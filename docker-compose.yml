@@ -1,13 +1,14 @@
 version: '3.8'
 services:
   react-app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     volumes:
       - ./react-app:/homepage/react-app
-    working_dir: /homepage/react-app
-    command: ["npm", "start"]
+      - /homepage/react-app/node_modules
   fastapi:
     build:
       context: ./backend
