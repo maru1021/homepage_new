@@ -1,35 +1,55 @@
+# Dockerの定義
+
 version: '3.8'
 services:
+  # http://localhost:3000/でReactアプリにアクセスするのに使用
   react-app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./react-app/Dockerfile
     ports:
       - "3000:3000"
     volumes:
-      - ./react-app:/homepage/react-app
-      - /homepage/react-app/node_modules
+      - ./react-app:/homepage/react-app        # ホストとコンテナのディレクトリをマウント
+      - /homepage/react-app/node_modules        # コンテナ内のnode_modulesを空ボリュームで確保
+    command: npm start
+
+  # http://localhost:8000/でAPIにアクセスするのに使用
   fastapi:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./backend/Dockerfile
     volumes:
-      - ./backend:/app
+      - ./backend:/app/backend
+      - ./backend/alembic.ini:/app/alembic.ini  # alembic.iniをマウント
+      - ./backend/alembic:/app/alembic  # Alembicフォルダのマウント
+    working_dir: /app  # /appディレクトリを基準に設定
     ports:
       - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 
+
+  # PostgreSQL
   db:
-    image: mysql:8.0
+    image: postgres:13
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: mydatabase
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql/data
+
+  # http://localhost:8080/でデータベースの内容を確認するのに使用
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
 
 volumes:
   db_data:

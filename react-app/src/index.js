@@ -1,21 +1,23 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
+import { ToastContainer } from 'react-toastify';
 import reportWebVitals from './reportWebVitals';
-// import EventBasic from './EventBasic';
-// import StateBasic from './StateBasic';
-import BookList from './BookList';
-import fetchBooks from './books';
+import './CSS/index.css';
+import Sidebar from './Sidebar';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './CSS/table.css';
+import './CSS/modal.css';
+import { BrowserRouter } from "react-router-dom";
+import AppRoutes from './routes/AppRoutes';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <>
-    {/* コメント */}
-    {/* <div><EventBasic /></div>
-    <div><StateBasic init={0} /></div> */}
-    <div><BookList src={fetchBooks} /></div>
-  </>
+  <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
+      <Sidebar />
+      <AppRoutes />
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
+  </BrowserRouter>
 );
 
 reportWebVitals();

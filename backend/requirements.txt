@@ -1,4 +1,8 @@
 fastapi
 uvicorn
-pymysql
 SQLAlchemy
+psycopg2-binary
+pydantic[email]
+alembic
+passlib[bcrypt]
+pyjwt

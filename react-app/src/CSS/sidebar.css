@@ -1,0 +1,46 @@
+/* サイドバー全体のスタイル */
+.sidebar {
+  height: 100vh;
+  width: 14%;
+  background-color: #1888d8; /* 薄い青色 */
+  padding-left: 15px;
+  position: fixed;
+  top: 0;
+}
+
+/* 部署のスタイル */
+.sidebar .btn-link {
+  color: #081923;
+  text-decoration: none;
+  text-align: left;
+  width: 100%;
+  margin: 0;
+  font-size: 1.2em;
+}
+
+/* 各項目のスタイル */
+.sidebar-items a {
+  color: #081923;
+  text-decoration: none;
+  display: block;
+  padding: 8px 12px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+/* ホバー時の効果 */
+.sidebar-items a:hover {
+  background-color: #b3e5fc;
+  color: #01579b;
+}
+
+.sidebar .btn-link:hover {
+  background-color: #b3e5fc;
+  color: #01579b;
+}
+
+/* サイドバーアイテムのインデント */
+.sidebar-items {
+  padding-left: 10px;
+}
