@@ -1,26 +1,84 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.sql import select
 
 from . import schemas
 from .. import models
 from backend.scripts import hash_password
 
 
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql import or_
+
+from sqlalchemy.orm import joinedload
+from sqlalchemy import or_, and_
+from sqlalchemy.sql import func
+
 def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10):
-    query = db.query(models.Employee)
+    # クエリのベース
+    query = db.query(models.Employee).options(joinedload(models.Employee.departments))
 
     if search:
+        # 管理者権限検索用の変換
+        is_admin = None
+        if search == "管理者":
+            is_admin = True
+        elif search == "利用者":
+            is_admin = False
+
+        # 部署名検索クエリ
+        department_query = db.query(models.employee_department).join(models.Department).filter(
+            models.Department.name.contains(search)
+        ).with_entities(models.employee_department.c.employee_id)
+
+        # クエリに条件を追加
         query = query.filter(
-            (models.Employee.name.contains(search)) |
-            (models.Employee.employee_no.contains(search))
+            or_(
+                models.Employee.name.contains(search),  # 名前で検索
+                models.Employee.employee_no.contains(search),  # 社員番号で検索
+                models.Employee.id.in_(department_query),  # 部署名で検索
+                and_(
+                    is_admin is not None,
+                    db.query(models.employee_department)
+                    .filter(
+                        models.employee_department.c.employee_id == models.Employee.id,
+                        models.employee_department.c.admin == is_admin
+                    ).exists()
+                )
+            )
         )
 
     total_count = query.count()  # 検索結果の総件数
+
     employees = query.offset((page - 1) * limit).limit(limit).all()  # ページネーション処理
 
-    employees_data = [schemas.Employee.from_orm(employee) for employee in employees]
+    # レスポンス用データ構築
+    employees_data = [
+        {
+            "id": employee.id,
+            "employee_no": employee.employee_no,
+            "name": employee.name,
+            "departments": [
+                {
+                    "id": dep.id,
+                    "name": dep.name,
+                    "admin": next(
+                        (row.admin for row in db.query(models.employee_department)
+                         .filter(
+                             models.employee_department.c.employee_id == employee.id,
+                             models.employee_department.c.department_id == dep.id
+                         ).all()),
+                        False
+                    )
+                }
+                for dep in employee.departments
+            ]
+        }
+        for employee in employees
+    ]
 
     return employees_data, total_count
+
 
 
 def existing_employee(db: Session, employee_no: str):
@@ -63,3 +121,33 @@ def create_employee(db: Session, employee: schemas.EmployeeCreate):
         db.rollback()
         print(f"Error occurred: {e}")
         return {"success": False, "message": "データベースエラーが発生しました", "field": ""}
+
+
+def update_employee(db: Session, employee_id: int, employee_data: schemas.EmployeeUpdate):
+    employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
+    if not employee:
+        raise ValueError("Employee not found")
+
+    # 従業員情報を更新
+    employee.name = employee_data.name
+    employee.employee_no = employee_data.employee_no
+
+    # 中間テーブルのデータを削除
+    db.execute(
+        models.employee_department.delete().where(models.employee_department.c.employee_id == employee_id)
+    )
+
+    # 新しいデータを挿入
+    for form in employee_data.forms:
+        db.execute(
+            models.employee_department.insert().values(
+                employee_id=employee_id,
+                department_id=form.department,
+                admin=form.admin
+            )
+        )
+
+    db.commit()
+    db.refresh(employee)
+    return {"message": "従業員情報を更新しました"}
+

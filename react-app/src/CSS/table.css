@@ -18,6 +18,20 @@
   text-align: center;
 }
 
+.table tr:hover {
+  background-color: #f0f8ff;
+}
+
+/* ホバー時の背景色 */
+.hovered-row td {
+  background-color: #f0f8ff;
+}
+
+/* ホバー中の共有行 (rowSpan対応) */
+.hovered-row:hover td {
+  background-color: #f0f8ff;
+}
+
 .pagination {
   display: flex;
   justify-content: flex-end;

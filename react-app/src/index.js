@@ -8,6 +8,7 @@ import Sidebar from './Sidebar';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './CSS/table.css';
 import './CSS/modal.css';
+import './CSS/contextmenu.css';
 import { BrowserRouter } from "react-router-dom";
 import AppRoutes from './routes/AppRoutes';
 

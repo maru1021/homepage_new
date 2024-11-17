@@ -32,7 +32,7 @@ function Modal({ show, onClose, onRegister, title, FormComponent }) {
 Modal.propTypes = {
     show: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
-    onRegister: PropTypes.func.isRequired,
+    onRegister: PropTypes.func,
     title: PropTypes.string.isRequired,
     FormComponent: PropTypes.elementType.isRequired, // FormComponentの型を明示
 };

@@ -1,9 +1,14 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 # 社員と紐づいた部署
 class EmployeeDepartment(BaseModel):
     department: int
+    admin: bool
+
+class Department(BaseModel):
+    id: int
+    name: str
     admin: bool
 
 # 登録時の形式
@@ -16,11 +21,26 @@ class EmployeeCreate(BaseModel):
     class Config:
         from_attributes = True
 
+class EmployeeDepartmentUpdate(BaseModel):
+    department: int
+    admin: bool
+
+# 編集時の形式
+class EmployeeUpdate(BaseModel):
+    name: str
+    employee_no: str
+    forms: List[EmployeeDepartment]
+
+    class Config:
+        from_attributes = True
+
+
 # テーブルのデータ取得時の形式
 class Employee(BaseModel):
     id: int
     employee_no: str = Field(..., pattern=r'^[a-zA-Z0-9]{7}$')
     name: str
+    departments: List[Department]
 
     class Config:
         from_attributes = True
@@ -36,7 +56,7 @@ class EmployeeResponse(BaseModel):
     field: str = ''
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # ログインリクエスト用モデル
 class LoginRequest(BaseModel):

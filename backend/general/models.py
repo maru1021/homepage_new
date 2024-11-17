@@ -8,12 +8,12 @@ employee_department = Table(
     "employee_department",
     Base.metadata,
     Column("employee_id", Integer, ForeignKey("employees.id"), primary_key=True),
-    Column("department_id", Integer, ForeignKey("depertments.id"), primary_key=True),
+    Column("department_id", Integer, ForeignKey("departments.id"), primary_key=True),
     Column("admin", Boolean, default=False)
 )
 
 class Department(Base):
-    __tablename__ = "depertments"
+    __tablename__ = "departments"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), index=True)
