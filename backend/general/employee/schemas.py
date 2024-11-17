@@ -1,11 +1,20 @@
 from pydantic import BaseModel, Field
 from typing import List
 
+# 社員と紐づいた部署
+class EmployeeDepartment(BaseModel):
+    department: int
+    admin: bool
+
 # 登録時の形式
 class EmployeeCreate(BaseModel):
     name: str
     employee_no: str = Field(..., pattern=r'^[a-zA-Z0-9]{7}$')
     password: str
+    forms: List[EmployeeDepartment]
+
+    class Config:
+        from_attributes = True
 
 # テーブルのデータ取得時の形式
 class Employee(BaseModel):
