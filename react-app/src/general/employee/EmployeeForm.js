@@ -112,12 +112,6 @@ function EmployeeForm({ onRegister }) {
 
         // バリデーションエラーがあれば送信を中止
         if (!inputValid()) return;
-        console.log(JSON.stringify({
-            name,
-            employee_no,
-            password,
-            forms,
-        }))
 
         const response = await fetch("http://localhost:8000/api/employees/", {
             method: "POST",

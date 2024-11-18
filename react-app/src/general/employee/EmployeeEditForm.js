@@ -93,7 +93,7 @@ function EmployeeEditForm({ employee, onSave }) {
         return isValid;
     };
 
-    // 登録時の処理
+    // 編集時の処理
     const handleSubmit = async (event) => {
         event.preventDefault();
 

@@ -1,49 +1,71 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import ContextMenu from '../../script/ContextMenu'; // コンテキストメニューをインポート
-import Modal from '../../script/Modal'; // モーダルをインポート
-import EmployeeEditForm from './EmployeeEditForm'; // 編集フォームをインポート
+import ContextMenu from '../../script/ContextMenu';
+import Modal from '../../script/Modal';
+import EmployeeEditForm from './EmployeeEditForm';
+import ConfirmDeleteModal from './ConfirmDeleteModal.js';
+import { successNoti, errorNoti } from '../../script/noti';
 
-function EmployeeTable({ data }) {
+function EmployeeTable({ data, onSave }) {
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [hoveredRowId, setHoveredRowId] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false); // モーダルの表示状態
-    const [selectedEmployee, setSelectedEmployee] = useState(null); // 編集対象の従業員
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-    // コンテキストメニューの位置調整、表示
-    // 編集削除のためにidの情報を持たせる
     const handleContextMenu = (event, rowId) => {
         event.preventDefault();
         setMenuPosition({
-            x: event.clientX -200,
-            y: event.clientY -200,
+            x: event.clientX - 200,
+            y: event.clientY - 200,
         });
-        setHoveredRowId(rowId); // メニューが関連する行を追跡
+        setHoveredRowId(rowId);
         setIsMenuVisible(true);
     };
 
-    // コンテキストメニュークリック時の処理
     const handleMenuAction = (action) => {
-        console.log(`Selected action: ${action} on row ${hoveredRowId}`);
-        setIsMenuVisible(false);
+        setTimeout(() => setIsMenuVisible(false), 0);
+        const employee = data.find((emp) => emp.id === hoveredRowId);
 
         if (action === 'Edit') {
-            const employee = data.find((emp) => emp.id === hoveredRowId);
-            console.log(selectedEmployee)
-            setSelectedEmployee(employee); // 編集対象の従業員を設定
-            setIsModalOpen(true); // モーダルを表示
+            setSelectedEmployee(employee);
+            setIsModalOpen(true);
+        } else if (action === 'Delete') {
+            setSelectedEmployee(employee);
+            setIsDeleteModalOpen(true);
         }
     };
 
     const closeModal = () => {
-        setIsModalOpen(false); // モーダルを閉じる
-        setSelectedEmployee(null); // 編集対象をリセット
+        setIsModalOpen(false);
+        setSelectedEmployee(null);
     };
 
-    const handleSave = (updatedData) => {
-        console.log('Updated data:', updatedData);
-        closeModal(); // 保存後にモーダルを閉じる
+    const closeDeleteModal = () => {
+        setIsDeleteModalOpen(false);
+        setSelectedEmployee(null);
+    };
+
+    const handleDelete = async () => {
+        const response = await fetch(
+            `http://localhost:8000/api/employees/${selectedEmployee.id}`,
+            { method: 'DELETE' }
+        );
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            successNoti('削除成功に成功しました');
+            onSave();
+        } else {
+            errorNoti('削除に失敗しました。');
+        }
+        closeDeleteModal();
+    };
+
+    const handleSave = (updatedEmployee) => {
+        closeModal();
+        onSave(updatedEmployee);
     };
 
     return (
@@ -58,42 +80,25 @@ function EmployeeTable({ data }) {
                     </tr>
                 </thead>
                 <tbody>
-                    {data.map((employee) => {
-                        const departmentCount = employee.departments.length;
-                        return (
-                            <React.Fragment key={employee.id}>
-                                {employee.departments.length > 0
-                                    ? employee.departments.map((department, index) => (
-                                          <tr
-                                              key={`${employee.id}-${department.id}`}
-                                              onContextMenu={(event) => handleContextMenu(event, employee.id)}
-                                              className={hoveredRowId === employee.id ? 'hovered-row' : ''}
-                                          >
-                                              {index === 0 && (
-                                                  <>
-                                                      <td rowSpan={departmentCount}>{employee.employee_no}</td>
-                                                      <td rowSpan={departmentCount}>{employee.name}</td>
-                                                  </>
-                                              )}
-                                              <td>{department.name}</td>
-                                              <td>{department.admin ? '管理者' : '利用者'}</td>
-                                          </tr>
-                                      ))
-                                    : (
-                                        <tr
-                                            key={`employee-no-department-${employee.id}`}
-                                            onContextMenu={(event) => handleContextMenu(event, employee.id)}
-                                            className={hoveredRowId === employee.id ? 'hovered-row' : ''}
-                                        >
-                                            <td>{employee.employee_no}</td>
-                                            <td>{employee.name}</td>
-                                            <td>部署なし</td>
-                                            <td>権限なし</td>
-                                        </tr>
+                    {data.map((employee) => (
+                        <React.Fragment key={employee.id}>
+                            {employee.departments.map((department, index) => (
+                                <tr
+                                    key={`${employee.id}-${department.id}`}
+                                    onContextMenu={(event) => handleContextMenu(event, employee.id)}
+                                >
+                                    {index === 0 && (
+                                        <>
+                                            <td rowSpan={employee.departments.length}>{employee.employee_no}</td>
+                                            <td rowSpan={employee.departments.length}>{employee.name}</td>
+                                        </>
                                     )}
-                            </React.Fragment>
-                        );
-                    })}
+                                    <td>{department.name}</td>
+                                    <td>{department.admin ? '管理者' : '利用者'}</td>
+                                </tr>
+                            ))}
+                        </React.Fragment>
+                    ))}
                 </tbody>
             </table>
 
@@ -107,9 +112,24 @@ function EmployeeTable({ data }) {
             <Modal
                 show={isModalOpen}
                 onClose={closeModal}
-                onRegister={handleSave}
                 title="従業員情報編集"
-                FormComponent={() => <EmployeeEditForm employee={selectedEmployee} onSave={handleSave} />}
+                FormComponent={() => (
+                    <EmployeeEditForm
+                        employee={selectedEmployee}
+                        onSave={handleSave}
+                    />
+                )}
+            />
+
+            <ConfirmDeleteModal
+                show={isDeleteModalOpen}
+                onClose={closeDeleteModal}
+                onConfirm={handleDelete}
+                message={
+                    selectedEmployee
+                        ? `${selectedEmployee.employee_no}を削除してもよろしいですか？`
+                        : '選択された従業員が見つかりません。'
+                }
             />
         </div>
     );
@@ -127,9 +147,10 @@ EmployeeTable.propTypes = {
                     name: PropTypes.string.isRequired,
                     admin: PropTypes.bool.isRequired,
                 })
-            ).isRequired,
+            ),
         })
     ).isRequired,
+    onSave: PropTypes.func.isRequired,
 };
 
 export default EmployeeTable;

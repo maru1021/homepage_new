@@ -32,7 +32,6 @@ ContextMenu.propTypes = {
         y: PropTypes.number.isRequired,
     }).isRequired,
     onActionSelect: PropTypes.func.isRequired,
-    onClose: PropTypes.func.isRequired,
 };
 
 export default ContextMenu;

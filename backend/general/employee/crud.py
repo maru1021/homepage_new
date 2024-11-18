@@ -1,14 +1,12 @@
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import select
+from sqlalchemy import delete
 
 from . import schemas
 from .. import models
 from backend.scripts import hash_password
 
-
-from sqlalchemy.orm import joinedload
-from sqlalchemy.sql import or_
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy import or_, and_
@@ -151,3 +149,21 @@ def update_employee(db: Session, employee_id: int, employee_data: schemas.Employ
     db.refresh(employee)
     return {"message": "従業員情報を更新しました"}
 
+
+def delete_employee(db: Session, employee_id: int):
+    employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
+    if not employee:
+        return {"success": False, "message": "対象の従業員が存在しません"}
+
+    try:
+        db.execute(
+            delete(models.employee_department).where(models.employee_department.c.employee_id == employee_id)
+        )
+        db.commit()
+        db.delete(employee)
+        db.commit()
+
+        return {"message": "削除に成功しました。"}
+    except Exception as e:
+        db.rollback()
+        return {"success": False, "message": "データベースエラーが発生しました", "field": ""}

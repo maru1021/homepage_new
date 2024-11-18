@@ -27,10 +27,9 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
         loadData(searchQuery, currentPage, itemsPerPage);
     }, [searchQuery, currentPage, itemsPerPage]);
 
-    // 登録後の処理
-    const handleRegister = () => {
-        closeRegisterModal();
-        loadData(searchQuery, 1, itemsPerPage);
+    // 編集または登録後の処理
+    const handleDataUpdate = () => {
+        loadData(searchQuery, currentPage, itemsPerPage); // 現在の検索条件で再取得
     };
 
     const handleItemsPerPageChange = (newItemsPerPage) => {
@@ -62,18 +61,18 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
             />
 
             <div className="table-container">
-              <TableComponent data={tableDatas} />
-              <Pagination
-                  totalPages={totalPages}
-                  currentPage={currentPage}
-                  onPageChange={handlePageChange}
-              />
+                <TableComponent data={tableDatas} onSave={handleDataUpdate} />
+                <Pagination
+                    totalPages={totalPages}
+                    currentPage={currentPage}
+                    onPageChange={handlePageChange}
+                />
             </div>
 
             <Modal
                 show={isModalOpen}
                 onClose={closeRegisterModal}
-                onRegister={handleRegister}
+                onRegister={handleDataUpdate} // 登録後にデータ更新
                 title={modalTitle}
                 FormComponent={FormComponent}
             />
