@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { Button, DialogActions, TextField } from '@mui/material';
 import 'react-toastify/dist/ReactToastify.css';
 import { successNoti, errorNoti } from '../../script/noti';
 
@@ -48,6 +49,7 @@ function DepartmentForm({ onRegister }) {
             successNoti(data.message);
         } else {
             // サーバーからのエラーメッセージをセット
+            console.log(data);
             if (data.field === "name") {
                 setNameError(data.message);
             } else {
@@ -59,21 +61,19 @@ function DepartmentForm({ onRegister }) {
     return (
         <>
             <form>
-                <div className="form-group">
-                    <label>部署名:</label>
-                    <input
-                        type="text"
-                        value={name}
-                        placeholder="部署名"
-                        className={`form-control ${nameError ? 'is-invalid' : ''}`}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                    {nameError && <div className="invalid-feedback">{nameError}</div>}
-                </div>
-                <hr />
-                <div className="d-flex justify-content-end">
-                    <button className="btn btn-primary" onClick={handleSubmit}>登録</button>
-                </div>
+                <TextField
+                    fullWidth
+                    label="部署名"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    error={Boolean(nameError)}
+                    helperText={nameError}
+                />
+                <DialogActions>
+                    <Button type="submit" variant="contained" color="primary" onClick={handleSubmit}>
+                        登録
+                    </Button>
+                </DialogActions>
             </form>
         </>
     );

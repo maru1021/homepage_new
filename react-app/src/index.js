@@ -1,5 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { createRoot } from "react-dom/client";
 import { ToastContainer } from 'react-toastify';
 import reportWebVitals from './reportWebVitals';
@@ -29,11 +29,14 @@ function App() {
     localStorage.setItem("token", newToken);
   };
 
+  // Sidebarをメモ化して、不要な再レンダリングを防ぐ
+  const memoizedSidebar = useMemo(() => <Sidebar setToken={setToken} />, []);
+
   return (
     <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
       {token ? (
         <>
-          <Sidebar setToken={setToken} />
+          {memoizedSidebar}
           <Routes>
             <Route path="/*" element={<AppRoutes />} />
           </Routes>

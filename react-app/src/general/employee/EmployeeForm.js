@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import {
+    Button, TextField, Select, MenuItem, FormControl, InputLabel, FormHelperText,
+     IconButton, InputAdornment, Stack, DialogActions
+} from '@mui/material';
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import 'react-toastify/dist/ReactToastify.css';
-import { FaPlus, FaMinus } from 'react-icons/fa';
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 import { successNoti, errorNoti } from '../../script/noti';
 import employeeValid from '../../script/valid/employeeValid';
 import passwordValid from '../../script/valid/passwordValid';
@@ -37,6 +43,7 @@ function EmployeeForm({ onRegister }) {
     const [employeeNoError, setEmployeeNoError] = useState('');
     const [nameError, setNameError] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [emailError, setEmailError] = useState('');
     const [formErrors, setFormErrors] = useState([]);
 
@@ -163,119 +170,117 @@ function EmployeeForm({ onRegister }) {
     };
 
     return (
-        <>
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label>社員番号:</label>
-                    <input
-                        type="text"
-                        value={employee_no}
-                        placeholder="社員番号"
-                        className={`form-control ${employeeNoError ? 'is-invalid' : ''}`}
-                        onChange={(e) => setEmployeeNo(e.target.value)}
-                    />
-                    {employeeNoError && <div className="invalid-feedback">{employeeNoError}</div>}
-                </div>
-                <div className="form-group">
-                    <label>名前:</label>
-                    <input
-                        type="text"
-                        value={name}
-                        placeholder="名前"
-                        className={`form-control ${nameError ? 'is-invalid' : ''}`}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                    {nameError && <div className="invalid-feedback">{nameError}</div>}
-                </div>
-                <div className="form-group">
-                    <label>メールアドレス:</label>
-                    <input
-                        type="text"
-                        value={email}
-                        placeholder="メールアドレス"
-                        className={`form-control ${emailError ? 'is-invalid' : ''}`}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                    {emailError && <div className="invalid-feedback">{emailError}</div>}
-                </div>
-                <div className="form-group">
-                    <label>パスワード:</label>
-                    <input
-                        type="password"
-                        value={password}
-                        placeholder="パスワード"
-                        className={`form-control ${passwordError ? 'is-invalid' : ''}`}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                    {passwordError && <div className="invalid-feedback">{passwordError}</div>}
-                </div>
+        <form>
+            <Stack spacing={2}>
+                <TextField
+                    fullWidth
+                    label="社員番号"
+                    value={employee_no}
+                    onChange={(e) => setEmployeeNo(e.target.value)}
+                    error={Boolean(employeeNoError)}
+                    helperText={employeeNoError}
+                />
+
+                <TextField
+                    fullWidth
+                    label="名前"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    error={Boolean(nameError)}
+                    helperText={nameError}
+                />
+                <TextField
+                    fullWidth
+                    label="メールアドレス"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    error={Boolean(emailError)}
+                    helperText={emailError}
+                />
+                <TextField
+                    fullWidth
+                    label="パスワード"
+                    type={showPassword ? "text" : "password"}  // 表示/非表示を切り替え
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    error={Boolean(passwordError)}
+                    helperText={passwordError}
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position="end">
+                                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                    }}
+                />
+
                 <hr />
+
                 {forms.map((form, index) => (
-                    <div key={index} className="form-group mb-3 border p-3 rounded">
-                        <div className="d-flex align-items-center justify-content-between">
+                    <Stack key={index} spacing={2} sx={{ border: "1px solid #ccc", padding: 2, borderRadius: 1 }}>
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
                             <h6>部署と権限 {index + 1}</h6>
                             {index > 0 && (
-                                <button
-                                    type="button"
-                                    className="btn btn-danger btn-sm"
+                                <Button
+                                    variant="contained"
+                                    size="small"
+                                    startIcon={<RemoveIcon />}
+                                    color="error"
                                     onClick={() => handleRemoveForm(index)}
                                 >
-                                    <FaMinus /> 削除
-                                </button>
+                                    削除
+                                </Button>
                             )}
-                        </div>
-                        <div className="form-group">
-                            <label>部署:</label>
-                            <select
-                                value={form.department}
-                                className={`form-select ${formErrors[index] ? 'is-invalid' : ''}`}
-                                onChange={(e) =>
-                                    handleFormChange(index, 'department', e.target.value)
-                                }
+                        </Stack>
+
+                        <FormControl fullWidth error={Boolean(formErrors[index])}>
+                            <InputLabel>部署</InputLabel>
+                            <Select
+                                value={departments.some(d => d.id === form.department) ? form.department : ""}
+                                onChange={(e) => handleFormChange(index, "department", e.target.value)}
+                                displayEmpty
                             >
-                                <option value="">部署を選択してください</option>
                                 {departments.map((department) => (
-                                    <option key={department.id} value={department.id}>
+                                    <MenuItem key={department.id} value={department.id}>
                                         {department.name}
-                                    </option>
+                                    </MenuItem>
                                 ))}
-                            </select>
-                            {formErrors[index] && (
-                                <div className="invalid-feedback">{formErrors[index]}</div>
-                            )}
-                        </div>
-                        <div className="form-group">
-                            <label>管理者権限:</label>
-                            <select
-                                value={form.admin}
-                                className="form-select"
-                                onChange={(e) =>
-                                    handleFormChange(index, 'admin', e.target.value)
-                                }
+                            </Select>
+                            {formErrors[index] && <FormHelperText>{formErrors[index]}</FormHelperText>}
+                        </FormControl>
+
+                        <FormControl fullWidth>
+                            <InputLabel>権限</InputLabel>
+                            <Select
+                                value={form.admin ? "true" : "false"}
+                                onChange={(e) => handleFormChange(index, "admin", e.target.value === "true")}
                             >
-                                <option value="false">利用者</option>
-                                <option value="true">管理者</option>
-                            </select>
-                        </div>
-                    </div>
+                                <MenuItem value="false">利用者</MenuItem>
+                                <MenuItem value="true">管理者</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Stack>
                 ))}
-                <div className="d-flex justify-content-start">
-                    <button
-                        type="button"
-                        className="btn btn-success btn-sm"
+                <Stack direction="row" justifyContent="flex-start">
+                    <Button
+                        variant="contained"
+                        size="small"
+                        startIcon={<AddIcon />}
+                        color="success"
                         onClick={handleAddForm}
                     >
-                        <FaPlus /> 追加
-                    </button>
-                </div>
-                <hr />
-                <div className="d-flex justify-content-end">
-                    <button className="btn btn-primary" type="submit">
+                        追加
+                    </Button>
+                </Stack>
+                <DialogActions>
+                    <Button type="submit" variant="contained" color="primary" onClick={handleSubmit}>
                         登録
-                    </button>
-                </div>
-            </form>
-        </>
+                    </Button>
+                </DialogActions>
+            </Stack>
+        </form>
     );
 }
 

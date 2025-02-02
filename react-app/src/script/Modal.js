@@ -1,40 +1,39 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
-function Modal({ show, onClose, onRegister, title, FormComponent }) {
+function Modal({ show, onClose, title, FormComponent, onRegister }) {
     return (
-        <>
-            {show && <div className="modal-overlay" onClick={onClose}></div>}
-            <div
-                className={`modal ${show ? 'd-block' : 'd-none'}`} 
-                tabIndex="-1"
-                onClick={onClose}
-            >
-                <div
-                    className="modal-dialog"
-                    onClick={(e) => e.stopPropagation()}
+        <Dialog open={show} onClose={onClose} fullWidth maxWidth="sm">
+            <DialogTitle>
+                {title}
+                <IconButton
+                    aria-label="close"
+                    onClick={onClose}
+                    sx={{
+                        position: 'absolute',
+                        right: 8,
+                        top: 8,
+                        color: (theme) => theme.palette.grey[500],
+                    }}
                 >
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">{title}</h5>
-                            <button type="button" className="btn-close" aria-label="Close" onClick={onClose}></button>
-                        </div>
-                        <div className="modal-body">
-                            <FormComponent onRegister={onRegister} />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
+                    <CloseIcon />
+                </IconButton>
+            </DialogTitle>
+            <DialogContent dividers>
+                <FormComponent onRegister={onRegister} />
+            </DialogContent>
+        </Dialog>
     );
 }
 
 Modal.propTypes = {
     show: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
-    onRegister: PropTypes.func,
     title: PropTypes.string.isRequired,
-    FormComponent: PropTypes.elementType.isRequired, // FormComponentの型を明示
+    FormComponent: PropTypes.elementType.isRequired,
+    onRegister: PropTypes.func,
 };
 
 export default Modal;

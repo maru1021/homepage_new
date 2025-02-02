@@ -23,6 +23,9 @@ def get_departments(db: Session, search: str = "", page: int = 1, limit: int = 1
 # 部署作成
 def create_department(db: Session, department: schemas.DepartmentBase):
     try:
+        if db.query(models.Department).filter(models.Department.name == department.name).first():
+            return {"success": False, "message": "その部署は既に存在しています", "field": "name"}
+
         db_department = models.Department(name=department.name)
         db.add(db_department)
         db.commit()
@@ -38,6 +41,10 @@ def update_department(db: Session, department_id: int, department_data: schemas.
     department = db.query(models.Department).filter(models.Department.id == department_id).first()
     if not department:
         raise ValueError("部署が見つかりません。")
+
+    if db.query(models.Department).filter(models.Department.name == department_data.name,
+                                          models.Department.id != department_id).first():
+        return {"success": False, "message": "その部署は既に存在しています", "field": "name"}
 
     department.name = department_data.name
     try:

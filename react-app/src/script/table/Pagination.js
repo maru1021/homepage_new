@@ -1,28 +1,25 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
+import { Pagination, Stack } from "@mui/material";
 
-const Pagination = ({ totalPages, currentPage, onPageChange }) => {
-    const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
-
+const PaginationComponent = ({ totalPages, currentPage, onPageChange }) => {
     return (
-        <nav>
-            <ul className="pagination">
-                {pageNumbers.map(number => (
-                    <li key={number} className={`page-item ${number === currentPage ? 'active' : ''}`}>
-                        <button onClick={() => onPageChange(number)} className="page-link">
-                            {number}
-                        </button>
-                    </li>
-                ))}
-            </ul>
-        </nav>
+        <Stack spacing={2} alignItems="flex-end" sx={{ marginTop: 2 }}>
+            <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={(event, page) => onPageChange(page)}
+                color="primary"
+                shape="rounded"
+            />
+        </Stack>
     );
-}
+};
 
-Pagination.propTypes = {
+PaginationComponent.propTypes = {
     totalPages: PropTypes.number.isRequired,
     currentPage: PropTypes.number.isRequired,
     onPageChange: PropTypes.func.isRequired,
 };
 
-export default Pagination;
+export default PaginationComponent;

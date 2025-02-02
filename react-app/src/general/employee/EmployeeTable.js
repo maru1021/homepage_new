@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import {
+    Table, TableBody, TableCell, TableContainer,
+    TableRow, Paper
+} from "@mui/material";
 import ContextMenu from '../../script/ContextMenu';
 import Modal from '../../script/Modal';
+import TableHeader from '../../script/table/TableHead';
 import EmployeeEditForm from './EmployeeEditForm';
 import ConfirmDeleteModal from '../../script/table/ConfirmDeleteModal';
 import { successNoti, errorNoti } from '../../script/noti';
@@ -77,37 +82,39 @@ function EmployeeTable({ data, onSave }) {
 
     return (
         <div onClick={() => setIsMenuVisible(false)} style={{ position: 'relative' }}>
-            <table className="table table-hover">
-                <thead>
-                    <tr>
-                        <th>社員番号</th>
-                        <th>名前</th>
-                        <th>部署</th>
-                        <th>権限</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {data.map((employee) => (
-                        <React.Fragment key={employee.id}>
-                            {employee.departments.map((department, index) => (
-                                <tr
-                                    key={`${employee.id}-${department.id}`}
-                                    onContextMenu={(event) => handleContextMenu(event, employee.id)}
-                                >
-                                    {index === 0 && (
-                                        <>
-                                            <td rowSpan={employee.departments.length}>{employee.employee_no}</td>
-                                            <td rowSpan={employee.departments.length}>{employee.name}</td>
-                                        </>
-                                    )}
-                                    <td>{department.name}</td>
-                                    <td>{department.admin ? '管理者' : '利用者'}</td>
-                                </tr>
-                            ))}
-                        </React.Fragment>
-                    ))}
-                </tbody>
-            </table>
+            <TableContainer component={Paper} elevation={3}>
+                <Table>
+                    <TableHeader columns={["社員番号", "名前", "部署", "権限"]} />
+
+                    <TableBody>
+                        {data.map((employee) => (
+                            <React.Fragment key={employee.id}>
+                                {employee.departments.map((department, index) => (
+                                    <TableRow
+                                        key={`${employee.id}-${department.id}`}
+                                        onContextMenu={(event) => handleContextMenu(event, employee.id)}
+                                        hover
+                                        sx={{ transition: "0.3s", "&:hover": { backgroundColor: "#f5f5f5" } }}
+                                    >
+                                        {index === 0 && (
+                                            <>
+                                                <TableCell rowSpan={employee.departments.length}>
+                                                    {employee.employee_no}
+                                                </TableCell>
+                                                <TableCell rowSpan={employee.departments.length}>
+                                                    {employee.name}
+                                                </TableCell>
+                                            </>
+                                        )}
+                                        <TableCell>{department.name}</TableCell>
+                                        <TableCell>{department.admin ? "管理者" : "利用者"}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </React.Fragment>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
 
             {isMenuVisible && (
                 <ContextMenu

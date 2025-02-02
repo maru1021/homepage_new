@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import {
+    Table, TableBody, TableCell, TableContainer,
+    TableRow, Paper
+} from "@mui/material";
 import ContextMenu from '../../script/ContextMenu';
 import Modal from '../../script/Modal';
+import TableHeader from '../../script/table/TableHead';
 import ConfirmDeleteModal from '../../script/table/ConfirmDeleteModal';
 import DepartmentEditForm from './DepartmentEditForm';
 import { successNoti, errorNoti } from '../../script/noti';
@@ -77,24 +82,26 @@ function DepartmentTable({ data, onSave }) {
 
     return (
         <div onClick={() => setIsMenuVisible(false)} style={{ position: 'relative' }}>
-            <table className="table table-hover">
-                <thead>
-                    <tr>
-                        <th>部署名</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {data.map((department) => (
-                        <tr
-                            key={department.id}
-                            onContextMenu={(event) => handleContextMenu(event, department.id)}
-                            id={`department-row-${department.id}`}
-                        >
-                            <td>{department.name}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            <TableContainer component={Paper} elevation={3}>
+                <Table>
+                    <TableHeader columns={["部署名"]} />
+
+                    <TableBody>
+                        {data.map((department) => (
+                            <TableRow
+                                key={department.id}
+                                onContextMenu={(event) => handleContextMenu(event, department.id)}
+                                id={`department-row-${department.id}`}
+                                hover
+                            >
+                                <TableCell>
+                                    {department.name}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
 
             {isMenuVisible && (
                 <ContextMenu

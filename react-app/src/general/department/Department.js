@@ -18,6 +18,7 @@ const ExcelOutput = async () => {
     exportExcel("http://localhost:8000/api/departments/export_excel", token);
 };
 
+// Excel入力する関数
 const ExcelInput = async (loadData) => {
     const token = localStorage.getItem("token");
     importExcel("http://localhost:8000/api/departments/import_excel", token, () => loadData());
@@ -31,7 +32,7 @@ const Department = () => (
         modalTitle='部署登録'
         FormComponent={DepartmentForm}
         ExcelOutput={ExcelOutput}
-        Excelinput={ExcelInput}
+        ExcelInput={ExcelInput}
     />
 );
 

@@ -10,7 +10,7 @@ function ContextMenu({ position, onActionSelect }) {
                 top: `${position.y}px`,
                 left: `${position.x}px`,
             }}
-            onClick={(e) => e.stopPropagation()} // 外部クリックの影響を防ぐ
+            onClick={(e) => e.stopPropagation()}
         >
             <ul>
                 <li onClick={() => onActionSelect('Edit')}>

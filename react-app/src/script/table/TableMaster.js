@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { Grid, Typography, Button } from "@mui/material";
+import { SaveAlt as SaveAltIcon, UploadFile as UploadFileIcon } from "@mui/icons-material";
 import TableActions from './TableActions';
-import Pagination from './Pagination';
+import PaginationComponent from './Pagination';
 import Modal from '../Modal';
 
-const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormComponent, ExcelOutput=null, Excelinput=null }) => {
+const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormComponent, ExcelOutput=null, ExcelInput=null }) => {
     const [tableDatas, setTableDatas] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -50,24 +52,47 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
     return (
         <div className="TableWithActions">
             <header>
-                <div className='row align-items-center'>
-                    <h1 className='col-7'>{title}</h1>
-                    {ExcelOutput && (
-                        <button className='btn btn-primary btn-sm col-1 mx-1' onClick={ExcelOutput}>
-                            Excel出力
-                        </button>
-                    )}
+            <Grid container alignItems="center" spacing={2} sx={{ paddingY: 2, paddingLeft: "17%" }}>
+                {/* タイトル */}
+                <Grid item xs={7}>
+                    <Typography variant="h2" fontWeight="bold">
+                        {title}
+                    </Typography>
+                </Grid>
 
-                    {Excelinput && (
-                        <button
-                            className='btn btn-primary btn-sm col-1 mx-1'
-                            onClick={() => Excelinput(loadData)}
+                {/* Excel出力ボタン */}
+                {ExcelOutput && (
+                    <Grid item xs={2}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            startIcon={<SaveAltIcon />}
+                            fullWidth
+                            onClick={ExcelOutput}
+                        >
+                            Excel出力
+                        </Button>
+                    </Grid>
+                )}
+
+                {/* Excel入力ボタン */}
+                {ExcelInput && (
+                    <Grid item xs={2}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            startIcon={<UploadFileIcon />}
+                            fullWidth
+                            onClick={() => ExcelInput(loadData)}
                         >
                             Excel入力
-                        </button>
-                    )}
-                </div>
-            </header>
+                        </Button>
+                    </Grid>
+                )}
+            </Grid>
+        </header>
 
             <TableActions
                 itemsPerPage={itemsPerPage}
@@ -79,7 +104,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
 
             <div className="table-container">
                 <TableComponent data={tableDatas} onSave={handleDataUpdate} />
-                <Pagination
+                <PaginationComponent
                     totalPages={totalPages}
                     currentPage={currentPage}
                     onPageChange={handlePageChange}
@@ -103,7 +128,7 @@ TableMaster.propTypes = {
     TableComponent: PropTypes.elementType.isRequired,
     modalTitle: PropTypes.string.isRequired,
     FormComponent: PropTypes.elementType.isRequired,
-    Excelinput: PropTypes.func,
+    ExcelInput: PropTypes.func,
     ExcelOutput: PropTypes.func,
 };
 

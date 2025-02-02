@@ -5,7 +5,7 @@
 # docker compose up -d
 
 # ベースイメージ
-FROM node:16
+FROM node:22
 
 # 作業ディレクトリの設定
 WORKDIR /homepage/react-app
