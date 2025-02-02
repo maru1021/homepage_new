@@ -30,14 +30,15 @@ function DepartmentForm({ onRegister }) {
         // バリデーションエラーがあれば送信を中止、メッセージを表示
         if (!inputValid()) return;
 
+        const token = localStorage.getItem("token");
         const response = await fetch("http://localhost:8000/api/departments/", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ name })
         });
-
         const data = await response.json();
 
         if (response.ok && data.success) {

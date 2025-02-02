@@ -43,6 +43,7 @@ async def update_employee(employee_id: int, employee_data: schemas.EmployeeUpdat
 @router.delete("/{employee_id}", response_model=schemas.EmployeeResponse)
 async def delete_employee(employee_id: int, db: Session = Depends(get_db)):
     try:
+        print('pppppppppppppppp')
         return crud.delete_employee(db, employee_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

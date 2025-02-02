@@ -1,4 +1,10 @@
 以下のコマンドを実行するとモデルとの差異を確認してマイグレーションファイルを実行する
 
-docker-compose run fastapi alembic revision --autogenerate -m "コメント"
-docker-compose run fastapi alembic upgrade head
+docker-compose exec fastapi alembic revision --autogenerate -m "コメント"
+docker-compose exec fastapi alembic upgrade head
+
+データベースを初期状態の戻す場合は以下のコマンドを実行する
+docker-compose exec fastapi alembic downgrade base
+
+ひとつ前のマイグレーションに戻す場合は以下のコマンドを実行する
+docker-compose exec fastapi alembic downgrade -1

@@ -7,7 +7,12 @@ import employeeValid from '../../script/valid/employeeValid';
 
 // 部署データを取得する関数
 const fetchDepartments = async () => {
-    const response = await fetch(`http://localhost:8000/api/departments`);
+    const token = localStorage.getItem("token");
+    const response = await fetch(`http://localhost:8000/api/departments`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
     if (response.ok) {
         const data = await response.json();
         return data.departments || [];
@@ -105,7 +110,7 @@ function EmployeeEditForm({ employee, onSave }) {
         // バリデーションエラーがあれば送信を中止
         if (!inputValid()) return;
 
-        const payload = {
+        const send_data = {
             name,
             employee_no,
             forms: forms.map((form) => ({
@@ -114,19 +119,21 @@ function EmployeeEditForm({ employee, onSave }) {
             })),
         };
 
+        const token = localStorage.getItem("token");
         const response = await fetch(`http://localhost:8000/api/employees/${employee?.id || ''}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify(payload),
+            body: JSON.stringify(send_data),
         });
 
         const data = await response.json();
 
         if (response.ok && data.success) {
             successNoti(data.message);
-            onSave(payload); // 保存後に親コンポーネントへ通知
+            onSave(send_data); // 保存後に親コンポーネントへ通知
         } else {
             if (data.field === 'employee_no') {
                 setEmployeeNoError(data.message);
@@ -183,11 +190,13 @@ function EmployeeEditForm({ employee, onSave }) {
                             onChange={(e) => handleFormChange(index, 'department', e.target.value)}
                         >
                             <option value="">部署を選択してください</option>
-                            {departments.map((department) => (
-                                <option key={department.id} value={department.id}>
-                                    {department.name}
-                                </option>
-                            ))}
+                            {departments
+                                .filter((department) => !forms.some((f, i) => f.department === department.id && i !== index))
+                                .map((department) => (
+                                    <option key={department.id} value={department.id}>
+                                        {department.name}
+                                    </option>
+                                ))}
                         </select>
                         {formErrors[index] && (
                             <div className="invalid-feedback">{formErrors[index]}</div>

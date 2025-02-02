@@ -4,7 +4,7 @@ import TableActions from './TableActions';
 import Pagination from './Pagination';
 import Modal from '../Modal';
 
-const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormComponent }) => {
+const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormComponent, ExcelOutput=null, Excelinput=null }) => {
     const [tableDatas, setTableDatas] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -30,6 +30,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
     // 編集または登録後の処理
     const handleDataUpdate = () => {
         loadData(searchQuery, currentPage, itemsPerPage); // 現在の検索条件で再取得
+        closeRegisterModal();
     };
 
     const handleItemsPerPageChange = (newItemsPerPage) => {
@@ -49,7 +50,23 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
     return (
         <div className="TableWithActions">
             <header>
-                <h1>{title}</h1>
+                <div className='row align-items-center'>
+                    <h1 className='col-7'>{title}</h1>
+                    {ExcelOutput && (
+                        <button className='btn btn-primary btn-sm col-1 mx-1' onClick={ExcelOutput}>
+                            Excel出力
+                        </button>
+                    )}
+
+                    {Excelinput && (
+                        <button
+                            className='btn btn-primary btn-sm col-1 mx-1'
+                            onClick={() => Excelinput(loadData)}
+                        >
+                            Excel入力
+                        </button>
+                    )}
+                </div>
             </header>
 
             <TableActions
@@ -86,6 +103,8 @@ TableMaster.propTypes = {
     TableComponent: PropTypes.elementType.isRequired,
     modalTitle: PropTypes.string.isRequired,
     FormComponent: PropTypes.elementType.isRequired,
+    Excelinput: PropTypes.func,
+    ExcelOutput: PropTypes.func,
 };
 
 export default TableMaster;

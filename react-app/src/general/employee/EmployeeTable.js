@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import ContextMenu from '../../script/ContextMenu';
 import Modal from '../../script/Modal';
 import EmployeeEditForm from './EmployeeEditForm';
-import ConfirmDeleteModal from './ConfirmDeleteModal.js';
+import ConfirmDeleteModal from '../../script/table/ConfirmDeleteModal';
 import { successNoti, errorNoti } from '../../script/noti';
 
 function EmployeeTable({ data, onSave }) {
@@ -48,9 +48,16 @@ function EmployeeTable({ data, onSave }) {
     };
 
     const handleDelete = async () => {
+        const token = localStorage.getItem("token");
         const response = await fetch(
             `http://localhost:8000/api/employees/${selectedEmployee.id}`,
-            { method: 'DELETE' }
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                method: 'DELETE',
+            }
         );
         const data = await response.json();
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from backend.general.department.router import router as department_router
-from backend.general.employee.router import router as employee_router
+from backend.authority.employee.router import router as employee_router
 
 # APIRouterのインスタンスを作成
 router = APIRouter()

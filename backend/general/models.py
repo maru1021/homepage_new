@@ -1,42 +1,28 @@
 from backend.database import Base
-from sqlalchemy import Table, Column, Integer, ForeignKey, String, Boolean
+from sqlalchemy import Table, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
+from typing import TYPE_CHECKING
 
-# 従業員と部署を多対多で紐付ける中間テーブル
-# 管理者権限もこのモデルで行う
-employee_department = Table(
-    "employee_department",
-    Base.metadata,
-    Column("employee_id", Integer, ForeignKey("employees.id"), primary_key=True),
-    Column("department_id", Integer, ForeignKey("departments.id"), primary_key=True),
-    Column("admin", Boolean, default=False)
-)
+if TYPE_CHECKING:
+    from backend.authority.models import Employee
 
+# 部署モデル
 class Department(Base):
     __tablename__ = "departments"
+    __table_args__ = {"extend_existing": True}
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(50), index=True)
+    name = Column(String(50), unique=True, index=True)
 
-    # Employee とのリレーション
+    department_authorities = relationship(
+        "EmployeeAuthority",
+        back_populates="department",
+        overlaps="employees"
+    )
+
     employees = relationship(
         "Employee",
-        secondary=employee_department,
-        back_populates="departments"
+        secondary="employee_authority",
+        back_populates="departments",
+        overlaps="department_authorities"
     )
-
-class Employee(Base):
-    __tablename__ = "employees"
-
-    id = Column(Integer, primary_key=True, index=True)
-    employee_no = Column(String(7), unique=True, index=True)
-    name = Column(String(50), index=True)
-    password = Column(String(255), nullable=False)
-
-    # Department とのリレーション
-    departments = relationship(
-        "Department",
-        secondary=employee_department,
-        back_populates="employees"
-    )
-

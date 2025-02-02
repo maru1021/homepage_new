@@ -1,9 +1,8 @@
 from pydantic import BaseModel, Field
 from typing import List
 
-# 登録時の形式
-class DepartmentCreate(BaseModel):
-    name: str
+class DepartmentBase(BaseModel):
+    name:str
 
 # テーブルのデータ取得時の形式
 class Department(BaseModel):
@@ -24,4 +23,4 @@ class DepartmentResponse(BaseModel):
     field: str = ''
 
     class Config:
-        orm_mode = True
+        from_attributes = True

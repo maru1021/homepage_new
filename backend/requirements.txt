@@ -6,3 +6,7 @@ pydantic[email]
 alembic
 passlib[bcrypt]
 pyjwt
+python-jose
+python-multipart
+pandas
+openpyxl

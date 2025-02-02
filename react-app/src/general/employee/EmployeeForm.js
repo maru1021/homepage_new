@@ -8,7 +8,12 @@ import passwordValid from '../../script/valid/passwordValid';
 
 // 部署データを取得する関数
 const fetchDepartments = async () => {
-    const response = await fetch(`http://localhost:8000/api/departments`);
+    const token = localStorage.getItem("token");
+    const response = await fetch(`http://localhost:8000/api/departments`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
     if (response.ok) {
         const data = await response.json();
         return data.departments || [];
@@ -22,6 +27,7 @@ function EmployeeForm({ onRegister }) {
     // 入力フォームの内容
     const [employee_no, setEmployeeNo] = useState('');
     const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     // 部署リスト
@@ -31,6 +37,7 @@ function EmployeeForm({ onRegister }) {
     const [employeeNoError, setEmployeeNoError] = useState('');
     const [nameError, setNameError] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [emailError, setEmailError] = useState('');
     const [formErrors, setFormErrors] = useState([]);
 
     // 部署と権限のフォームの状態
@@ -88,6 +95,10 @@ function EmployeeForm({ onRegister }) {
             setPasswordError("パスワードは8〜20桁の英数字、記号で入力してください。");
             isValid = false;
         }
+        if (!email) {
+            setEmailError("メールアドレスを入力してください。");
+            isValid = false;
+        }
 
         forms.forEach((form, index) => {
             if (!form.department) {
@@ -108,20 +119,24 @@ function EmployeeForm({ onRegister }) {
         setEmployeeNoError('');
         setNameError('');
         setPasswordError('');
+        setEmailError('');
         setFormErrors([]);
 
         // バリデーションエラーがあれば送信を中止
         if (!inputValid()) return;
 
+        const token = localStorage.getItem("token");
         const response = await fetch("http://localhost:8000/api/employees/", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
                 name,
                 employee_no,
                 password,
+                email,
                 forms,
             }),
         });
@@ -133,7 +148,8 @@ function EmployeeForm({ onRegister }) {
             setEmployeeNo('');
             setName('');
             setPassword('');
-            setForms([{ department: '', admin: 'false' }]); // 部署フォームを初期化
+            setEmail('');
+            setForms([{ department: '', admin: 'false' }]);
             onRegister();
             successNoti(data.message);
         } else {
@@ -170,6 +186,17 @@ function EmployeeForm({ onRegister }) {
                         onChange={(e) => setName(e.target.value)}
                     />
                     {nameError && <div className="invalid-feedback">{nameError}</div>}
+                </div>
+                <div className="form-group">
+                    <label>メールアドレス:</label>
+                    <input
+                        type="text"
+                        value={email}
+                        placeholder="メールアドレス"
+                        className={`form-control ${emailError ? 'is-invalid' : ''}`}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                    {emailError && <div className="invalid-feedback">{emailError}</div>}
                 </div>
                 <div className="form-group">
                     <label>パスワード:</label>

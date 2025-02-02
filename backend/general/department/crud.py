@@ -1,35 +1,75 @@
 from sqlalchemy.orm import Session
-
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.sql import delete
 from . import schemas
 from .. import models
+from backend.authority import models as authority_models
 
-def existing_department(db: Session, name: str):
-    return db.query(models.Department).filter(models.Department.name == name).first()
-
+# 部署一覧取得
 def get_departments(db: Session, search: str = "", page: int = 1, limit: int = 10):
     query = db.query(models.Department)
 
     if search:
-        query = query.filter(
-            (models.Employee.name.contains(search))
-        )
+        query = query.filter(models.Department.name.contains(search))
 
-    total_count = query.count()  # 検索結果の総件数
-    departments = query.offset((page - 1) * limit).limit(limit).all()  # ページネーション処理
+    total_count = query.count()
+    departments = query.offset((page - 1) * limit).limit(limit).all()
 
-    departments_data = [schemas.Department.from_orm(department) for department in departments]
-
+    departments_data = [
+            {"id": department.id, "name": department.name} for department in departments
+        ]
     return departments_data, total_count
 
-def create_department(db: Session, department: schemas.DepartmentCreate):
-    if existing_department(db, department.name):
-        return {"success": False, "message": "その部署はすでに登録されています", "field": "name"}
+# 部署作成
+def create_department(db: Session, department: schemas.DepartmentBase):
+    try:
+        db_department = models.Department(name=department.name)
+        db.add(db_department)
+        db.commit()
+        db.refresh(db_department)
+        return { "message": "部署を作成しました。" }
+    except SQLAlchemyError as e:
+        db.rollback()
+        print(f"Error occurred: {e}")
+        return {"success": False, "message": "データベースエラーが発生しました", "field": ""}
 
-    db_department = models.Department(
-        name=department.name,
-    )
-    db.add(db_department)
-    db.commit()
-    db.refresh(db_department)
-    return {"message": "部署の登録に成功しました"}
+# 部署編集
+def update_department(db: Session, department_id: int, department_data: schemas.DepartmentBase):
+    department = db.query(models.Department).filter(models.Department.id == department_id).first()
+    if not department:
+        raise ValueError("部署が見つかりません。")
 
+    department.name = department_data.name
+    try:
+        db.commit()
+        db.refresh(department)
+        return {
+            "id": department.id,
+            "name": department.name,
+            "message": "部署情報を更新しました。",
+        }
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise ValueError(f"部署更新中にエラーが発生しました: {e}")
+
+# 部署削除
+def delete_department(db: Session, department_id: int):
+    department = db.query(models.Department).filter(models.Department.id == department_id).first()
+    if not department:
+        raise ValueError("部署が見つかりません。")
+
+    employee_count = db.query(authority_models.EmployeeAuthority).filter(authority_models.EmployeeAuthority.department_id == department_id).count()
+    if employee_count > 0:
+        return {"success": False, "message": "所属している従業員がいるため削除できません", "field": ""}
+
+    try:
+        db.delete(department)
+        db.commit()
+        return {
+            "id": department.id,
+            "name": department.name,
+            "message": "部署を削除しました。",
+        }
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise ValueError(f"部署削除中にエラーが発生しました: {e}")

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
 
 # 社員と紐づいた部署
@@ -16,6 +16,7 @@ class EmployeeCreate(BaseModel):
     name: str
     employee_no: str = Field(..., pattern=r'^[a-zA-Z0-9]{7}$')
     password: str
+    email: EmailStr
     forms: List[EmployeeDepartment]
 
     class Config:
@@ -28,7 +29,7 @@ class EmployeeDepartmentUpdate(BaseModel):
 # 編集時の形式
 class EmployeeUpdate(BaseModel):
     name: str
-    employee_no: str
+    employee_no: str = Field(..., pattern=r'^[a-zA-Z0-9]{7}$')
     forms: List[EmployeeDepartment]
 
     class Config:

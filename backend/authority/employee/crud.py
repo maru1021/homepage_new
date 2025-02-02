@@ -1,19 +1,14 @@
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.sql import select
-from sqlalchemy import delete
+from sqlalchemy import delete, or_, and_, exists
 
 from . import schemas
 from .. import models
+from backend.general import models as general_models
 from backend.scripts import hash_password
 
 
-from sqlalchemy.orm import joinedload
-from sqlalchemy import or_, and_
-from sqlalchemy.sql import func
-
 def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10):
-    # クエリのベース
     query = db.query(models.Employee).options(joinedload(models.Employee.departments))
 
     if search:
@@ -24,10 +19,13 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10)
         elif search == "利用者":
             is_admin = False
 
-        # 部署名検索クエリ
-        department_query = db.query(models.employee_department).join(models.Department).filter(
-            models.Department.name.contains(search)
-        ).with_entities(models.employee_department.c.employee_id)
+        # 部署名で検索
+        department_query = db.query(models.EmployeeAuthority.employee_id).join(
+            general_models.Department,
+            models.EmployeeAuthority.department_id == general_models.Department.id
+        ).filter(
+            general_models.Department.name.contains(search)
+        )
 
         # クエリに条件を追加
         query = query.filter(
@@ -37,11 +35,12 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10)
                 models.Employee.id.in_(department_query),  # 部署名で検索
                 and_(
                     is_admin is not None,
-                    db.query(models.employee_department)
-                    .filter(
-                        models.employee_department.c.employee_id == models.Employee.id,
-                        models.employee_department.c.admin == is_admin
-                    ).exists()
+                    exists().where(
+                        and_(
+                            models.EmployeeAuthority.employee_id == models.Employee.id,
+                            models.EmployeeAuthority.admin == is_admin
+                        )
+                    )
                 )
             )
         )
@@ -61,10 +60,10 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10)
                     "id": dep.id,
                     "name": dep.name,
                     "admin": next(
-                        (row.admin for row in db.query(models.employee_department)
+                        (row.admin for row in db.query(models.EmployeeAuthority)
                          .filter(
-                             models.employee_department.c.employee_id == employee.id,
-                             models.employee_department.c.department_id == dep.id
+                             models.EmployeeAuthority.employee_id == employee.id,
+                             models.EmployeeAuthority.department_id == dep.id
                          ).all()),
                         False
                     )
@@ -84,7 +83,7 @@ def existing_employee(db: Session, employee_no: str):
 
 def create_employee(db: Session, employee: schemas.EmployeeCreate):
     try:
-        # トランザクション開始
+        # 従業員番号の重複チェック
         if existing_employee(db, employee.employee_no):
             return {"success": False, "message": "従業員番号が重複しています", "field": "employee_no"}
 
@@ -95,27 +94,28 @@ def create_employee(db: Session, employee: schemas.EmployeeCreate):
         db_employee = models.Employee(
             name=employee.name,
             employee_no=employee.employee_no,
-            password=hashed_password,
+            email=employee.email,
+            hashed_password=hashed_password,
         )
         db.add(db_employee)
-        db.commit()  # `db_employee` の ID を確定させるためにコミット
+        db.flush()
         db.refresh(db_employee)
 
-        # forms 情報を中間テーブルに追加
-        for form in employee.forms:
-            db_employee_department = models.employee_department.insert().values(
+        # 部署・権限情報を中間テーブルに保存
+        employee_authorities = [
+            models.EmployeeAuthority(
                 employee_id=db_employee.id,
                 department_id=form.department,
-                admin=form.admin
+                admin=form.admin,
             )
-            db.execute(db_employee_department)
+            for form in employee.forms
+        ]
 
-        # トランザクションのコミット
+        db.bulk_save_objects(employee_authorities)
         db.commit()
         return {"message": "従業員登録に成功しました"}
 
     except SQLAlchemyError as e:
-        # エラーが発生した場合にロールバック
         db.rollback()
         print(f"Error occurred: {e}")
         return {"success": False, "message": "データベースエラーが発生しました", "field": ""}
@@ -131,22 +131,22 @@ def update_employee(db: Session, employee_id: int, employee_data: schemas.Employ
     employee.employee_no = employee_data.employee_no
 
     # 中間テーブルのデータを削除
-    db.execute(
-        models.employee_department.delete().where(models.employee_department.c.employee_id == employee_id)
-    )
+    stmt = delete(models.EmployeeAuthority).where(models.EmployeeAuthority.employee_id == employee_id)
+    db.execute(stmt)
 
-    # 新しいデータを挿入
-    for form in employee_data.forms:
-        db.execute(
-            models.employee_department.insert().values(
-                employee_id=employee_id,
-                department_id=form.department,
-                admin=form.admin
-            )
+    # 部署・権限情報を中間テーブルに保存
+    employee_authorities = [
+        models.EmployeeAuthority(
+            employee_id=employee_id,
+            department_id=form.department,
+            admin=form.admin,
         )
+        for form in employee_data.forms
+    ]
+
+    db.bulk_save_objects(employee_authorities)
 
     db.commit()
-    db.refresh(employee)
     return {"message": "従業員情報を更新しました"}
 
 
@@ -156,14 +156,14 @@ def delete_employee(db: Session, employee_id: int):
         return {"success": False, "message": "対象の従業員が存在しません"}
 
     try:
-        db.execute(
-            delete(models.employee_department).where(models.employee_department.c.employee_id == employee_id)
-        )
-        db.commit()
+        print('test')
         db.delete(employee)
+        print('test2')
         db.commit()
+        print('test3')
 
         return {"message": "削除に成功しました。"}
     except Exception as e:
         db.rollback()
+        print(f"Error occurred: {e}")
         return {"success": False, "message": "データベースエラーが発生しました", "field": ""}

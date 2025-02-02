@@ -1,27 +1,78 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import ContextMenu from '../../script/ContextMenu';
+import Modal from '../../script/Modal';
+import ConfirmDeleteModal from '../../script/table/ConfirmDeleteModal';
+import DepartmentEditForm from './DepartmentEditForm';
+import { successNoti, errorNoti } from '../../script/noti';
 
-function DepartmentTable({ data }) {
+function DepartmentTable({ data, onSave }) {
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
     const [isMenuVisible, setIsMenuVisible] = useState(false);
-    const [selectedRowId, setSelectedRowId] = useState(null);
+    const [hoveredRowId, setHoveredRowId] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedDepartment, setSelectedDepartment] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-    // 右クリック時のメニュー表示処理
     const handleContextMenu = (event, rowId) => {
         event.preventDefault();
         setMenuPosition({
             x: event.clientX - 200,
-            y: event.clientY - 200
+            y: event.clientY - 200,
         });
-        setSelectedRowId(rowId);
+        setHoveredRowId(rowId);
         setIsMenuVisible(true);
     };
 
-    // メニューの項目をクリックしたときの処理
-    const handleMenuClick = (action) => {
-        console.log(`Selected action: ${action} on row ${selectedRowId}`);
-        setIsMenuVisible(false);
+    const handleMenuAction = (action) => {
+        setTimeout(() => setIsMenuVisible(false), 0);
+        const department = data.find((depart) => depart.id === hoveredRowId);
+
+        if (action === 'Edit') {
+            setSelectedDepartment(department);
+            setIsModalOpen(true);
+        } else if (action === 'Delete') {
+            setSelectedDepartment(department);
+            setIsDeleteModalOpen(true);
+        }
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedDepartment(null);
+    };
+
+    const closeDeleteModal = () => {
+        setIsDeleteModalOpen(false);
+        setSelectedDepartment(null);
+    };
+
+    const handleDelete = async () => {
+        const token = localStorage.getItem('token');
+        const response = await fetch(
+            `http://localhost:8000/api/departments/${selectedDepartment.id}`,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                method: 'DELETE'
+            }
+        );
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            successNoti('削除成功に成功しました');
+            onSave();
+        } else {
+            errorNoti(data.message ?? '削除に失敗しました。');
+        }
+        closeDeleteModal();
+    };
+
+    const handleSave = (updatedDepartment) => {
+        closeModal();
+        onSave(updatedDepartment);
     };
 
     return (
@@ -45,57 +96,35 @@ function DepartmentTable({ data }) {
                 </tbody>
             </table>
 
-            {/* コンテキストメニュー */}
             {isMenuVisible && (
-                <div
-                    className="context-menu"
-                    style={{
-                        position: 'absolute',
-                        top: `${menuPosition.y}px`,
-                        left: `${menuPosition.x}px`,
-                        backgroundColor: '#fff',
-                        border: '1px solid #ddd',
-                        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
-                        borderRadius: '6px',
-                        zIndex: 1000,
-                        minWidth: '120px',
-                        padding: '0.5em 0',
-                    }}
-                >
-                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                        <li
-                            onClick={() => handleMenuClick('Edit')}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                padding: '8px 16px',
-                                cursor: 'pointer',
-                                transition: 'background-color 0.2s',
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                        >
-                            <FaEdit style={{ marginRight: '8px', color: '#007bff' }} />
-                            編集
-                        </li>
-                        <li
-                            onClick={() => handleMenuClick('Delete')}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                padding: '8px 16px',
-                                cursor: 'pointer',
-                                transition: 'background-color 0.2s',
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                        >
-                            <FaTrash style={{ marginRight: '8px', color: '#dc3545' }} />
-                            削除
-                        </li>
-                    </ul>
-                </div>
+                <ContextMenu
+                    position={menuPosition}
+                    onActionSelect={handleMenuAction}
+                />
             )}
+
+            <Modal
+                show={isModalOpen}
+                onClose={closeModal}
+                title="部署情報編集"
+                FormComponent={() => (
+                    <DepartmentEditForm
+                        department={selectedDepartment}
+                        onSave={handleSave}
+                    />
+                )}
+            />
+
+            <ConfirmDeleteModal
+                show={isDeleteModalOpen}
+                onClose={closeDeleteModal}
+                onConfirm={handleDelete}
+                message={
+                    selectedDepartment
+                        ? `${selectedDepartment.name}を削除してもよろしいですか？`
+                        : '選択された部署が見つかりません。'
+                }
+            />
         </div>
     );
 }
@@ -106,7 +135,8 @@ DepartmentTable.propTypes = {
             id: PropTypes.number.isRequired,
             name: PropTypes.string.isRequired,
         })
-    ),
+    ).isRequired,
+    onSave: PropTypes.func.isRequired,
 };
 
 export default DepartmentTable;
