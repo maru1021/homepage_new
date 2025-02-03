@@ -35,7 +35,7 @@ class Employee(Base):
         cascade="all, delete-orphan",
     )
 
-    # 🔹 部署とのリレーション
+    # 部署とのリレーション
     departments = relationship(
         "Department",
         secondary="employee_authority",

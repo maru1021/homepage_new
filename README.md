@@ -8,4 +8,12 @@ docker-compose exec fastapi alembic upgrade head
 
 2回目以降は
 docker compose up
+で起動します
+
+パスワード
+初回
+ユーザー名 maru123
+パスワード password
 で起動します。
+
+以降従業員登録で登録した社員番号、パスワードでログインできるようになります。

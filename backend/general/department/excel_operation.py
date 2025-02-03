@@ -60,7 +60,6 @@ def import_excel(db: Session, file):
             print('row')
             print(row)
             if pd.isna(action := row["操作"]) or not action.strip():
-                print('action')
                 continue
 
             department_id = int(row["ID"]) if not pd.isna(row["ID"]) else None
