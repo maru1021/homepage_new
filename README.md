@@ -3,7 +3,9 @@ docker compose up --build
 を実行し、必要なパッケージをインストールさせてください。
 
 その後、
-docker-compose exec fastapi alembic upgrade head
+docker exec -it homepage_new-fastapi-1 alembic downgrade base
+docker exec -it homepage_new-fastapi-1 alembic revision --autogenerate -m "マイグレーションファイル作成"
+docker exec -it homepage_new-fastapi-1 alembic upgrade head
 を実行しマイグレーションを行なってください。
 
 2回目以降は
