@@ -9,7 +9,8 @@ import Modal from '../../script/Modal';
 import TableHeader from '../../script/table/TableHead';
 import ConfirmDeleteModal from '../../script/table/ConfirmDeleteModal';
 import DepartmentEditForm from './DepartmentEditForm';
-import { successNoti, errorNoti } from '../../script/noti';
+import handleDelete from '../../script/handleDelete';
+import API_BASE_URL from "../../baseURL";
 
 function DepartmentTable({ data, onSave }) {
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -52,27 +53,8 @@ function DepartmentTable({ data, onSave }) {
         setSelectedDepartment(null);
     };
 
-    const handleDelete = async () => {
-        const token = localStorage.getItem('token');
-        const response = await fetch(
-            `http://localhost:8000/api/departments/${selectedDepartment.id}`,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                method: 'DELETE'
-            }
-        );
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            successNoti('削除成功に成功しました');
-            onSave();
-        } else {
-            errorNoti(data.message ?? '削除に失敗しました。');
-        }
-        closeDeleteModal();
+    const departmentDelete = async () => {
+        handleDelete(`${API_BASE_URL}/api/departments/${selectedDepartment.id}`, onSave, closeDeleteModal);
     };
 
     const handleSave = (updatedDepartment) => {
@@ -125,7 +107,7 @@ function DepartmentTable({ data, onSave }) {
             <ConfirmDeleteModal
                 show={isDeleteModalOpen}
                 onClose={closeDeleteModal}
-                onConfirm={handleDelete}
+                onConfirm={departmentDelete}
                 message={
                     selectedDepartment
                         ? `${selectedDepartment.name}を削除してもよろしいですか？`

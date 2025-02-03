@@ -3,15 +3,12 @@ import PropTypes from 'prop-types';
 import { Button, DialogActions, TextField } from '@mui/material';
 import 'react-toastify/dist/ReactToastify.css';
 import { successNoti, errorNoti } from '../../script/noti';
+import API_BASE_URL from "../../baseURL";
 
 function DepartmentForm({ onRegister }) {
-    // 入力フォームの内容
     const [name, setName] = useState('');
-
-    // 各インプットのエラーメッセージ用の状態
     const [nameError, setNameError] = useState('');
 
-    //入力フォームのバリデーション
     const inputValid = () => {
         let isValid = true;
         if (!name) {
@@ -25,14 +22,12 @@ function DepartmentForm({ onRegister }) {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        // エラーメッセージの初期化
         setNameError('');
 
-        // バリデーションエラーがあれば送信を中止、メッセージを表示
         if (!inputValid()) return;
 
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:8000/api/departments/", {
+        const response = await fetch(`${API_BASE_URL}/api/departments/`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -43,13 +38,10 @@ function DepartmentForm({ onRegister }) {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            // 登録完了メッセージを表示、入力フォームの初期化、モーダルを閉じる
             setName('');
             onRegister();
             successNoti(data.message);
         } else {
-            // サーバーからのエラーメッセージをセット
-            console.log(data);
             if (data.field === "name") {
                 setNameError(data.message);
             } else {

@@ -9,7 +9,8 @@ import Modal from '../../script/Modal';
 import TableHeader from '../../script/table/TableHead';
 import EmployeeEditForm from './EmployeeEditForm';
 import ConfirmDeleteModal from '../../script/table/ConfirmDeleteModal';
-import { successNoti, errorNoti } from '../../script/noti';
+import API_BASE_URL from "../../baseURL";
+import handleDelete from '../../script/handleDelete';
 
 function EmployeeTable({ data, onSave }) {
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -52,27 +53,8 @@ function EmployeeTable({ data, onSave }) {
         setSelectedEmployee(null);
     };
 
-    const handleDelete = async () => {
-        const token = localStorage.getItem("token");
-        const response = await fetch(
-            `http://localhost:8000/api/employees/${selectedEmployee.id}`,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                method: 'DELETE',
-            }
-        );
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            successNoti('削除成功に成功しました');
-            onSave();
-        } else {
-            errorNoti('削除に失敗しました。');
-        }
-        closeDeleteModal();
+    const employeeDelete = async () => {
+        handleDelete(`${API_BASE_URL}/api/employees/${selectedEmployee.id}`, onSave, closeDeleteModal);
     };
 
     const handleSave = (updatedEmployee) => {
@@ -138,7 +120,7 @@ function EmployeeTable({ data, onSave }) {
             <ConfirmDeleteModal
                 show={isDeleteModalOpen}
                 onClose={closeDeleteModal}
-                onConfirm={handleDelete}
+                onConfirm={employeeDelete}
                 message={
                     selectedEmployee
                         ? `${selectedEmployee.employee_no}を削除してもよろしいですか？`

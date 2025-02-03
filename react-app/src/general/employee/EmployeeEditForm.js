@@ -8,11 +8,12 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { successNoti, errorNoti } from '../../script/noti';
 import employeeValid from '../../script/valid/employeeValid';
+import API_BASE_URL from '../../baseURL';
 
 // 部署データを取得する関数
 const fetchDepartments = async () => {
     const token = localStorage.getItem("token");
-    const response = await fetch(`http://localhost:8000/api/departments`, {
+    const response = await fetch(`${API_BASE_URL}/api/departments`, {
         headers: { Authorization: `Bearer ${token}` },
     });
     if (response.ok) {
@@ -114,7 +115,7 @@ function EmployeeEditForm({ employee, onSave }) {
         };
 
         const token = localStorage.getItem("token");
-        const response = await fetch(`http://localhost:8000/api/employees/${employee?.id || ''}`, {
+        const response = await fetch(`${API_BASE_URL}/api/employees/${employee?.id || ''}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

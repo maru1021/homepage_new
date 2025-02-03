@@ -4,28 +4,57 @@ import PropTypes from "prop-types";
 import { Container, Card, CardContent, Typography,
     TextField, Button, Box
 } from "@mui/material";
+import API_BASE_URL from "./baseURL";
 
 function Login({ setToken }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [errorMessage, setErrorMessage] = useState('');
+    const [usernameError, setUsernameError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const response = await fetch("http://127.0.0.1:8000/auth/token", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-                username: username,
-                password: password,
-            }),
-        });
-        const data = await response.json();
-        if (response.ok) {
+
+        setUsernameError('');
+        setPasswordError('');
+        setErrorMessage('');
+
+        let isValid = true;
+
+        if (!username) {
+            setUsernameError("社員番号を入力してください");
+            isValid = false;
+        }
+
+        if (!password) {
+            setPasswordError("パスワードを入力してください");
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/token`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({
+                    username: username,
+                    password: password,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("社員番号もしくはパスワードが間違えています");
+            }
+
+            const data = await response.json();
             setToken(data.access_token);
             navigate("/");
-        } else {
-            alert("ログインに失敗しました");
+
+        } catch (error) {
+            setErrorMessage(error.message);
         }
     };
 
@@ -52,13 +81,26 @@ function Login({ setToken }) {
                         <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: "bold" }}>
                             ログイン
                         </Typography>
+
+                        {errorMessage && (
+                            <Typography
+                                color="error"
+                                align="center"
+                                fontSize="small"
+                            >
+                                {errorMessage}
+                            </Typography>
+                        )}
+
                         <form onSubmit={handleSubmit}>
                             <TextField
                                 fullWidth
-                                label="ユーザー名"
+                                label="社員番号"
                                 margin="normal"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
+                                error={Boolean(usernameError)}
+                                helperText={usernameError}
                             />
                             <TextField
                                 fullWidth
@@ -67,6 +109,8 @@ function Login({ setToken }) {
                                 margin="normal"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                error={Boolean(passwordError)}
+                                helperText={passwordError}
                             />
                             <Button
                                 type="submit"

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, DialogActions, TextField } from '@mui/material';
 import 'react-toastify/dist/ReactToastify.css';
 import { successNoti, errorNoti } from '../../script/noti';
+import API_BASE_URL from "../../baseURL";
 
 function DepartmentEditForm({ department, onSave }) {
     const [name, setName] = useState(department?.name || '');
@@ -36,7 +37,7 @@ function DepartmentEditForm({ department, onSave }) {
         };
 
         const token = localStorage.getItem("token");
-        const response = await fetch(`http://localhost:8000/api/departments/${department?.id || ''}`, {
+        const response = await fetch(`${API_BASE_URL}/api/departments/${department?.id || ''}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

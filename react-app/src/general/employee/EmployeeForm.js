@@ -11,11 +11,12 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import { successNoti, errorNoti } from '../../script/noti';
 import employeeValid from '../../script/valid/employeeValid';
 import passwordValid from '../../script/valid/passwordValid';
+import API_BASE_URL from '../../baseURL';
 
 // 部署データを取得する関数
 const fetchDepartments = async () => {
     const token = localStorage.getItem("token");
-    const response = await fetch(`http://localhost:8000/api/departments`, {
+    const response = await fetch(`${API_BASE_URL}/api/departments`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -133,7 +134,7 @@ function EmployeeForm({ onRegister }) {
         if (!inputValid()) return;
 
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:8000/api/employees/", {
+        const response = await fetch(`${API_BASE_URL}/api/employees/`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -151,7 +152,6 @@ function EmployeeForm({ onRegister }) {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            // 登録完了メッセージを表示
             setEmployeeNo('');
             setName('');
             setPassword('');
@@ -160,7 +160,6 @@ function EmployeeForm({ onRegister }) {
             onRegister();
             successNoti(data.message);
         } else {
-            // サーバーからのエラーメッセージをセット
             if (data.field === "employee_no") {
                 setEmployeeNoError(data.message);
             } else {
