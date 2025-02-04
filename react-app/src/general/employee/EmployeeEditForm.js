@@ -4,15 +4,15 @@ import {
     Button, TextField, Select, MenuItem, FormControl,
     InputLabel, FormHelperText, Stack, DialogActions
 } from '@mui/material';
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import { successNoti, errorNoti } from '../../script/noti';
 import employeeValid from '../../script/valid/employeeValid';
 import API_BASE_URL from '../../baseURL';
 
 // 部署データを取得する関数
 const fetchDepartments = async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/api/departments`, {
         headers: { Authorization: `Bearer ${token}` },
     });
@@ -114,7 +114,7 @@ function EmployeeEditForm({ employee, onSave }) {
             })),
         };
 
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem('token');
         const response = await fetch(`${API_BASE_URL}/api/employees/${employee?.id || ''}`, {
             method: 'PUT',
             headers: {
@@ -143,7 +143,7 @@ function EmployeeEditForm({ employee, onSave }) {
             <Stack spacing={2}>
                 <TextField
                     fullWidth
-                    label="社員番号"
+                    label='社員番号'
                     value={employee_no}
                     onChange={(e) => setEmployeeNo(e.target.value)}
                     error={Boolean(employeeNoError)}
@@ -152,7 +152,7 @@ function EmployeeEditForm({ employee, onSave }) {
 
                 <TextField
                     fullWidth
-                    label="名前"
+                    label='名前'
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     error={Boolean(nameError)}
@@ -162,15 +162,15 @@ function EmployeeEditForm({ employee, onSave }) {
                 <hr />
 
                 {forms.map((form, index) => (
-                    <Stack key={index} spacing={2} sx={{ border: "1px solid #ccc", padding: 2, borderRadius: 1 }}>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Stack key={index} spacing={2} sx={{ border: '1px solid #ccc', padding: 2, borderRadius: 1 }}>
+                        <Stack direction='row' justifyContent='space-between' alignItems='center'>
                             <h6>部署と権限 {index + 1}</h6>
                             {index > 0 && (
                                 <Button
-                                    variant="contained"
-                                    size="small"
+                                    variant='contained'
+                                    size='small'
                                     startIcon={<RemoveIcon />}
-                                    color="error"
+                                    color='error'
                                     onClick={() => handleRemoveForm(index)}
                                 >
                                     削除
@@ -181,8 +181,8 @@ function EmployeeEditForm({ employee, onSave }) {
                         <FormControl fullWidth error={Boolean(formErrors[index])}>
                             <InputLabel>部署</InputLabel>
                             <Select
-                                value={departments.some(d => d.id === form.department) ? form.department : ""}
-                                onChange={(e) => handleFormChange(index, "department", e.target.value)}
+                                value={departments.some(d => d.id === form.department) ? form.department : ''}
+                                onChange={(e) => handleFormChange(index, 'department', e.target.value)}
                             >
                                 {departments.map((department) => (
                                     <MenuItem key={department.id} value={department.id}>
@@ -196,22 +196,22 @@ function EmployeeEditForm({ employee, onSave }) {
                         <FormControl fullWidth>
                             <InputLabel>権限</InputLabel>
                             <Select
-                                value={form.admin ? "true" : "false"}
-                                onChange={(e) => handleFormChange(index, "admin", e.target.value === "true")}
+                                value={form.admin ? 'true' : 'false'}
+                                onChange={(e) => handleFormChange(index, 'admin', e.target.value === 'true')}
                             >
-                                <MenuItem value="false">利用者</MenuItem>
-                                <MenuItem value="true">管理者</MenuItem>
+                                <MenuItem value='false'>利用者</MenuItem>
+                                <MenuItem value='true'>管理者</MenuItem>
                             </Select>
                         </FormControl>
                     </Stack>
                 ))}
 
-                <Stack direction="row" justifyContent="flex-start">
+                <Stack direction='row' justifyContent='flex-start'>
                     <Button
-                        variant="contained"
-                        size="small"
+                        variant='contained'
+                        size='small'
                         startIcon={<AddIcon />}
-                        color="success"
+                        color='success'
                         onClick={handleAddForm}
                     >
                         追加
@@ -219,7 +219,7 @@ function EmployeeEditForm({ employee, onSave }) {
                 </Stack>
 
                 <DialogActions>
-                    <Button type="submit" variant="contained" color="primary" onClick={handleSubmit}>
+                    <Button type='submit' variant='contained' color='primary' onClick={handleSubmit}>
                         保存
                     </Button>
                 </DialogActions>

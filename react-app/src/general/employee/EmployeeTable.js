@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 import {
     Table, TableBody, TableCell, TableContainer,
     TableRow, Paper
-} from "@mui/material";
+} from '@mui/material';
 import ContextMenu from '../../script/ContextMenu';
 import Modal from '../../script/Modal';
 import TableHeader from '../../script/table/TableHead';
 import EmployeeEditForm from './EmployeeEditForm';
 import ConfirmDeleteModal from '../../script/table/ConfirmDeleteModal';
-import API_BASE_URL from "../../baseURL";
+import API_BASE_URL from '../../baseURL';
 import handleDelete from '../../script/handleDelete';
 
 function EmployeeTable({ data, onSave }) {
@@ -66,7 +66,7 @@ function EmployeeTable({ data, onSave }) {
         <div onClick={() => setIsMenuVisible(false)} style={{ position: 'relative' }}>
             <TableContainer component={Paper} elevation={3}>
                 <Table>
-                    <TableHeader columns={["社員番号", "名前", "部署", "権限"]} />
+                    <TableHeader columns={['社員番号', '名前', '部署', '権限']} />
 
                     <TableBody>
                         {data.map((employee) => (
@@ -76,7 +76,7 @@ function EmployeeTable({ data, onSave }) {
                                         key={`${employee.id}-${department.id}`}
                                         onContextMenu={(event) => handleContextMenu(event, employee.id)}
                                         hover
-                                        sx={{ transition: "0.3s", "&:hover": { backgroundColor: "#f5f5f5" } }}
+                                        sx={{ transition: '0.3s', '&:hover': { backgroundColor: '#f5f5f5' } }}
                                     >
                                         {index === 0 && (
                                             <>
@@ -89,7 +89,7 @@ function EmployeeTable({ data, onSave }) {
                                             </>
                                         )}
                                         <TableCell>{department.name}</TableCell>
-                                        <TableCell>{department.admin ? "管理者" : "利用者"}</TableCell>
+                                        <TableCell>{department.admin ? '管理者' : '利用者'}</TableCell>
                                     </TableRow>
                                 ))}
                             </React.Fragment>
@@ -108,7 +108,7 @@ function EmployeeTable({ data, onSave }) {
             <Modal
                 show={isModalOpen}
                 onClose={closeModal}
-                title="従業員情報編集"
+                title='従業員情報編集'
                 FormComponent={() => (
                     <EmployeeEditForm
                         employee={selectedEmployee}

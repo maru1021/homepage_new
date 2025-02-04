@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, DialogActions, TextField } from '@mui/material';
 import 'react-toastify/dist/ReactToastify.css';
 import { successNoti, errorNoti } from '../../script/noti';
-import API_BASE_URL from "../../baseURL";
+import API_BASE_URL from '../../baseURL';
 
 function DepartmentEditForm({ department, onSave }) {
     const [name, setName] = useState(department?.name || '');
@@ -36,7 +36,7 @@ function DepartmentEditForm({ department, onSave }) {
             name,
         };
 
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem('token');
         const response = await fetch(`${API_BASE_URL}/api/departments/${department?.id || ''}`, {
             method: 'PUT',
             headers: {
@@ -64,14 +64,14 @@ function DepartmentEditForm({ department, onSave }) {
         <form>
             <TextField
                 fullWidth
-                label="部署名"
+                label='部署名'
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 error={Boolean(nameError)}
                 helperText={nameError}
             />
             <DialogActions>
-                <Button type="submit" variant="contained" color="primary" onClick={handleSubmit}>
+                <Button type='submit' variant='contained' color='primary' onClick={handleSubmit}>
                     登録
                 </Button>
             </DialogActions>

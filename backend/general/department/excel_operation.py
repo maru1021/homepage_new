@@ -7,6 +7,8 @@ from .. import models
 from backend.authority import models as authority_models
 import os
 from io import BytesIO
+from .crud import run_department_websocket
+from fastapi import BackgroundTasks
 
 def export_excel(db: Session):
     departments = db.query(models.Department).all()
@@ -44,7 +46,7 @@ def export_excel(db: Session):
 
     return FileResponse(file_path, filename="departments.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-def import_excel(db: Session, file):
+def import_excel(db: Session, file, background_tasks=BackgroundTasks):
     try:
         # ExcelファイルをDataFrameに変換
         contents = file.file.read()  # 非同期でファイルを読み込む
@@ -57,8 +59,6 @@ def import_excel(db: Session, file):
             raise ValueError("Excelのフォーマットが正しくありません。'操作', 'ID', '部署名'の列が必要です。")
 
         for _, row in df.iterrows():
-            print('row')
-            print(row)
             if pd.isna(action := row["操作"]) or not action.strip():
                 continue
 
@@ -112,6 +112,9 @@ def import_excel(db: Session, file):
                 raise ValueError(f"無効な操作 '{action.strip()}' が含まれています。'追加', '編集', '削除' のいずれかを指定してください。")
 
         db.commit()
+
+        background_tasks.add_task(run_department_websocket, db)
+
         return {"success": True, "message": "Excelデータをインポートしました"}
     except Exception as e:
         db.rollback()

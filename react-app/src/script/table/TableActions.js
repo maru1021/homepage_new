@@ -1,5 +1,5 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React from 'react';
+import PropTypes from 'prop-types';
 import {
     FormControl,
     InputLabel,
@@ -8,7 +8,7 @@ import {
     TextField,
     Button,
     Grid,
-} from "@mui/material";
+} from '@mui/material';
 
 const TableActions = ({
     itemsPerPage,
@@ -20,17 +20,17 @@ const TableActions = ({
     return (
         <Grid
             container
-            alignItems="center"
+            alignItems='center'
             spacing={2}
             sx={{ mb: 2 }}
         >
-            <Grid item sx={{ marginLeft:"17%" }}>
-                <FormControl sx={{ minWidth: 90 }} size="small"> {/* 横幅を狭く */}
+            <Grid item sx={{ marginLeft:'17%' }}>
+                <FormControl sx={{ minWidth: 90 }} size='small'> {/* 横幅を狭く */}
                     <InputLabel>件数</InputLabel>
                     <Select
                         value={itemsPerPage}
                         onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-                        label="件数"
+                        label='件数'
                     >
                         <MenuItem value={5}>5件</MenuItem>
                         <MenuItem value={10}>10件</MenuItem>
@@ -40,19 +40,19 @@ const TableActions = ({
                 </FormControl>
             </Grid>
 
-            <Grid item xs container justifyContent="flex-end" spacing={2} sx={{ marginRight:"8%" }}>
+            <Grid item xs container justifyContent='flex-end' spacing={2} sx={{ marginRight:'8%' }}>
                 <Grid item>
                     <TextField
                         value={searchQuery}
-                        placeholder="検索"
+                        placeholder='検索'
                         onChange={(e) => onSearchChange(e.target.value)}
-                        variant="outlined"
-                        size="small"
+                        variant='outlined'
+                        size='small'
                         sx={{ width: 200 }} // 検索バーの横幅を調整
                     />
                 </Grid>
                 <Grid item>
-                    <Button variant="contained" color="primary" onClick={onOpenRegisterModal}>
+                    <Button variant='contained' color='primary' onClick={onOpenRegisterModal}>
                         登録
                     </Button>
                 </Grid>

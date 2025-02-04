@@ -1,7 +1,7 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { TableHead, TableRow, TableCell } from "@mui/material";
-import { alpha } from "@mui/material/styles";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { TableHead, TableRow, TableCell } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 
 function TableHeader({ columns }) {
     return (
@@ -10,8 +10,8 @@ function TableHeader({ columns }) {
                 {columns.map((column, index) => (
                     <TableCell
                         key={index}
-                        variant="head"
-                        sx={{ color: "white", fontWeight: "bold", padding: "12px" }}
+                        variant='head'
+                        sx={{ color: 'white', fontWeight: 'bold', padding: '12px' }}
                     >
                         {column}
                     </TableCell>

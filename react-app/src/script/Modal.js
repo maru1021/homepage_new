@@ -5,11 +5,11 @@ import CloseIcon from '@mui/icons-material/Close';
 
 function Modal({ show, onClose, title, FormComponent, onRegister }) {
     return (
-        <Dialog open={show} onClose={onClose} fullWidth maxWidth="sm">
+        <Dialog open={show} onClose={onClose} fullWidth maxWidth='sm'>
             <DialogTitle>
                 {title}
                 <IconButton
-                    aria-label="close"
+                    aria-label='close'
                     onClick={onClose}
                     sx={{
                         position: 'absolute',

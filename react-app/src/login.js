@@ -1,14 +1,14 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import PropTypes from "prop-types";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import { Container, Card, CardContent, Typography,
     TextField, Button, Box
-} from "@mui/material";
-import API_BASE_URL from "./baseURL";
+} from '@mui/material';
+import API_BASE_URL from './baseURL';
 
 function Login({ setToken }) {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [usernameError, setUsernameError] = useState('');
     const [passwordError, setPasswordError] = useState('');
@@ -24,12 +24,12 @@ function Login({ setToken }) {
         let isValid = true;
 
         if (!username) {
-            setUsernameError("社員番号を入力してください");
+            setUsernameError('社員番号を入力してください');
             isValid = false;
         }
 
         if (!password) {
-            setPasswordError("パスワードを入力してください");
+            setPasswordError('パスワードを入力してください');
             isValid = false;
         }
 
@@ -37,8 +37,8 @@ function Login({ setToken }) {
 
         try {
             const response = await fetch(`${API_BASE_URL}/auth/token`, {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams({
                     username: username,
                     password: password,
@@ -46,12 +46,12 @@ function Login({ setToken }) {
             });
 
             if (!response.ok) {
-                throw new Error("社員番号もしくはパスワードが間違えています");
+                throw new Error('社員番号もしくはパスワードが間違えています');
             }
 
             const data = await response.json();
             setToken(data.access_token);
-            navigate("/");
+            navigate('/');
 
         } catch (error) {
             setErrorMessage(error.message);
@@ -61,32 +61,32 @@ function Login({ setToken }) {
     return (
         <Box
             sx={{
-                minHeight: "100vh",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#f4f6f8",
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f4f6f8',
             }}
         >
-            <Container maxWidth="xs">
+            <Container maxWidth='xs'>
                 <Card
                     sx={{
                         p: 3,
                         boxShadow: 3,
                         borderRadius: 2,
-                        backgroundColor: "#fff",
+                        backgroundColor: '#fff',
                     }}
                 >
                     <CardContent>
-                        <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: "bold" }}>
+                        <Typography variant='h4' align='center' gutterBottom sx={{ fontWeight: 'bold' }}>
                             ログイン
                         </Typography>
 
                         {errorMessage && (
                             <Typography
-                                color="error"
-                                align="center"
-                                fontSize="small"
+                                color='error'
+                                align='center'
+                                fontSize='small'
                             >
                                 {errorMessage}
                             </Typography>
@@ -95,8 +95,8 @@ function Login({ setToken }) {
                         <form onSubmit={handleSubmit}>
                             <TextField
                                 fullWidth
-                                label="社員番号"
-                                margin="normal"
+                                label='社員番号'
+                                margin='normal'
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 error={Boolean(usernameError)}
@@ -104,25 +104,25 @@ function Login({ setToken }) {
                             />
                             <TextField
                                 fullWidth
-                                label="パスワード"
-                                type="password"
-                                margin="normal"
+                                label='パスワード'
+                                type='password'
+                                margin='normal'
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 error={Boolean(passwordError)}
                                 helperText={passwordError}
                             />
                             <Button
-                                type="submit"
+                                type='submit'
                                 fullWidth
-                                color="primary"
+                                color='primary'
                                 sx={{
                                     mt: 3,
-                                    backgroundColor: "#1976d2",
-                                    color: "#fff",
-                                    fontWeight: "bold",
-                                    "&:hover": {
-                                        backgroundColor: "#1565c0",
+                                    backgroundColor: '#1976d2',
+                                    color: '#fff',
+                                    fontWeight: 'bold',
+                                    '&:hover': {
+                                        backgroundColor: '#1565c0',
                                     },
                                 }}
                             >

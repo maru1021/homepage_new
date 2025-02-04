@@ -1,4 +1,4 @@
-const fetchData = async (url, token, query = "", page = 1, limit = 10, model="") => {
+const fetchData = async (url, token, query = '', page = 1, limit = 10, model='') => {
   try {
       const response = await fetch(`${url}?search=${query}&page=${page}&limit=${limit}`, {
           headers: {
@@ -16,7 +16,7 @@ const fetchData = async (url, token, query = "", page = 1, limit = 10, model="")
           return { tableDatas: [], totalCount: 0 };
       }
   } catch (error) {
-      console.error("データ取得エラー:", error);
+      console.error('データ取得エラー:', error);
       return { tableDatas: [], totalCount: 0 };
   }
 };

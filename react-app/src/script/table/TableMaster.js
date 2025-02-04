@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Grid, Typography, Button } from "@mui/material";
-import { SaveAlt as SaveAltIcon, UploadFile as UploadFileIcon } from "@mui/icons-material";
+import { Grid, Typography, Button } from '@mui/material';
+import { SaveAlt as SaveAltIcon, UploadFile as UploadFileIcon } from '@mui/icons-material';
 import TableActions from './TableActions';
 import PaginationComponent from './Pagination';
 import Modal from '../Modal';
 
 const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormComponent, ExcelOutput=null, ExcelInput=null }) => {
     const [tableDatas, setTableDatas] = useState([]);
-    const [searchQuery, setSearchQuery] = useState("");
+    const [searchQuery, setSearchQuery] = useState('');
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1); // 現在のページ
     const [totalPages, setTotalPages] = useState(1); // ページの合計
@@ -50,12 +50,12 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
     };
 
     return (
-        <div className="TableWithActions">
+        <div className='TableWithActions'>
             <header>
-            <Grid container alignItems="center" spacing={2} sx={{ paddingY: 2, paddingLeft: "17%" }}>
+            <Grid container alignItems='center' spacing={2} sx={{ paddingY: 2, paddingLeft: '17%' }}>
                 {/* タイトル */}
                 <Grid item xs={7}>
-                    <Typography variant="h2" fontWeight="bold">
+                    <Typography variant='h2' fontWeight='bold'>
                         {title}
                     </Typography>
                 </Grid>
@@ -64,9 +64,9 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                 {ExcelOutput && (
                     <Grid item xs={2}>
                         <Button
-                            variant="contained"
-                            color="primary"
-                            size="small"
+                            variant='contained'
+                            color='primary'
+                            size='small'
                             startIcon={<SaveAltIcon />}
                             fullWidth
                             onClick={ExcelOutput}
@@ -80,9 +80,9 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                 {ExcelInput && (
                     <Grid item xs={2}>
                         <Button
-                            variant="contained"
-                            color="primary"
-                            size="small"
+                            variant='contained'
+                            color='primary'
+                            size='small'
                             startIcon={<UploadFileIcon />}
                             fullWidth
                             onClick={() => ExcelInput(loadData)}
@@ -102,7 +102,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                 onOpenRegisterModal={openRegisterModal}
             />
 
-            <div className="table-container">
+            <div className='table-container'>
                 <TableComponent data={tableDatas} onSave={handleDataUpdate} />
                 <PaginationComponent
                     totalPages={totalPages}

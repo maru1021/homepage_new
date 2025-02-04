@@ -1,9 +1,24 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import delete
+import json
+from backend.websocket import websocket_manager
 from . import schemas
 from .. import models
 from backend.authority import models as authority_models
+from fastapi import BackgroundTasks
+import asyncio
+
+# 部署の変更を WebSocketで通知
+async def department_websocket(db: Session):
+    updated_departments, total_count = get_departments(db)
+    message = json.dumps({"departments": updated_departments, "totalCount": total_count})
+
+    # WebSocketManagerのグローバルインスタンスを使用
+    await websocket_manager.broadcast(message)
+
+def run_department_websocket(db: Session):
+    asyncio.run(department_websocket(db))
 
 # 部署一覧取得
 def get_departments(db: Session, search: str = "", page: int = 1, limit: int = 10):
@@ -21,7 +36,7 @@ def get_departments(db: Session, search: str = "", page: int = 1, limit: int = 1
     return departments_data, total_count
 
 # 部署作成
-def create_department(db: Session, department: schemas.DepartmentBase):
+def create_department(db: Session, department: schemas.DepartmentBase, background_tasks: BackgroundTasks):
     try:
         if db.query(models.Department).filter(models.Department.name == department.name).first():
             return {"success": False, "message": "その部署は既に存在しています", "field": "name"}
@@ -30,6 +45,9 @@ def create_department(db: Session, department: schemas.DepartmentBase):
         db.add(db_department)
         db.commit()
         db.refresh(db_department)
+
+        background_tasks.add_task(run_department_websocket, db)
+
         return { "message": "部署を作成しました。" }
     except SQLAlchemyError as e:
         db.rollback()
@@ -37,7 +55,7 @@ def create_department(db: Session, department: schemas.DepartmentBase):
         return {"success": False, "message": "データベースエラーが発生しました", "field": ""}
 
 # 部署編集
-def update_department(db: Session, department_id: int, department_data: schemas.DepartmentBase):
+def update_department(db: Session, department_id: int, department_data: schemas.DepartmentBase, background_tasks: BackgroundTasks):
     department = db.query(models.Department).filter(models.Department.id == department_id).first()
     if not department:
         raise ValueError("部署が見つかりません。")
@@ -47,9 +65,13 @@ def update_department(db: Session, department_id: int, department_data: schemas.
         return {"success": False, "message": "その部署は既に存在しています", "field": "name"}
 
     department.name = department_data.name
+
     try:
         db.commit()
         db.refresh(department)
+
+        background_tasks.add_task(run_department_websocket, db)
+
         return {
             "id": department.id,
             "name": department.name,
@@ -60,7 +82,7 @@ def update_department(db: Session, department_id: int, department_data: schemas.
         raise ValueError(f"部署更新中にエラーが発生しました: {e}")
 
 # 部署削除
-def delete_department(db: Session, department_id: int):
+def delete_department(db: Session, department_id: int, background_tasks: BackgroundTasks):
     department = db.query(models.Department).filter(models.Department.id == department_id).first()
     if not department:
         raise ValueError("部署が見つかりません。")
@@ -72,6 +94,9 @@ def delete_department(db: Session, department_id: int):
     try:
         db.delete(department)
         db.commit()
+
+        background_tasks.add_task(run_department_websocket, db)
+
         return {
             "id": department.id,
             "name": department.name,

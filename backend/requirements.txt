@@ -1,5 +1,5 @@
 fastapi
-uvicorn
+uvicorn[standard]
 SQLAlchemy
 psycopg2-binary
 pydantic[email]
@@ -10,3 +10,4 @@ python-jose
 python-multipart
 pandas
 openpyxl
+websockets

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
@@ -7,6 +7,9 @@ from typing import Union
 from backend.authority.models import Employee
 from database import get_db
 from scripts.hash_password import verify_password, hashed_password
+import jwt  # PyJWT が必要
+from jwt import PyJWTError
+from datetime import datetime, timezone
 
 # 秘密鍵とアルゴリズム設定
 SECRET_KEY = "your_secret_key"  # 本番環境では環境変数から取得
@@ -43,9 +46,28 @@ def authenticate_user(db: Session, employee_no: str, password: str):
 # アクセストークン作成関数
 def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(minutes=15))
+    expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(minutes=360))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def verify_token(token: str = Depends(oauth2_scheme)):
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    try:
+        # トークンをデコード
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+        # トークンの有効期限を確認
+        exp = payload.get("exp")
+        if exp is None or datetime.fromtimestamp(exp, timezone.utc) < datetime.now(timezone.utc):
+            raise HTTPException(status_code=401, detail="Token expired")
+
+        # トークンが有効ならユーザー情報を返す
+        return payload
+
+    except PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
 # トークン発行エンドポイント
 @router.post("/token")

@@ -4,10 +4,10 @@ import {
     Button, TextField, Select, MenuItem, FormControl, InputLabel, FormHelperText,
      IconButton, InputAdornment, Stack, DialogActions
 } from '@mui/material';
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import 'react-toastify/dist/ReactToastify.css';
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import { successNoti, errorNoti } from '../../script/noti';
 import employeeValid from '../../script/valid/employeeValid';
 import passwordValid from '../../script/valid/passwordValid';
@@ -15,7 +15,7 @@ import API_BASE_URL from '../../baseURL';
 
 // 部署データを取得する関数
 const fetchDepartments = async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/api/departments`, {
         headers: {
             Authorization: `Bearer ${token}`,
@@ -86,31 +86,31 @@ function EmployeeForm({ onRegister }) {
         const errors = [];
 
         if (!employee_no) {
-            setEmployeeNoError("社員番号を入力してください。");
+            setEmployeeNoError('社員番号を入力してください。');
             isValid = false;
         } else if (!employeeValid(employee_no)) {
-            setEmployeeNoError("社員番号は7桁の英数字で入力してください。");
+            setEmployeeNoError('社員番号は7桁の英数字で入力してください。');
             isValid = false;
         }
         if (!name) {
-            setNameError("名前を入力してください。");
+            setNameError('名前を入力してください。');
             isValid = false;
         }
         if (!password) {
-            setPasswordError("パスワードを入力してください。");
+            setPasswordError('パスワードを入力してください。');
             isValid = false;
         } else if (!passwordValid(password)) {
-            setPasswordError("パスワードは8〜20桁の英数字、記号で入力してください。");
+            setPasswordError('パスワードは8〜20桁の英数字、記号で入力してください。');
             isValid = false;
         }
         if (!email) {
-            setEmailError("メールアドレスを入力してください。");
+            setEmailError('メールアドレスを入力してください。');
             isValid = false;
         }
 
         forms.forEach((form, index) => {
             if (!form.department) {
-                errors[index] = "部署を選択してください。";
+                errors[index] = '部署を選択してください。';
                 isValid = false;
             }
         });
@@ -133,11 +133,11 @@ function EmployeeForm({ onRegister }) {
         // バリデーションエラーがあれば送信を中止
         if (!inputValid()) return;
 
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem('token');
         const response = await fetch(`${API_BASE_URL}/api/employees/`, {
-            method: "POST",
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
@@ -160,10 +160,10 @@ function EmployeeForm({ onRegister }) {
             onRegister();
             successNoti(data.message);
         } else {
-            if (data.field === "employee_no") {
+            if (data.field === 'employee_no') {
                 setEmployeeNoError(data.message);
             } else {
-                errorNoti("登録に失敗しました。");
+                errorNoti('登録に失敗しました。');
             }
         }
     };
@@ -173,7 +173,7 @@ function EmployeeForm({ onRegister }) {
             <Stack spacing={2}>
                 <TextField
                     fullWidth
-                    label="社員番号"
+                    label='社員番号'
                     value={employee_no}
                     onChange={(e) => setEmployeeNo(e.target.value)}
                     error={Boolean(employeeNoError)}
@@ -182,7 +182,7 @@ function EmployeeForm({ onRegister }) {
 
                 <TextField
                     fullWidth
-                    label="名前"
+                    label='名前'
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     error={Boolean(nameError)}
@@ -190,7 +190,7 @@ function EmployeeForm({ onRegister }) {
                 />
                 <TextField
                     fullWidth
-                    label="メールアドレス"
+                    label='メールアドレス'
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     error={Boolean(emailError)}
@@ -198,16 +198,16 @@ function EmployeeForm({ onRegister }) {
                 />
                 <TextField
                     fullWidth
-                    label="パスワード"
-                    type={showPassword ? "text" : "password"}  // 表示/非表示を切り替え
+                    label='パスワード'
+                    type={showPassword ? 'text' : 'password'}  // 表示/非表示を切り替え
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     error={Boolean(passwordError)}
                     helperText={passwordError}
                     InputProps={{
                         endAdornment: (
-                            <InputAdornment position="end">
-                                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                            <InputAdornment position='end'>
+                                <IconButton onClick={() => setShowPassword(!showPassword)} edge='end'>
                                     {showPassword ? <VisibilityOff /> : <Visibility />}
                                 </IconButton>
                             </InputAdornment>
@@ -218,15 +218,15 @@ function EmployeeForm({ onRegister }) {
                 <hr />
 
                 {forms.map((form, index) => (
-                    <Stack key={index} spacing={2} sx={{ border: "1px solid #ccc", padding: 2, borderRadius: 1 }}>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Stack key={index} spacing={2} sx={{ border: '1px solid #ccc', padding: 2, borderRadius: 1 }}>
+                        <Stack direction='row' justifyContent='space-between' alignItems='center'>
                             <h6>部署と権限 {index + 1}</h6>
                             {index > 0 && (
                                 <Button
-                                    variant="contained"
-                                    size="small"
+                                    variant='contained'
+                                    size='small'
                                     startIcon={<RemoveIcon />}
-                                    color="error"
+                                    color='error'
                                     onClick={() => handleRemoveForm(index)}
                                 >
                                     削除
@@ -237,8 +237,8 @@ function EmployeeForm({ onRegister }) {
                         <FormControl fullWidth error={Boolean(formErrors[index])}>
                             <InputLabel>部署</InputLabel>
                             <Select
-                                value={departments.some(d => d.id === form.department) ? form.department : ""}
-                                onChange={(e) => handleFormChange(index, "department", e.target.value)}
+                                value={departments.some(d => d.id === form.department) ? form.department : ''}
+                                onChange={(e) => handleFormChange(index, 'department', e.target.value)}
                                 displayEmpty
                             >
                                 {departments.map((department) => (
@@ -253,28 +253,28 @@ function EmployeeForm({ onRegister }) {
                         <FormControl fullWidth>
                             <InputLabel>権限</InputLabel>
                             <Select
-                                value={form.admin ? "true" : "false"}
-                                onChange={(e) => handleFormChange(index, "admin", e.target.value === "true")}
+                                value={form.admin ? 'true' : 'false'}
+                                onChange={(e) => handleFormChange(index, 'admin', e.target.value === 'true')}
                             >
-                                <MenuItem value="false">利用者</MenuItem>
-                                <MenuItem value="true">管理者</MenuItem>
+                                <MenuItem value='false'>利用者</MenuItem>
+                                <MenuItem value='true'>管理者</MenuItem>
                             </Select>
                         </FormControl>
                     </Stack>
                 ))}
-                <Stack direction="row" justifyContent="flex-start">
+                <Stack direction='row' justifyContent='flex-start'>
                     <Button
-                        variant="contained"
-                        size="small"
+                        variant='contained'
+                        size='small'
                         startIcon={<AddIcon />}
-                        color="success"
+                        color='success'
                         onClick={handleAddForm}
                     >
                         追加
                     </Button>
                 </Stack>
                 <DialogActions>
-                    <Button type="submit" variant="contained" color="primary" onClick={handleSubmit}>
+                    <Button type='submit' variant='contained' color='primary' onClick={handleSubmit}>
                         登録
                     </Button>
                 </DialogActions>

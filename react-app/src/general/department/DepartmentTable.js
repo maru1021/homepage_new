@@ -1,24 +1,40 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
     Table, TableBody, TableCell, TableContainer,
     TableRow, Paper
-} from "@mui/material";
+} from '@mui/material';
 import ContextMenu from '../../script/ContextMenu';
 import Modal from '../../script/Modal';
 import TableHeader from '../../script/table/TableHead';
 import ConfirmDeleteModal from '../../script/table/ConfirmDeleteModal';
 import DepartmentEditForm from './DepartmentEditForm';
 import handleDelete from '../../script/handleDelete';
-import API_BASE_URL from "../../baseURL";
+import API_BASE_URL from '../../baseURL';
+import useWebSocket from '../../script/useWebsocket';
 
 function DepartmentTable({ data, onSave }) {
+    const [departments, setDepartments] = useState(data);
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
     const [isMenuVisible, setIsMenuVisible] = useState(false);
     const [hoveredRowId, setHoveredRowId] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDepartment, setSelectedDepartment] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+    const memoizedDepartments = useMemo(() => departments, [departments]);
+
+     // 初回レンダリング時にdataをセット
+    useEffect(() => {
+        if (data.length > 0) {
+            setDepartments(data);
+        }
+    }, [data]);
+
+    // WebSocketを利用してリアルタイム更新
+    useWebSocket((updatedData) => {
+        setDepartments(updatedData.departments);
+    });
 
     const handleContextMenu = (event, rowId) => {
         event.preventDefault();
@@ -31,7 +47,7 @@ function DepartmentTable({ data, onSave }) {
     };
 
     const handleMenuAction = (action) => {
-        setTimeout(() => setIsMenuVisible(false), 0);
+        setIsMenuVisible(false)
         const department = data.find((depart) => depart.id === hoveredRowId);
 
         if (action === 'Edit') {
@@ -66,10 +82,10 @@ function DepartmentTable({ data, onSave }) {
         <div onClick={() => setIsMenuVisible(false)} style={{ position: 'relative' }}>
             <TableContainer component={Paper} elevation={3}>
                 <Table>
-                    <TableHeader columns={["部署名"]} />
+                    <TableHeader columns={['部署名']} />
 
                     <TableBody>
-                        {data.map((department) => (
+                        {memoizedDepartments.map((department) => (
                             <TableRow
                                 key={department.id}
                                 onContextMenu={(event) => handleContextMenu(event, department.id)}
@@ -95,7 +111,7 @@ function DepartmentTable({ data, onSave }) {
             <Modal
                 show={isModalOpen}
                 onClose={closeModal}
-                title="部署情報編集"
+                title='部署情報編集'
                 FormComponent={() => (
                     <DepartmentEditForm
                         department={selectedDepartment}

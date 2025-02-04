@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, DialogActions, TextField } from '@mui/material';
 import 'react-toastify/dist/ReactToastify.css';
 import { successNoti, errorNoti } from '../../script/noti';
-import API_BASE_URL from "../../baseURL";
+import API_BASE_URL from '../../baseURL';
 
 function DepartmentForm({ onRegister }) {
     const [name, setName] = useState('');
@@ -12,7 +12,7 @@ function DepartmentForm({ onRegister }) {
     const inputValid = () => {
         let isValid = true;
         if (!name) {
-            setNameError("部署名を入力してください。");
+            setNameError('部署名を入力してください。');
             isValid = false;
         }
         return isValid;
@@ -26,11 +26,11 @@ function DepartmentForm({ onRegister }) {
 
         if (!inputValid()) return;
 
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem('token');
         const response = await fetch(`${API_BASE_URL}/api/departments/`, {
-            method: "POST",
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ name })
@@ -42,10 +42,10 @@ function DepartmentForm({ onRegister }) {
             onRegister();
             successNoti(data.message);
         } else {
-            if (data.field === "name") {
+            if (data.field === 'name') {
                 setNameError(data.message);
             } else {
-                errorNoti("登録に失敗しました。");
+                errorNoti('登録に失敗しました。');
             }
         }
     };
@@ -55,14 +55,14 @@ function DepartmentForm({ onRegister }) {
             <form>
                 <TextField
                     fullWidth
-                    label="部署名"
+                    label='部署名'
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     error={Boolean(nameError)}
                     helperText={nameError}
                 />
                 <DialogActions>
-                    <Button type="submit" variant="contained" color="primary" onClick={handleSubmit}>
+                    <Button type='submit' variant='contained' color='primary' onClick={handleSubmit}>
                         登録
                     </Button>
                 </DialogActions>

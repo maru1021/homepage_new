@@ -5,5 +5,5 @@ def hashed_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """入力されたパスワードとハッシュを比較"""
+    # 入力されたパスワードとハッシュを比較
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))

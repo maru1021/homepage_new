@@ -3,7 +3,7 @@ Dockerのインストール
 
 プロジェクトを立ち上げたいフォルダで  
 git clone https://github.com/maru1021/homepage_new  
-を実行し、リポジトリのをローカルにコピーしてください。
+を実行し、リポジトリをローカルにコピーしてください。
 
 cd homepage_new  
 docker compose up --build  

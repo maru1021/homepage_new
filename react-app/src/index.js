@@ -1,6 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import React, { useState, useEffect, useMemo } from "react";
-import { createRoot } from "react-dom/client";
+import React, { useState, useEffect, useMemo } from 'react';
+import { createRoot } from 'react-dom/client';
 import { ToastContainer } from 'react-toastify';
 import reportWebVitals from './reportWebVitals';
 import './CSS/index.css';
@@ -9,16 +9,16 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './CSS/table.css';
 import './CSS/modal.css';
 import './CSS/contextmenu.css';
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AppRoutes from './routes/AppRoutes';
-import Login from "./login";
+import Login from './login';
 
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem("token") || null); // 初期状態でトークンを取得
+  const [token, setToken] = useState(localStorage.getItem('token') || null); // 初期状態でトークンを取得
 
   useEffect(() => {
-    const savedToken = localStorage.getItem("token");
+    const savedToken = localStorage.getItem('token');
     if (savedToken && token !== savedToken) {
       setToken(savedToken);
     }
@@ -26,7 +26,7 @@ function App() {
 
   const handleSetToken = (newToken) => {
     setToken(newToken);
-    localStorage.setItem("token", newToken);
+    localStorage.setItem('token', newToken);
   };
 
   // Sidebarをメモ化して、不要な再レンダリングを防ぐ
@@ -38,14 +38,14 @@ function App() {
         <>
           {memoizedSidebar}
           <Routes>
-            <Route path="/*" element={<AppRoutes />} />
+            <Route path='/*' element={<AppRoutes />} />
           </Routes>
-          <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
+          <ToastContainer position='top-right' autoClose={3000} hideProgressBar />
         </>
       ) : (
         <Routes>
-          <Route path="/login" element={<Login setToken={handleSetToken} />} />
-          <Route path="/*" element={<Navigate to="/login" replace />} />
+          <Route path='/login' element={<Login setToken={handleSetToken} />} />
+          <Route path='/*' element={<Navigate to='/login' replace />} />
         </Routes>
       )}
     </BrowserRouter>
@@ -53,7 +53,7 @@ function App() {
 }
 
 
-const root = createRoot(document.getElementById("root"));
+const root = createRoot(document.getElementById('root'));
 root.render(<App />);
 
 reportWebVitals();

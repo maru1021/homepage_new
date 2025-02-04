@@ -6,7 +6,7 @@ const handleDelete = async (url, onSave, closeDeleteModal) => {
       url,
       {
           headers: {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
           },
           method: 'DELETE'

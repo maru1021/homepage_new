@@ -6,14 +6,14 @@ import EmployeeForm from './EmployeeForm';
 import API_BASE_URL from '../../baseURL';
 
 // 従業員データを取得する関数
-const fetchEmployees = async (query = "", page = 1, limit = 10) => {
-    const token = localStorage.getItem("token");
-    return fetchData(`${API_BASE_URL}/api/employees`, token, query, page, limit, "employees");
+const fetchEmployees = async (query = '', page = 1, limit = 10) => {
+    const token = localStorage.getItem('token');
+    return fetchData(`${API_BASE_URL}/api/employees`, token, query, page, limit, 'employees');
 };
 
 const Employee = () => (
     <TableMaster
-        title="従業員一覧"
+        title='従業員一覧'
         fetchData={fetchEmployees}
         TableComponent={EmployeeTable}
         modalTitle='従業員登録'

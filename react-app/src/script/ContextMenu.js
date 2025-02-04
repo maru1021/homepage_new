@@ -5,7 +5,7 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 function ContextMenu({ position, onActionSelect }) {
     return (
         <div
-            className="context-menu"
+            className='context-menu'
             style={{
                 top: `${position.y}px`,
                 left: `${position.x}px`,
@@ -14,11 +14,11 @@ function ContextMenu({ position, onActionSelect }) {
         >
             <ul>
                 <li onClick={() => onActionSelect('Edit')}>
-                    <FaEdit className="edit-icon" />
+                    <FaEdit className='edit-icon' />
                     編集
                 </li>
                 <li onClick={() => onActionSelect('Delete')}>
-                    <FaTrash className="delete-icon" />
+                    <FaTrash className='delete-icon' />
                     削除
                 </li>
             </ul>

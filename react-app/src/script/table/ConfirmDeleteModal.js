@@ -7,11 +7,11 @@ const ConfirmDeleteModal = ({ show, onClose, onConfirm, message }) => {
     if (!show) return null;
 
     return (
-        <Dialog open={show} onClose={onClose} fullWidth maxWidth="xs">
+        <Dialog open={show} onClose={onClose} fullWidth maxWidth='xs'>
             <DialogTitle>
                 削除確認
                 <IconButton
-                    aria-label="close"
+                    aria-label='close'
                     onClick={onClose}
                     sx={{
                         position: 'absolute',
@@ -27,10 +27,10 @@ const ConfirmDeleteModal = ({ show, onClose, onConfirm, message }) => {
                 <p>{message}</p>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} color="secondary" variant="outlined">
+                <Button onClick={onClose} color='secondary' variant='outlined'>
                     キャンセル
                 </Button>
-                <Button onClick={onConfirm} color="error" variant="contained">
+                <Button onClick={onConfirm} color='error' variant='contained'>
                     削除
                 </Button>
             </DialogActions>
