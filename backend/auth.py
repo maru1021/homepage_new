@@ -1,20 +1,22 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import datetime, timedelta
-from jose import JWTError, jwt
+from jose import jwt
 from sqlalchemy.orm import Session
-from typing import Union
 from backend.authority.models import Employee
 from database import get_db
 from scripts.hash_password import verify_password, hashed_password
-import jwt  # PyJWT が必要
+import jwt
 from jwt import PyJWTError
-from datetime import datetime, timezone
+from datetime import datetime
+from scripts.get_time import now
+from zoneinfo import ZoneInfo
 
 # 秘密鍵とアルゴリズム設定
 SECRET_KEY = "your_secret_key"  # 本番環境では環境変数から取得
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+JST = ZoneInfo("Asia/Tokyo")
+EXPIRES_DELTA = 120 #ログアウトされるまでの時間(分単位)
 
 # OAuth2スキームの設定
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
@@ -44,11 +46,12 @@ def authenticate_user(db: Session, employee_no: str, password: str):
     return employee
 
 # アクセストークン作成関数
-def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
+def create_access_token(data: dict):
+    expires_delta = timedelta(minutes=EXPIRES_DELTA)
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(minutes=360))
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    expiration_time = now() + expires_delta
+    to_encode.update({"exp": expiration_time})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM), expiration_time
 
 def verify_token(token: str = Depends(oauth2_scheme)):
     if not token:
@@ -60,7 +63,7 @@ def verify_token(token: str = Depends(oauth2_scheme)):
 
         # トークンの有効期限を確認
         exp = payload.get("exp")
-        if exp is None or datetime.fromtimestamp(exp, timezone.utc) < datetime.now(timezone.utc):
+        if exp is None or datetime.fromtimestamp(exp, JST) < now():
             raise HTTPException(status_code=401, detail="Token expired")
 
         # トークンが有効ならユーザー情報を返す
@@ -76,8 +79,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     if not user:
         raise HTTPException(status_code=401, detail="社員番号またはパスワードが間違っています")
 
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.employee_no}, expires_delta=access_token_expires
+    access_token, expiration_time = create_access_token(
+        data={"sub": user.employee_no}
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer", "expiration_time": expiration_time}

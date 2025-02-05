@@ -50,7 +50,9 @@ function Login({ setToken }) {
             }
 
             const data = await response.json();
-            setToken(data.access_token);
+            const expirationTimeStr = new Date(data.expiration_time);
+            const expirationTime = new Date(expirationTimeStr);
+            setToken(data.access_token, expirationTime);
             navigate('/');
 
         } catch (error) {

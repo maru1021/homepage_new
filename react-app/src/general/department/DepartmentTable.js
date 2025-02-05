@@ -32,7 +32,7 @@ function DepartmentTable({ data, onSave }) {
     }, [data]);
 
     // WebSocketを利用してリアルタイム更新
-    useWebSocket((updatedData) => {
+    useWebSocket(`${API_BASE_URL.replace("http", "ws")}/ws/departments`, (updatedData) => {
         setDepartments(updatedData.departments);
     });
 
