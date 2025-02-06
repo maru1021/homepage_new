@@ -1,76 +1,60 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
     Table, TableBody, TableCell, TableContainer,
     TableRow, Paper
 } from '@mui/material';
-import ContextMenu from '../../script/ContextMenu';
-import Modal from '../../script/Modal';
-import TableHeader from '../../script/table/TableHead';
-import ConfirmDeleteModal from '../../script/table/ConfirmDeleteModal';
+import {
+    API_BASE_URL,
+    handleDelete,
+    setTableData,
+    TableHeader,
+    Modal,
+    ConfirmDeleteModal,
+    ContextMenu,
+    useContextMenu,
+} from '../../script/table/basicTableModules';
+import useModalManager from '../../script/modal/useModalManager'
+
 import DepartmentEditForm from './DepartmentEditForm';
-import handleDelete from '../../script/handleDelete';
-import API_BASE_URL from '../../baseURL';
-import useWebSocket from '../../script/useWebsocket';
+
 
 function DepartmentTable({ data, onSave }) {
     const [departments, setDepartments] = useState(data);
-    const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
-    const [isMenuVisible, setIsMenuVisible] = useState(false);
-    const [hoveredRowId, setHoveredRowId] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedDepartment, setSelectedDepartment] = useState(null);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-    const memoizedDepartments = useMemo(() => departments, [departments]);
+    const {
+        menuPosition,
+        hoveredRowId,
+        isMenuVisible,
+        setIsMenuVisible,
+        handleContextMenu,
+    } = useContextMenu();
 
-     // 初回レンダリング時にdataをセット
-    useEffect(() => {
-        if (data.length > 0) {
-            setDepartments(data);
-        }
-    }, [data]);
+    const {
+        isModalOpen,
+        isDeleteModalOpen,
+        selectedItem,
+        openModal,
+        closeModal,
+        openDeleteModal,
+        closeDeleteModal,
+    } = useModalManager();
 
-    // WebSocketを利用してリアルタイム更新
-    useWebSocket(`${API_BASE_URL.replace("http", "ws")}/ws/departments`, (updatedData) => {
-        setDepartments(updatedData.departments);
-    });
-
-    const handleContextMenu = (event, rowId) => {
-        event.preventDefault();
-        setMenuPosition({
-            x: event.clientX - 200,
-            y: event.clientY - 200,
-        });
-        setHoveredRowId(rowId);
-        setIsMenuVisible(true);
-    };
+    setTableData(data, setDepartments, `${API_BASE_URL.replace("http", "ws")}/ws/departments`);
 
     const handleMenuAction = (action) => {
-        setIsMenuVisible(false)
+        setIsMenuVisible(false);
         const department = data.find((depart) => depart.id === hoveredRowId);
 
         if (action === 'Edit') {
-            setSelectedDepartment(department);
-            setIsModalOpen(true);
+            openModal(department);
         } else if (action === 'Delete') {
-            setSelectedDepartment(department);
-            setIsDeleteModalOpen(true);
+            openDeleteModal(department);
         }
     };
 
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setSelectedDepartment(null);
-    };
-
-    const closeDeleteModal = () => {
-        setIsDeleteModalOpen(false);
-        setSelectedDepartment(null);
-    };
-
     const departmentDelete = async () => {
-        handleDelete(`${API_BASE_URL}/api/departments/${selectedDepartment.id}`, onSave, closeDeleteModal);
+        handleDelete(`${API_BASE_URL}/api/departments/${selectedItem.id}`, onSave, closeDeleteModal);
     };
 
     const handleSave = (updatedDepartment) => {
@@ -85,7 +69,7 @@ function DepartmentTable({ data, onSave }) {
                     <TableHeader columns={['部署名']} />
 
                     <TableBody>
-                        {memoizedDepartments.map((department) => (
+                        {departments.map((department) => (
                             <TableRow
                                 key={department.id}
                                 onContextMenu={(event) => handleContextMenu(event, department.id)}
@@ -114,7 +98,7 @@ function DepartmentTable({ data, onSave }) {
                 title='部署情報編集'
                 FormComponent={() => (
                     <DepartmentEditForm
-                        department={selectedDepartment}
+                        department={selectedItem}
                         onSave={handleSave}
                     />
                 )}
@@ -125,8 +109,8 @@ function DepartmentTable({ data, onSave }) {
                 onClose={closeDeleteModal}
                 onConfirm={departmentDelete}
                 message={
-                    selectedDepartment
-                        ? `${selectedDepartment.name}を削除してもよろしいですか？`
+                    selectedItem
+                        ? `${selectedItem.name}を削除してもよろしいですか？`
                         : '選択された部署が見つかりません。'
                 }
             />

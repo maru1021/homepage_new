@@ -1,8 +1,9 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 class DepartmentBase(BaseModel):
     name:str
+    searchQuery: Optional[str] = None
 
 # テーブルのデータ取得時の形式
 class Department(BaseModel):

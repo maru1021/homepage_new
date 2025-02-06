@@ -12,7 +12,7 @@ import asyncio
 # 部署の変更を WebSocketで通知
 async def department_websocket(db: Session):
     updated_departments, total_count = get_departments(db)
-    message = json.dumps({"departments": updated_departments, "totalCount": total_count})
+    message = json.dumps({"updated_data": updated_departments, "totalCount": total_count})
 
     # WebSocketManagerのグローバルインスタンスを使用
     await websocket_manager.broadcast(message)

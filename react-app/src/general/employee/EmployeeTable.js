@@ -4,13 +4,15 @@ import {
     Table, TableBody, TableCell, TableContainer,
     TableRow, Paper
 } from '@mui/material';
-import ContextMenu from '../../script/ContextMenu';
-import Modal from '../../script/Modal';
-import TableHeader from '../../script/table/TableHead';
+import {
+    API_BASE_URL,
+    handleDelete,
+    TableHeader,
+    Modal,
+    ConfirmDeleteModal,
+    ContextMenu,
+} from '../../script/table/basicTableModules'
 import EmployeeEditForm from './EmployeeEditForm';
-import ConfirmDeleteModal from '../../script/table/ConfirmDeleteModal';
-import API_BASE_URL from '../../baseURL';
-import handleDelete from '../../script/handleDelete';
 
 function EmployeeTable({ data, onSave }) {
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });

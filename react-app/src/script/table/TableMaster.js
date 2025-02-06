@@ -4,7 +4,7 @@ import { Grid, Typography, Button } from '@mui/material';
 import { SaveAlt as SaveAltIcon, UploadFile as UploadFileIcon } from '@mui/icons-material';
 import TableActions from './TableActions';
 import PaginationComponent from './Pagination';
-import Modal from '../Modal';
+import Modal from '../modal/Modal';
 
 const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormComponent, ExcelOutput=null, ExcelInput=null }) => {
     const [tableDatas, setTableDatas] = useState([]);
