@@ -19,7 +19,7 @@ import useModalManager from '../../script/modal/useModalManager'
 import DepartmentEditForm from './DepartmentEditForm';
 
 
-function DepartmentTable({ data, onSave }) {
+function DepartmentTable({ data, onSave, searchQuery, currentPage, itemsPerPage }) {
     const [departments, setDepartments] = useState(data);
 
     const {
@@ -40,7 +40,7 @@ function DepartmentTable({ data, onSave }) {
         closeDeleteModal,
     } = useModalManager();
 
-    setTableData(data, setDepartments, `${API_BASE_URL.replace("http", "ws")}/ws/departments`);
+    setTableData(data, setDepartments, `${API_BASE_URL.replace("http", "ws")}/ws/departments`, searchQuery, currentPage, itemsPerPage);
 
     const handleMenuAction = (action) => {
         setIsMenuVisible(false);
@@ -69,7 +69,7 @@ function DepartmentTable({ data, onSave }) {
                     <TableHeader columns={['部署名']} />
 
                     <TableBody>
-                        {departments.map((department) => (
+                        {departments?.map((department) => (
                             <TableRow
                                 key={department.id}
                                 onContextMenu={(event) => handleContextMenu(event, department.id)}
@@ -126,6 +126,9 @@ DepartmentTable.propTypes = {
         })
     ).isRequired,
     onSave: PropTypes.func.isRequired,
+    searchQuery: PropTypes.string,
+    currentPage: PropTypes.number,
+    itemsPerPage: PropTypes.number,
 };
 
 export default DepartmentTable;

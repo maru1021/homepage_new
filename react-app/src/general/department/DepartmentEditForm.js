@@ -8,10 +8,8 @@ import API_BASE_URL from '../../baseURL';
 function DepartmentEditForm({ department, onSave }) {
     const [name, setName] = useState(department?.name || '');
 
-    // 各インプットのエラーメッセージ用の状態
     const [nameError, setNameError] = useState('');
 
-    // 入力フォームのバリデーション
     const inputValid = () => {
         let isValid = true;
 
@@ -26,10 +24,8 @@ function DepartmentEditForm({ department, onSave }) {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        // エラーメッセージの初期化
         setNameError('');
 
-        // バリデーションエラーがあれば送信を中止
         if (!inputValid()) return;
 
         const send_data = {
@@ -85,6 +81,9 @@ DepartmentEditForm.propTypes = {
         name: PropTypes.string,
     }),
     onSave: PropTypes.func.isRequired,
+    searchQuery: PropTypes.string,
+    currentPage: PropTypes.number,
+    itemsPerPage: PropTypes.number
 };
 
 export default DepartmentEditForm;

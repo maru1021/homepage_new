@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import useWebSocket from '../websocket/useWebsocket';
 
-const setTableData = (data, setData, url) => {
+const setTableData = (data, setData, url, searchQuery, currentPage, itemsPerPage) => {
   // 初回レンダリング時にdataをセット
   useEffect(() => {
       if (data.length > 0) {
@@ -12,7 +12,7 @@ const setTableData = (data, setData, url) => {
   // WebSocketを利用してリアルタイム更新
   useWebSocket(url, (updatedData) => {
       setData(updatedData.updated_data);
-  });
+  }, searchQuery, currentPage, itemsPerPage);
 }
 
 export default setTableData

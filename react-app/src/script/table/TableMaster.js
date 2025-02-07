@@ -103,7 +103,13 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
             />
 
             <div className='table-container'>
-                <TableComponent data={tableDatas} onSave={handleDataUpdate} />
+                <TableComponent data={tableDatas}
+                    onSave={handleDataUpdate}
+                    searchQuery={searchQuery}
+                    currentPage={currentPage}
+                    itemsPerPage={itemsPerPage}
+                />
+
                 <PaginationComponent
                     totalPages={totalPages}
                     currentPage={currentPage}
