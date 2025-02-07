@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from backend.database import get_db
 from . import crud, schemas
@@ -14,11 +14,11 @@ async def read_employees(search: str = Query("", description="Search query"), pa
 
 
 @router.post("/", response_model=schemas.EmployeeResponse)
-async def create_employee(employee: schemas.EmployeeCreate, db: Session = Depends(get_db)):
+async def create_employee(employee: schemas.EmployeeCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     employee_data = employee.dict()
 
     try:
-        return crud.create_employee(db=db, employee=schemas.EmployeeCreate(**employee_data))
+        return crud.create_employee(db=db, employee=schemas.EmployeeCreate(**employee_data), background_tasks=background_tasks)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except RequestValidationError as e:
@@ -28,10 +28,10 @@ async def create_employee(employee: schemas.EmployeeCreate, db: Session = Depend
 
 
 @router.put("/{employee_id}", response_model=schemas.EmployeeResponse)
-async def update_employee(employee_id: int, employee_data: schemas.EmployeeUpdate, db: Session = Depends(get_db)):
+async def update_employee(employee_id: int, employee_data: schemas.EmployeeUpdate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
 
     try:
-        return crud.update_employee(db, employee_id, employee_data)
+        return crud.update_employee(db, employee_id, employee_data, background_tasks=background_tasks)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except RequestValidationError as e:
@@ -41,10 +41,9 @@ async def update_employee(employee_id: int, employee_data: schemas.EmployeeUpdat
 
 
 @router.delete("/{employee_id}", response_model=schemas.EmployeeResponse)
-async def delete_employee(employee_id: int, db: Session = Depends(get_db)):
+async def delete_employee(employee_id: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     try:
-        print('pppppppppppppppp')
-        return crud.delete_employee(db, employee_id)
+        return crud.delete_employee(db, employee_id, background_tasks=background_tasks)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except RequestValidationError as e:

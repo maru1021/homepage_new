@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import {
     FormControl,
@@ -16,7 +16,17 @@ const TableActions = ({
     searchQuery,
     onSearchChange,
     onOpenRegisterModal,
+    modalClosed
 }) => {
+    const searchInputRef = useRef(null);
+
+    // モーダルが閉じられたら検索ボックスにフォーカスを設定
+    useEffect(() => {
+        if (modalClosed && searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    }, [modalClosed]);
+
     return (
         <Grid
             container
@@ -48,7 +58,8 @@ const TableActions = ({
                         onChange={(e) => onSearchChange(e.target.value)}
                         variant='outlined'
                         size='small'
-                        sx={{ width: 200 }} // 検索バーの横幅を調整
+                        sx={{ width: 200 }}
+                        inputRef={searchInputRef}
                     />
                 </Grid>
                 <Grid item>
@@ -67,6 +78,7 @@ TableActions.propTypes = {
     searchQuery: PropTypes.string.isRequired,
     onSearchChange: PropTypes.func.isRequired,
     onOpenRegisterModal: PropTypes.func,
+    modalClosed: PropTypes.bool.isRequired,
 };
 
 export default TableActions;

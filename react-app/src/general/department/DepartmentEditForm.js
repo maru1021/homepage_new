@@ -65,6 +65,7 @@ function DepartmentEditForm({ department, onSave }) {
                 onChange={(e) => setName(e.target.value)}
                 error={Boolean(nameError)}
                 helperText={nameError}
+                autoFocus
             />
             <DialogActions>
                 <Button type='submit' variant='contained' color='primary' onClick={handleSubmit}>

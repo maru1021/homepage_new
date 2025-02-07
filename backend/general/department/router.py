@@ -50,7 +50,6 @@ def export_departments_to_excel(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
 # Excel入力
 @router.post("/import_excel")
 def import_departments_to_excel(background_tasks: BackgroundTasks, file: UploadFile = File(...), db: Session = Depends(get_db)):

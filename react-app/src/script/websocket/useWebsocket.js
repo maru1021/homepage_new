@@ -58,7 +58,7 @@ const useWebSocket = (url, updateFunc, searchQuery, currentPage, itemsPerPage) =
                 wsRef.current = null;
             }
         };
-    }, [url]);  // 初回の WebSocket接続のみ実行
+    }, [url]);  // 初回のWebSocket接続のみ実行
 
     // 検索などの変更を監視して最新の値を反映
     useEffect(() => {

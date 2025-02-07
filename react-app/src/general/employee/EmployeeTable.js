@@ -7,56 +7,53 @@ import {
 import {
     API_BASE_URL,
     handleDelete,
+    setTableData,
     TableHeader,
     Modal,
     ConfirmDeleteModal,
     ContextMenu,
-} from '../../script/table/basicTableModules'
+    useContextMenu,
+} from '../../script/table/basicTableModules';
+import useModalManager from '../../script/modal/useModalManager'
+
 import EmployeeEditForm from './EmployeeEditForm';
 
-function EmployeeTable({ data, onSave }) {
-    const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
-    const [isMenuVisible, setIsMenuVisible] = useState(false);
-    const [hoveredRowId, setHoveredRowId] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedEmployee, setSelectedEmployee] = useState(null);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage }) {
+    const [employees, setEmployees] = useState(data);
 
-    const handleContextMenu = (event, rowId) => {
-        event.preventDefault();
-        setMenuPosition({
-            x: event.clientX - 200,
-            y: event.clientY - 200,
-        });
-        setHoveredRowId(rowId);
-        setIsMenuVisible(true);
-    };
+    const {
+        menuPosition,
+        hoveredRowId,
+        isMenuVisible,
+        setIsMenuVisible,
+        handleContextMenu,
+    } = useContextMenu();
+
+    const {
+        isModalOpen,
+        isDeleteModalOpen,
+        selectedItem,
+        openModal,
+        closeModal,
+        openDeleteModal,
+        closeDeleteModal,
+    } = useModalManager();
+
+    setTableData(data, setEmployees, `${API_BASE_URL.replace("http", "ws")}/ws/employees`, searchQuery, currentPage, itemsPerPage);
 
     const handleMenuAction = (action) => {
         setTimeout(() => setIsMenuVisible(false), 0);
         const employee = data.find((emp) => emp.id === hoveredRowId);
 
         if (action === 'Edit') {
-            setSelectedEmployee(employee);
-            setIsModalOpen(true);
+            openModal(employee);
         } else if (action === 'Delete') {
-            setSelectedEmployee(employee);
-            setIsDeleteModalOpen(true);
+            openDeleteModal(employee);
         }
     };
 
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setSelectedEmployee(null);
-    };
-
-    const closeDeleteModal = () => {
-        setIsDeleteModalOpen(false);
-        setSelectedEmployee(null);
-    };
-
     const employeeDelete = async () => {
-        handleDelete(`${API_BASE_URL}/api/employees/${selectedEmployee.id}`, onSave, closeDeleteModal);
+        handleDelete(`${API_BASE_URL}/api/employees/${selectedItem.id}`, onSave, closeDeleteModal);
     };
 
     const handleSave = (updatedEmployee) => {
@@ -71,7 +68,7 @@ function EmployeeTable({ data, onSave }) {
                     <TableHeader columns={['社員番号', '名前', '部署', '権限']} />
 
                     <TableBody>
-                        {data.map((employee) => (
+                        {employees?.map((employee) => (
                             <React.Fragment key={employee.id}>
                                 {employee.departments.map((department, index) => (
                                     <TableRow
@@ -113,7 +110,7 @@ function EmployeeTable({ data, onSave }) {
                 title='従業員情報編集'
                 FormComponent={() => (
                     <EmployeeEditForm
-                        employee={selectedEmployee}
+                        employee={selectedItem}
                         onSave={handleSave}
                     />
                 )}
@@ -124,8 +121,8 @@ function EmployeeTable({ data, onSave }) {
                 onClose={closeDeleteModal}
                 onConfirm={employeeDelete}
                 message={
-                    selectedEmployee
-                        ? `${selectedEmployee.employee_no}を削除してもよろしいですか？`
+                    selectedItem
+                        ? `${selectedItem.employee_no}を削除してもよろしいですか？`
                         : '選択された従業員が見つかりません。'
                 }
             />
@@ -149,6 +146,9 @@ EmployeeTable.propTypes = {
         })
     ).isRequired,
     onSave: PropTypes.func.isRequired,
+    searchQuery: PropTypes.string,
+    currentPage: PropTypes.number,
+    itemsPerPage: PropTypes.number,
 };
 
 export default EmployeeTable;

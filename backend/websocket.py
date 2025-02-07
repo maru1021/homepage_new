@@ -1,9 +1,11 @@
+import asyncio
+import json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, HTTPException, Depends
 from jose import JWTError, jwt
-from backend.auth import SECRET_KEY, ALGORITHM
-import json
-from backend.database import get_db
 from sqlalchemy.orm import Session
+from backend.auth import SECRET_KEY, ALGORITHM
+from backend.database import get_db
+
 
 router = APIRouter()
 
@@ -50,37 +52,36 @@ class WebSocketManager:
 
 websocket_manager = WebSocketManager()
 
-@router.websocket("/departments")
-async def websocket_endpoint(websocket: WebSocket, token: str = Query(...), db: Session = Depends(get_db)):
-    from backend.general.department.crud import get_departments
+# フロントからWebSocketでデータが来たときに実行
+@router.websocket("/{path:path}")
+async def websocket_handler(websocket: WebSocket, token: str = Query(...), db: Session = Depends(get_db)):
     await websocket_manager.connect(websocket, token)
+
+    async def timeout_disconnect():
+        await asyncio.sleep(30 * 60)  # 切断までの時間
+        await websocket.close()
+        websocket_manager.disconnect(websocket)
+
+    timeout_task = asyncio.create_task(timeout_disconnect())
 
     try:
         while True:
             raw_data = await websocket.receive_text()
 
-            if not raw_data.strip():
-                continue  # 空メッセージは無視
-
             try:
-                data = json.loads(raw_data)  # JSONデコード
+                data = json.loads(raw_data)
             except json.JSONDecodeError:
                 await websocket.send_text(json.dumps({"error": "Invalid JSON format"}))
                 continue
 
-            # 🔹 クライアントごとの検索条件を更新
+            # クライアントごとの検索条件を更新
             websocket_manager.active_connections[websocket]["searchQuery"] = data.get("searchQuery", "")
             websocket_manager.active_connections[websocket]["currentPage"] = data.get("currentPage", 1)
             websocket_manager.active_connections[websocket]["itemsPerPage"] = data.get("itemsPerPage", 10)
 
-            # 🔹 個別のクライアントにフィルタリングされたデータを送信
-            search_query = websocket_manager.active_connections[websocket]["searchQuery"]
-            current_page = websocket_manager.active_connections[websocket]["currentPage"]
-            items_per_page = websocket_manager.active_connections[websocket]["itemsPerPage"]
-
-            departments, total_count = get_departments(db, search_query, current_page, items_per_page)
-            response_message = json.dumps({"updated_data": departments, "totalCount": total_count})
-            await websocket.send_text(response_message)
+            # 新しいメッセージを受信したらタイムをリセット
+            timeout_task.cancel()
+            timeout_task = asyncio.create_task(timeout_disconnect())
 
     except WebSocketDisconnect:
         websocket_manager.disconnect(websocket)

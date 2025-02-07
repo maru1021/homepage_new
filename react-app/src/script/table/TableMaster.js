@@ -100,6 +100,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                 searchQuery={searchQuery}
                 onSearchChange={handleSearchChange}
                 onOpenRegisterModal={openRegisterModal}
+                modalClosed={!isModalOpen}
             />
 
             <div className='table-container'>

@@ -148,6 +148,7 @@ function EmployeeEditForm({ employee, onSave }) {
                     onChange={(e) => setEmployeeNo(e.target.value)}
                     error={Boolean(employeeNoError)}
                     helperText={employeeNoError}
+                    autoFocus
                 />
 
                 <TextField

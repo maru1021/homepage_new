@@ -1,15 +1,15 @@
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.sql import delete
-import json
-from backend.websocket import websocket_manager
-from . import schemas
-from .. import models
-from backend.authority import models as authority_models
-from fastapi import BackgroundTasks
 import asyncio
+from fastapi import BackgroundTasks
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
-# 部署の変更を WebSocketで通知
+from backend.authority import models as authority_models
+from backend.general import models
+from backend.general.department import schemas
+from backend.websocket import websocket_manager
+
+
+# 部署の変更をWebSocketで通知
 async def department_websocket(db: Session):
     await websocket_manager.broadcast_filtered(db, get_departments)
 

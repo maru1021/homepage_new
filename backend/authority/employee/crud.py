@@ -1,11 +1,21 @@
+import asyncio
+from fastapi import BackgroundTasks
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import delete, or_, and_, exists
 
-from . import schemas
-from .. import models
+from backend.authority import models
+from backend.authority.employee import schemas
 from backend.general import models as general_models
 from backend.scripts import hash_password
+from backend.websocket import websocket_manager
+
+# 従業員の変更をWebSocketで通知
+async def noti_websocket(db: Session):
+    await websocket_manager.broadcast_filtered(db, get_employees)
+
+def run_websocket(db: Session):
+    asyncio.run(noti_websocket(db))
 
 
 def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10):
@@ -81,7 +91,7 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10)
 def existing_employee(db: Session, employee_no: str):
     return db.query(models.Employee).filter(models.Employee.employee_no == employee_no).first()
 
-def create_employee(db: Session, employee: schemas.EmployeeCreate):
+def create_employee(db: Session, employee: schemas.EmployeeCreate, background_tasks: BackgroundTasks):
     try:
         # 従業員番号の重複チェック
         if existing_employee(db, employee.employee_no):
@@ -113,6 +123,9 @@ def create_employee(db: Session, employee: schemas.EmployeeCreate):
 
         db.bulk_save_objects(employee_authorities)
         db.commit()
+
+        background_tasks.add_task(run_websocket, db)
+
         return {"message": "従業員登録に成功しました"}
 
     except SQLAlchemyError as e:
@@ -121,7 +134,8 @@ def create_employee(db: Session, employee: schemas.EmployeeCreate):
         return {"success": False, "message": "データベースエラーが発生しました", "field": ""}
 
 
-def update_employee(db: Session, employee_id: int, employee_data: schemas.EmployeeUpdate):
+def update_employee(db: Session, employee_id: int, employee_data: schemas.EmployeeUpdate, background_tasks: BackgroundTasks):
+    print('test')
     employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
     if not employee:
         raise ValueError("Employee not found")
@@ -147,20 +161,22 @@ def update_employee(db: Session, employee_id: int, employee_data: schemas.Employ
     db.bulk_save_objects(employee_authorities)
 
     db.commit()
+
+    background_tasks.add_task(run_websocket, db)
+
     return {"message": "従業員情報を更新しました"}
 
 
-def delete_employee(db: Session, employee_id: int):
+def delete_employee(db: Session, employee_id: int, background_tasks: BackgroundTasks):
     employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
     if not employee:
         return {"success": False, "message": "対象の従業員が存在しません"}
 
     try:
-        print('test')
         db.delete(employee)
-        print('test2')
         db.commit()
-        print('test3')
+
+        background_tasks.add_task(run_websocket, db)
 
         return {"message": "削除に成功しました。"}
     except Exception as e:
