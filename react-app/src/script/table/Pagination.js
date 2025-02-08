@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Pagination, Stack } from '@mui/material';
 
+
 const PaginationComponent = ({ totalPages, currentPage, onPageChange }) => {
     return (
         <Stack spacing={2} alignItems='flex-end' sx={{ marginTop: 2 }}>
