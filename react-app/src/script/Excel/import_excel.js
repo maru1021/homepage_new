@@ -1,6 +1,7 @@
 import { successNoti, errorNoti } from '../noti';
 
-const importExcel = async (url, token, fetchData) => {
+
+const importExcel = async (url, token) => {
     return new Promise((resolve, reject) => {
         const input = document.createElement('input');
         input.type = 'file';
@@ -30,7 +31,7 @@ const importExcel = async (url, token, fetchData) => {
 
                 if (data.success) {
                     successNoti(data.message || 'Excelのアップロードに成功しました');
-                    fetchData();
+                    // fetchData();
                     resolve(data);
                 } else {
                     errorNoti(data.message || 'Excelのアップロードに失敗しました');

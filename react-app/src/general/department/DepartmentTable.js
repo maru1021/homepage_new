@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
-    Table, TableBody, TableCell, TableContainer,
-    TableRow, Paper
+    Paper, Table, TableBody, TableCell, TableContainer,
+    TableRow
 } from '@mui/material';
+
+import DepartmentEditForm from './DepartmentEditForm';
+
 import {
     API_BASE_URL,
-    handleDelete,
-    setTableData,
-    TableHeader,
-    Modal,
     ConfirmDeleteModal,
     ContextMenu,
+    handleDelete,
+    Modal,
+    setTableData,
+    TableHeader,
     useContextMenu,
 } from '../../script/table/basicTableModules';
 import useModalManager from '../../script/modal/useModalManager'
-
-import DepartmentEditForm from './DepartmentEditForm';
 
 
 function DepartmentTable({ data, onSave, searchQuery, currentPage, itemsPerPage }) {

@@ -20,7 +20,7 @@ const useWebSocket = (url, updateFunc, searchQuery, currentPage, itemsPerPage) =
         wsRef.current.onopen = () => {
             console.log("WebSocket 接続成功");
 
-            // 初回接続時にデータ送信
+            // 初回接続時にサーバーにデータ送信
             const message = {
                 action: "subscribe",
                 searchQuery: searchQueryRef.current,
@@ -35,7 +35,7 @@ const useWebSocket = (url, updateFunc, searchQuery, currentPage, itemsPerPage) =
             }
         };
 
-        // WebSocketからメッセージを受信
+        // WebSocketでデータが送られてきた時の処理
         wsRef.current.onmessage = (event) => {
             try {
                 const updatedData = JSON.parse(event.data);
@@ -75,7 +75,7 @@ const useWebSocket = (url, updateFunc, searchQuery, currentPage, itemsPerPage) =
             };
             wsRef.current.send(JSON.stringify(message));
         }
-    }, [searchQuery, currentPage, itemsPerPage]);  // WebSocketを閉じずにメッセージのみ送信
+    }, [searchQuery, currentPage, itemsPerPage]);
 
     return wsRef.current;
 };

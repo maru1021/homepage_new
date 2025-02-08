@@ -1,7 +1,8 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Employee from '../general/employee/Employee';
 import Department from '../general/department/Department';
+import Employee from '../general/employee/Employee';
+
 
 const AppRoutes = () => {
   return (

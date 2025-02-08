@@ -1,7 +1,8 @@
-from backend.database import Base
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Table
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from typing import TYPE_CHECKING
+
+from backend.database import Base
 
 if TYPE_CHECKING:
     from backend.general.models import Department

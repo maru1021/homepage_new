@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import useWebSocket from '../websocket/useWebsocket';
 
+
 const setTableData = (data, setData, url, searchQuery, currentPage, itemsPerPage) => {
   // 初回レンダリング時にdataをセット
   useEffect(() => {

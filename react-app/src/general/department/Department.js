@@ -1,11 +1,14 @@
 import React from 'react';
-import TableMaster from '../../script/table/TableMaster';
-import fetchData from '../../script/table/fetchData';
-import DepartmentTable from './DepartmentTable';
-import DepartmentForm from './DepartmentForm';
-import exportExcel from '../../script/Excel/export_excel';
-import importExcel from '../../script/Excel/import_excel';
+
 import API_BASE_URL from '../../baseURL';
+import DepartmentForm from './DepartmentForm';
+import DepartmentTable from './DepartmentTable';
+import TableMaster from '../../script/table/TableMaster';
+
+import exportExcel from '../../script/Excel/export_excel';
+import fetchData from '../../script/table/fetchData';
+import importExcel from '../../script/Excel/import_excel';
+
 
 // 従業員データを取得する関数
 const fetchDepartments = async (query = '', page = 1, limit = 10) => {

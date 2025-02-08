@@ -31,7 +31,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
 
     // 編集または登録後の処理
     const handleDataUpdate = () => {
-        loadData(searchQuery, currentPage, itemsPerPage); // 現在の検索条件で再取得
+        loadData(searchQuery, currentPage, itemsPerPage);
         closeRegisterModal();
     };
 
@@ -53,14 +53,12 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
         <div className='TableWithActions'>
             <header>
             <Grid container alignItems='center' spacing={2} sx={{ paddingY: 2, paddingLeft: '17%' }}>
-                {/* タイトル */}
                 <Grid item xs={7}>
                     <Typography variant='h2' fontWeight='bold'>
                         {title}
                     </Typography>
                 </Grid>
 
-                {/* Excel出力ボタン */}
                 {ExcelOutput && (
                     <Grid item xs={2}>
                         <Button
@@ -76,7 +74,6 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                     </Grid>
                 )}
 
-                {/* Excel入力ボタン */}
                 {ExcelInput && (
                     <Grid item xs={2}>
                         <Button
@@ -121,7 +118,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
             <Modal
                 show={isModalOpen}
                 onClose={closeRegisterModal}
-                onRegister={handleDataUpdate} // 登録後にデータ更新
+                onRegister={handleDataUpdate}
                 title={modalTitle}
                 FormComponent={FormComponent}
             />

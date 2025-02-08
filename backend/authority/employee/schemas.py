@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional
+from pydantic import BaseModel, EmailStr, Field
+from typing import List
 
 # 社員と紐づいた部署
 class EmployeeDepartment(BaseModel):

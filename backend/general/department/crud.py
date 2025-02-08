@@ -13,7 +13,7 @@ from backend.websocket import websocket_manager
 async def department_websocket(db: Session):
     await websocket_manager.broadcast_filtered(db, get_departments)
 
-def run_department_websocket(db: Session):
+def run_websocket(db: Session):
     asyncio.run(department_websocket(db))
 
 # 部署一覧取得
@@ -42,7 +42,7 @@ def create_department(db: Session, department: schemas.DepartmentBase, backgroun
         db.commit()
         db.refresh(db_department)
 
-        background_tasks.add_task(run_department_websocket, db)
+        background_tasks.add_task(run_websocket, db)
 
         return { "message": "部署を作成しました。" }
     except SQLAlchemyError as e:
@@ -66,7 +66,7 @@ def update_department(db: Session, department_id: int, department_data: schemas.
         db.commit()
         db.refresh(department)
 
-        background_tasks.add_task(run_department_websocket, db)
+        background_tasks.add_task(run_websocket, db)
 
         return {
             "id": department.id,
@@ -91,7 +91,7 @@ def delete_department(db: Session, department_id: int, background_tasks: Backgro
         db.delete(department)
         db.commit()
 
-        background_tasks.add_task(run_department_websocket, db)
+        background_tasks.add_task(run_websocket, db)
 
         return {
             "id": department.id,

@@ -2,13 +2,13 @@ from io import BytesIO
 
 from fastapi import BackgroundTasks
 from fastapi.responses import FileResponse
-from sqlalchemy.orm import Session
 from openpyxl import Workbook
 from openpyxl.worksheet.datavalidation import DataValidation
 import pandas as pd
+from sqlalchemy.orm import Session
 
-from backend.authority import models as authority_models
-from backend.general import models
+from backend.authority import models
+
 
 
 def export_excel(db: Session):
@@ -48,7 +48,7 @@ def export_excel(db: Session):
     return FileResponse(file_path, filename="departments.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
 def import_excel(db: Session, file, background_tasks=BackgroundTasks):
-    from backend.general.department.crud import run_websocket
+    from .crud import run_websocket
     try:
         # ExcelファイルをDataFrameに変換
         contents = file.file.read()  # 非同期でファイルを読み込む
@@ -99,13 +99,6 @@ def import_excel(db: Session, file, background_tasks=BackgroundTasks):
                 department = db.query(models.Department).filter(models.Department.id == department_id).first()
                 if not department:
                     raise ValueError(f"削除対象のID {department_id} が見つかりません。")
-
-                employee_count = db.query(authority_models.EmployeeAuthority.department_id).filter(
-                    authority_models.EmployeeAuthority.department_id == department_id
-                ).count()
-
-                if employee_count > 0:
-                    raise ValueError(f"{department.name} に所属する従業員がいるため削除できません。")
 
                 db.delete(department)
                 continue

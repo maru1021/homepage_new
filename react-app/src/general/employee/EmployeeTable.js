@@ -6,17 +6,19 @@ import {
 } from '@mui/material';
 import {
     API_BASE_URL,
-    handleDelete,
-    setTableData,
-    TableHeader,
-    Modal,
     ConfirmDeleteModal,
     ContextMenu,
+    handleDelete,
+    Modal,
+    setTableData,
+    TableHeader,
     useContextMenu,
 } from '../../script/table/basicTableModules';
-import useModalManager from '../../script/modal/useModalManager'
 
 import EmployeeEditForm from './EmployeeEditForm';
+
+import useModalManager from '../../script/modal/useModalManager'
+
 
 function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage }) {
     const [employees, setEmployees] = useState(data);

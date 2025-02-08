@@ -1,8 +1,10 @@
 import asyncio
 import json
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, HTTPException, Depends
+
+from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect 
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
+
 from backend.auth import SECRET_KEY, ALGORITHM
 from backend.database import get_db
 

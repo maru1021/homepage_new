@@ -1,11 +1,12 @@
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .database import engine, Base
-from . import router
-from .auth import router as auth_router
-from .websocket import router as ws_router
-from backend.general.router import router as general_router
+
+from backend.auth import router as auth_router
 from backend.auth import verify_token
+from backend.database import Base, engine
+from backend.general.router import router as general_router
+from backend.websocket import router as ws_router
+
 
 app = FastAPI()
 

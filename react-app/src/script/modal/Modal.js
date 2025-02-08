@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
+
 function Modal({ show, onClose, title, FormComponent, onRegister }) {
     return (
         <Dialog open={show} onClose={onClose} fullWidth maxWidth='sm'>

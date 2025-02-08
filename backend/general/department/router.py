@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, status, Query, HTTPException, UploadFile, File
+from fastapi import APIRouter, BackgroundTasks, Depends, File,  HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, BackgroundTasks
+
 from backend.database import get_db
-from . import crud, schemas
-from .excel_operation import export_excel, import_excel
+from backend.general.department import crud, schemas, excel_operation
 
 
 router = APIRouter()
@@ -44,7 +43,7 @@ def delete_department(department_id: int, background_tasks: BackgroundTasks, db:
 @router.get("/export_excel")
 def export_departments_to_excel(db: Session = Depends(get_db)):
     try:
-        return export_excel(db)
+        return excel_operation.export_excel(db)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -54,7 +53,7 @@ def export_departments_to_excel(db: Session = Depends(get_db)):
 @router.post("/import_excel")
 def import_departments_to_excel(background_tasks: BackgroundTasks, file: UploadFile = File(...), db: Session = Depends(get_db)):
     try:
-        return import_excel(db, file, background_tasks=background_tasks)
+        return excel_operation.import_excel(db, file, background_tasks=background_tasks)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

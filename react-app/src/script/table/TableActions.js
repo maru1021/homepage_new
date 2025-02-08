@@ -10,14 +10,15 @@ import {
     Grid,
 } from '@mui/material';
 
-const TableActions = ({
+
+function TableActions ({
     itemsPerPage,
     onItemsPerPageChange,
     searchQuery,
     onSearchChange,
     onOpenRegisterModal,
     modalClosed
-}) => {
+}) {
     const searchInputRef = useRef(null);
 
     // モーダルが閉じられたら検索ボックスにフォーカスを設定
@@ -70,7 +71,7 @@ const TableActions = ({
             </Grid>
         </Grid>
     );
-};
+}
 
 TableActions.propTypes = {
     itemsPerPage: PropTypes.number.isRequired,

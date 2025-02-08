@@ -8,6 +8,7 @@ const fetchData = async (url, token, query = '', page = 1, limit = 10, model='')
 
       if (response.ok) {
           const data = await response.json();
+          console.log(data)
           return {
               tableDatas: data[model] || [],
               totalCount: data.totalCount || 0,

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, DialogActions, TextField } from '@mui/material';
-import 'react-toastify/dist/ReactToastify.css';
-import { successNoti, errorNoti } from '../../script/noti';
+
 import API_BASE_URL from '../../baseURL';
+import { successNoti, errorNoti } from '../../script/noti';
+
 
 function DepartmentForm({ onRegister }) {
     const [name, setName] = useState('');

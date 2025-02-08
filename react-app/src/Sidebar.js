@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { FaIndustry, FaUsers, FaSignOutAlt, FaToolbox } from 'react-icons/fa';
 import './CSS/sidebar.css';
 
+
 function Sidebar({ setToken }) {
   const navigate = useNavigate();
 

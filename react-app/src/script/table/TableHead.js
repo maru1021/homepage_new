@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { TableHead, TableRow, TableCell } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 
+
 function TableHeader({ columns }) {
     return (
         <TableHead>

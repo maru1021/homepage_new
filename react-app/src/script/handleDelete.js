@@ -1,5 +1,6 @@
 import { successNoti, errorNoti } from './noti';
 
+
 const handleDelete = async (url, onSave, closeDeleteModal) => {
   const token = localStorage.getItem('token');
   const response = await fetch(

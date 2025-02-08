@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import {
     Button, TextField, Select, MenuItem, FormControl,
     InputLabel, FormHelperText, Stack, DialogActions
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
+
+import API_BASE_URL from '../../baseURL';
 import { successNoti, errorNoti } from '../../script/noti';
 import employeeValid from '../../script/valid/employeeValid';
-import API_BASE_URL from '../../baseURL';
 
 // 部署データを取得する関数
 const fetchDepartments = async () => {
