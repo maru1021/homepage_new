@@ -17,11 +17,14 @@ def run_websocket(db: Session):
     asyncio.run(department_websocket(db))
 
 # 部署一覧取得
-def get_departments(db: Session, search: str = "", page: int = 1, limit: int = 10):
+def get_departments(db: Session, search: str = "", page: int = 1, limit: int = 10, return_total_count=True):
     query = db.query(models.Department)
 
     if search:
         query = query.filter(models.Department.name.contains(search))
+
+    if return_total_count == False:
+        return query
 
     total_count = query.count()
     departments = query.offset((page - 1) * limit).limit(limit).all()

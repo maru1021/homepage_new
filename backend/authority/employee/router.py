@@ -3,8 +3,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from backend.authority.employee import crud, schemas
-from backend.authority.employee.excel_operation import export_excel, import_excel
+from backend.authority.employee import crud, schemas, excel_operation
 from backend.database import get_db
 
 router = APIRouter()
@@ -56,9 +55,10 @@ async def delete_employee(employee_id: int, background_tasks: BackgroundTasks, d
 
 # Excel出力
 @router.get("/export_excel")
-def export_departments_to_excel(db: Session = Depends(get_db)):
+def export_employees_to_excel(db: Session = Depends(get_db), searchQuery: str = Query("", alias="searchQuery")):
+    print('test')
     try:
-        return export_excel(db)
+        return excel_operation.export_excel_employees(db, searchQuery)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -66,9 +66,9 @@ def export_departments_to_excel(db: Session = Depends(get_db)):
 
 # Excel入力
 @router.post("/import_excel")
-def import_departments_to_excel(background_tasks: BackgroundTasks, file: UploadFile = File(...), db: Session = Depends(get_db)):
+def import_employees_to_excel(background_tasks: BackgroundTasks, file: UploadFile = File(...), db: Session = Depends(get_db)):
     try:
-        return import_excel(db, file, background_tasks=background_tasks)
+        return excel_operation.import_excel_employees(db, file, background_tasks=background_tasks)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

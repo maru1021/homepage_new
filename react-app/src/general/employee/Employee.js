@@ -16,15 +16,15 @@ const fetchEmployees = async (query = '', page = 1, limit = 10) => {
 };
 
 // Excel出力する関数
-const ExcelOutput = async () => {
+const ExcelOutput = async (searchQuery) => {
     const token = localStorage.getItem('token');
-    exportExcel(`${API_BASE_URL}/api/departments/export_excel`, token);
+    exportExcel(`${API_BASE_URL}/api/employees/export_excel?searchQuery=${searchQuery}`, token);
 };
 
 // Excel入力する関数
 const ExcelInput = async (loadData) => {
     const token = localStorage.getItem('token');
-    importExcel(`${API_BASE_URL}/api/departments/import_excel`, token, () => loadData());
+    importExcel(`${API_BASE_URL}/api/employees/import_excel`, token, () => loadData());
 };
 
 const Employee = () => (

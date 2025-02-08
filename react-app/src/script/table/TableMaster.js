@@ -67,7 +67,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                             size='small'
                             startIcon={<SaveAltIcon />}
                             fullWidth
-                            onClick={ExcelOutput}
+                            onClick={() => ExcelOutput(searchQuery)}
                         >
                             Excel出力
                         </Button>

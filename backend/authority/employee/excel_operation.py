@@ -1,116 +1,59 @@
-from io import BytesIO
-
 from fastapi import BackgroundTasks
-from fastapi.responses import FileResponse
-from openpyxl import Workbook
-from openpyxl.worksheet.datavalidation import DataValidation
 import pandas as pd
 from sqlalchemy.orm import Session
 
 from backend.authority import models
+from backend.authority.employee.crud import get_employees
+from backend.scripts.export_excel import export_excel
+from backend.scripts.import_excel import import_excel
+from backend.scripts.hash_password import hashed_password
 
 
+def export_excel_employees(db: Session, search):
+    employees = get_employees(db, search, return_total_count=False)
 
-def export_excel(db: Session):
-    departments = db.query(models.Department).all()
-
-    if not departments:
-        raise ValueError("No department data found")
-
-    # DataFrame に変換（1列目のタイトルを「操作」に設定）
     df = pd.DataFrame([
-        {"操作": "", "ID": dept.id, "部署名": dept.name}
-        for dept in departments
+        {
+            "操作": "",
+            "ID": employee.id,
+            "従業員名": employee.name,
+            "社員番号": employee.employee_no,
+            "メールアドレス": employee.email
+        }
+        for employee in employees
     ])
 
-    file_path = "departments.xlsx"
-    wb = Workbook()
-    ws = wb.active
-    ws.append(df.columns.tolist())  # カラム名を追加
+    return export_excel(df, "employees.xlsx")
 
-    for row in df.itertuples(index=False):
-        ws.append(row)
 
-    dv = DataValidation(
-        type="list",
-        formula1='"追加,編集,削除"',
-        showDropDown=True
-    )
+def import_excel_employees(db: Session, file, background_tasks=BackgroundTasks):
+    from backend.authority.employee.crud import run_websocket
+    from backend.general.models import Department
 
-    max_row = ws.max_row
-    if max_row > 1:
-        for row in range(2, max_row + 1):
-            dv.add(ws[f"A{row}"])  # A列に選択肢の追加
-        ws.add_data_validation(dv)
+    model = models.Employee
+    required_columns = {"操作", "ID", "従業員名", "社員番号", "メールアドレス"}
+    websocket_func = lambda: background_tasks.add_task(run_websocket, db)
 
-    wb.save(file_path)
+    def before_add_func(row_data):
+        if row_data["employee_no"]:
+            existing_employee = db.query(model).filter(model.employee_no == row_data["employee_no"]).first()
+        if existing_employee:
+            raise ValueError(f"社員番号 '{row_data['employee_no']}' は既に存在しています。")
 
-    return FileResponse(file_path, filename="departments.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        row_data["hashed_password"] = hashed_password("password")
+        department = db.query(Department).filter(Department.name=="未設定").first()
+        row_data["employee_authorities"] = [
+            models.EmployeeAuthority(
+                department_id=department.id,
+                admin=False,
+            )
+        ]
+        return row_data
 
-def import_excel(db: Session, file, background_tasks=BackgroundTasks):
-    from .crud import run_websocket
-    try:
-        # ExcelファイルをDataFrameに変換
-        contents = file.file.read()  # 非同期でファイルを読み込む
-        excel_data = BytesIO(contents)
-        df = pd.read_excel(excel_data, engine="openpyxl")
-
-        # 必須カラムの確認
-        required_columns = {"操作", "ID", "部署名"}
-        if not required_columns.issubset(df.columns):
-            raise ValueError("Excelのフォーマットが正しくありません。'操作', 'ID', '部署名'の列が必要です。")
-
-        for _, row in df.iterrows():
-            if pd.isna(action := row["操作"]) or not action.strip():
-                continue
-
-            department_id = int(row["ID"]) if not pd.isna(row["ID"]) else None
-            department_name = str(row["部署名"]).strip()
-
-            if action.strip() == "追加":
-                if department_id is not None:
-                    existing_department = db.query(models.Department).filter(models.Department.id == department_id).first()
-                    if existing_department:
-                        raise ValueError(f"ID {department_id} は既に存在しています。")
-
-                    existing_department = db.query(models.Department).filter(models.Department.name == department_name).first()
-                    if existing_department:
-                        raise ValueError(f"{department_name} は既に存在しています。")
-
-                new_department = models.Department(name=department_name)
-                db.add(new_department)
-                db.commit()
-                db.refresh(new_department)
-                continue
-
-            if pd.isna(row["ID"]):
-                raise ValueError(f"IDを記入していない行があります。")
-            if not isinstance(row["ID"], (int)) or not row["ID"]:
-                raise ValueError(f"ID '{row['ID']}' を整数に修正してください。")
-
-            elif action.strip() == "編集":
-                department = db.query(models.Department).filter(models.Department.id == department_id).first()
-                if not department:
-                    raise ValueError(f"編集対象のID {department_id} が見つかりません。")
-                department.name = department_name
-                continue
-
-            elif action.strip() == "削除":
-                department = db.query(models.Department).filter(models.Department.id == department_id).first()
-                if not department:
-                    raise ValueError(f"削除対象のID {department_id} が見つかりません。")
-
-                db.delete(department)
-                continue
-
-            else:
-                raise ValueError(f"無効な操作 '{action.strip()}' が含まれています。'追加', '編集', '削除' のいずれかを指定してください。")
-
-        db.commit()
-
-        background_tasks.add_task(run_websocket, db)
-
-        return {"success": True, "message": "Excelデータをインポートしました"}
-    except Exception as e:
-        db.rollback()
-        return {"success": False, "message": str(e), "field": ""}
+    return import_excel(db, file,
+                        "employee",
+                        model,
+                        required_columns, websocket_func,
+                        before_add_func=before_add_func,
+                        name_duplication_check=False
+                        )

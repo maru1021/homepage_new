@@ -23,11 +23,11 @@ class Employee(Base):
     __tablename__ = "employees"
     __table_args__ = {"extend_existing": True}
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     employee_no = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     name = Column(String, index=True, nullable=False)
-    email = Column(String, index=True, nullable=False)
+    email = Column(String, index=True, nullable=True)
 
     employee_authorities = relationship(
         "EmployeeAuthority",

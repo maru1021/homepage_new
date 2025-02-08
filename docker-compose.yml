@@ -19,6 +19,8 @@ services:
     build:
       context: .
       dockerfile: ./backend/Dockerfile
+    depends_on:
+      - db  # DB起動後に起動させる
     volumes:
       - ./backend:/app/backend
       - ./backend/alembic.ini:/app/alembic.ini  # alembic.iniをマウント
