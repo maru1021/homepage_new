@@ -12,7 +12,7 @@ class Department(Base):
     __tablename__ = "departments"
     __table_args__ = {"extend_existing": True}
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(50), unique=True, index=True)
 
     department_authorities = relationship(

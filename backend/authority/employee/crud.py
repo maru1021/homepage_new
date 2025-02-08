@@ -19,7 +19,7 @@ def run_websocket(db: Session):
     asyncio.run(noti_websocket(db))
 
 
-def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10):
+def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10, return_total_count=True):
     query = db.query(models.Employee).options(joinedload(models.Employee.departments))
 
     if search:
@@ -55,6 +55,9 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10)
                 )
             )
         )
+
+    if return_total_count == False:
+        return query
 
     total_count = query.count()  # 検索結果の総件数
 
