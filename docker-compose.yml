@@ -1,6 +1,5 @@
 # Dockerの定義
 
-version: '3.8'
 services:
   # http://localhost:3000/でReactアプリにアクセスするのに使用
   react-app:
@@ -19,8 +18,6 @@ services:
     build:
       context: .
       dockerfile: ./backend/Dockerfile
-    depends_on:
-      - db  # DB起動後に起動させる
     volumes:
       - ./backend:/app/backend
       - ./backend/alembic.ini:/app/alembic.ini  # alembic.iniをマウント

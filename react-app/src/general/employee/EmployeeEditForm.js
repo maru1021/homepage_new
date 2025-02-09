@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import {
-    Button, TextField, Select, MenuItem, FormControl,
-    InputLabel, FormHelperText, Stack, DialogActions
+    Button, TextField, FormControl,
+    FormHelperText, Stack, DialogActions
 } from '@mui/material';
-
+import Select from 'react-select';
 import API_BASE_URL from '../../baseURL';
 import { successNoti, errorNoti } from '../../script/noti';
 import employeeValid from '../../script/valid/employeeValid';
@@ -27,7 +27,6 @@ const fetchDepartments = async () => {
 };
 
 function EmployeeEditForm({ employee, onSave }) {
-    console.log(employee)
     const [employee_no, setEmployeeNo] = useState(employee?.employee_no || '');
     const [name, setName] = useState(employee?.name || '');
     const [departments, setDepartments] = useState([]);
@@ -38,9 +37,9 @@ function EmployeeEditForm({ employee, onSave }) {
     // 部署と権限のフォームの状態
     const [forms, setForms] = useState(
         employee?.departments?.map((dep) => ({
-            department: dep.id, 
+            department: { value: dep.id, label: dep.name },
             admin: dep.admin ?? false,
-        })) || [{ department: '', admin: false }]
+        })) || [{ department: null, admin: false }]
     );
 
     // 部署データを取得
@@ -101,6 +100,14 @@ function EmployeeEditForm({ employee, onSave }) {
     // 編集時の処理
     const handleSubmit = async (event) => {
         event.preventDefault();
+
+        // selectの形式を戻さないとサーバーサイドで弾かれる
+        const formattedForms = forms.map(form => ({
+            department: form.department.value,
+            admin: form.admin
+        }));
+
+        // エラーメッセージの初期化
         setEmployeeNoError('');
         setNameError('');
         setFormErrors([]);
@@ -110,10 +117,7 @@ function EmployeeEditForm({ employee, onSave }) {
         const send_data = {
             name,
             employee_no,
-            forms: forms.map((form) => ({
-                department: form.department,
-                admin: Boolean(form.admin),
-            })),
+            forms: formattedForms,
         };
 
         const token = localStorage.getItem('token');
@@ -182,29 +186,30 @@ function EmployeeEditForm({ employee, onSave }) {
                         </Stack>
 
                         <FormControl fullWidth error={Boolean(formErrors[index])}>
-                            <InputLabel>部署</InputLabel>
                             <Select
-                                value={departments.some(d => d.id === form.department) ? form.department : ''}
-                                onChange={(e) => handleFormChange(index, 'department', e.target.value)}
-                            >
-                                {departments.map((department) => (
-                                    <MenuItem key={department.id} value={department.id}>
-                                        {department.name}
-                                    </MenuItem>
-                                ))}
-                            </Select>
+                                options={departments.map(department => ({
+                                    value: department.id,
+                                    label: department.name
+                                }))}
+                                value={form.department}
+                                onChange={(selectedOption) => handleFormChange(index, "department", selectedOption)}
+                                isSearchable={true}
+                                placeholder="部署を選択"
+                            />
                             {formErrors[index] && <FormHelperText>{formErrors[index]}</FormHelperText>}
                         </FormControl>
 
                         <FormControl fullWidth>
-                            <InputLabel>権限</InputLabel>
                             <Select
-                                value={form.admin ? 'true' : 'false'}
-                                onChange={(e) => handleFormChange(index, 'admin', e.target.value === 'true')}
-                            >
-                                <MenuItem value='false'>利用者</MenuItem>
-                                <MenuItem value='true'>管理者</MenuItem>
-                            </Select>
+                                options={[
+                                    { value: false, label: '利用者' },
+                                    { value: true, label: '管理者' }
+                                ]}
+                                value={form.admin !== undefined ? { value: form.admin, label: form.admin ? '管理者' : '利用者' } : null}
+                                onChange={(selectedOption) => handleFormChange(index, "admin", selectedOption.value)}
+                                isSearchable={false} // 検索を無効化
+                                placeholder="権限を選択"
+                            />
                         </FormControl>
                     </Stack>
                 ))}
