@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import {
-    Button, TextField, FormControl, FormHelperText,
-     Stack, DialogActions
-} from '@mui/material';
-import Select from 'react-select';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
-
+import {
+    Button, TextField, FormControl,
+    FormHelperText, Stack, DialogActions
+} from '@mui/material';
+import Select from 'react-select';
 import API_BASE_URL from '../../baseURL';
 import { successNoti, errorNoti } from '../../script/noti';
 import employeeValid from '../../script/valid/employeeValid';
-
 
 // 部署データを取得する関数
 const fetchDepartments = async () => {
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/api/departments`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
     });
     if (response.ok) {
         const data = await response.json();
@@ -30,24 +26,21 @@ const fetchDepartments = async () => {
     }
 };
 
-function EmployeeForm({ onRegister }) {
-    const [employee_no, setEmployeeNo] = useState('');
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-
-    // 部署リスト
+function EmployeeeAuthorityEditForm({ employee, onSave }) {
+    const [employee_no, setEmployeeNo] = useState(employee?.employee_no || '');
+    const [name, setName] = useState(employee?.name || '');
     const [departments, setDepartments] = useState([]);
-
-    // 各インプットのエラーメッセージ用の状態
     const [employeeNoError, setEmployeeNoError] = useState('');
     const [nameError, setNameError] = useState('');
-    const [emailError, setEmailError] = useState('');
     const [formErrors, setFormErrors] = useState([]);
 
     // 部署と権限のフォームの状態
-    const [forms, setForms] = useState([
-        { department: '', admin: false },
-    ]);
+    const [forms, setForms] = useState(
+        employee?.departments?.map((dep) => ({
+            department: { value: dep.id, label: dep.name },
+            admin: dep.admin ?? false,
+        })) || [{ department: null, admin: false }]
+    );
 
     // 部署データを取得
     useEffect(() => {
@@ -60,19 +53,18 @@ function EmployeeForm({ onRegister }) {
 
     // 部署と権限フォームの追加
     const handleAddForm = () => {
-        setForms([...forms, { department: '', admin: 'false' }]);
+        setForms([...forms, { department: '', admin: false }]);
     };
 
     // 部署と権限フォームの削除
     const handleRemoveForm = (index) => {
-        const updatedForms = forms.filter((_, i) => i !== index);
-        setForms(updatedForms);
+        setForms(forms.filter((_, i) => i !== index));
     };
 
     // 部署と権限フォームのデータ変更
     const handleFormChange = (index, field, value) => {
         const updatedForms = [...forms];
-        updatedForms[index][field] = value;
+        updatedForms[index] = { ...updatedForms[index], [field]: value };
         setForms(updatedForms);
     };
 
@@ -88,12 +80,9 @@ function EmployeeForm({ onRegister }) {
             setEmployeeNoError('社員番号は7桁の英数字で入力してください。');
             isValid = false;
         }
+
         if (!name) {
             setNameError('名前を入力してください。');
-            isValid = false;
-        }
-        if (!email) {
-            setEmailError('メールアドレスを入力してください。');
             isValid = false;
         }
 
@@ -108,7 +97,7 @@ function EmployeeForm({ onRegister }) {
         return isValid;
     };
 
-    // 登録時の処理
+    // 編集時の処理
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -121,36 +110,31 @@ function EmployeeForm({ onRegister }) {
         // エラーメッセージの初期化
         setEmployeeNoError('');
         setNameError('');
-        setEmailError('');
         setFormErrors([]);
 
-        // バリデーションエラーがあれば送信を中止
         if (!inputValid()) return;
 
+        const send_data = {
+            name,
+            employee_no,
+            forms: formattedForms,
+        };
+
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE_URL}/api/authoritys/`, {
-            method: 'POST',
+        const response = await fetch(`${API_BASE_URL}/api/authoritys/${employee?.id || ''}`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({
-                name,
-                employee_no,
-                email,
-                forms: formattedForms,
-            }),
+            body: JSON.stringify(send_data),
         });
 
         const data = await response.json();
 
         if (response.ok && data.success) {
-            setEmployeeNo('');
-            setName('');
-            setEmail('');
-            setForms([{ department: '', admin: 'false' }]);
-            onRegister();
             successNoti(data.message);
+            onSave(send_data);
         } else {
             if (data.field === 'employee_no') {
                 setEmployeeNoError(data.message);
@@ -180,14 +164,6 @@ function EmployeeForm({ onRegister }) {
                     onChange={(e) => setName(e.target.value)}
                     error={Boolean(nameError)}
                     helperText={nameError}
-                />
-                <TextField
-                    fullWidth
-                    label='メールアドレス'
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    error={Boolean(emailError)}
-                    helperText={emailError}
                 />
 
                 <hr />
@@ -229,7 +205,7 @@ function EmployeeForm({ onRegister }) {
                                     { value: false, label: '利用者' },
                                     { value: true, label: '管理者' }
                                 ]}
-                                value={{ value: form.admin ?? false, label: form.admin ? '管理者' : '利用者' }}
+                                value={form.admin !== undefined ? { value: form.admin, label: form.admin ? '管理者' : '利用者' } : null}
                                 onChange={(selectedOption) => handleFormChange(index, "admin", selectedOption.value)}
                                 isSearchable={false} // 検索を無効化
                                 placeholder="権限を選択"
@@ -237,6 +213,7 @@ function EmployeeForm({ onRegister }) {
                         </FormControl>
                     </Stack>
                 ))}
+
                 <Stack direction='row' justifyContent='flex-start'>
                     <Button
                         variant='contained'
@@ -248,9 +225,10 @@ function EmployeeForm({ onRegister }) {
                         追加
                     </Button>
                 </Stack>
+
                 <DialogActions>
                     <Button type='submit' variant='contained' color='primary' onClick={handleSubmit}>
-                        登録
+                        保存
                     </Button>
                 </DialogActions>
             </Stack>
@@ -258,8 +236,21 @@ function EmployeeForm({ onRegister }) {
     );
 }
 
-EmployeeForm.propTypes = {
-    onRegister: PropTypes.func.isRequired,
+
+EmployeeeAuthorityEditForm.propTypes = {
+    employee: PropTypes.shape({
+        id: PropTypes.number,
+        employee_no: PropTypes.string,
+        name: PropTypes.string,
+        departments: PropTypes.arrayOf(
+            PropTypes.shape({
+                id: PropTypes.number,
+                name: PropTypes.string,
+                admin: PropTypes.bool,
+            })
+        ),
+    }),
+    onSave: PropTypes.func.isRequired,
 };
 
-export default EmployeeForm;
+export default EmployeeeAuthorityEditForm;
