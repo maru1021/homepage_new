@@ -15,12 +15,12 @@ import {
     useContextMenu,
 } from '../../script/table/basicTableModules';
 
-import EmployeeEditForm from './EmployeeEditForm';
+import EmployeeeAuthorityEditForm from './EmployeeeAuthorityEditForm';
 
 import useModalManager from '../../script/modal/useModalManager'
 
 
-function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage }) {
+function EmployeeeAuthorityTable({ data, onSave, searchQuery, currentPage, itemsPerPage }) {
     const [employees, setEmployees] = useState(data);
 
     const {
@@ -110,7 +110,7 @@ function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage })
                 onClose={closeModal}
                 title='従業員情報編集'
                 FormComponent={() => (
-                    <EmployeeEditForm
+                    <EmployeeeAuthorityEditForm
                         employee={selectedItem}
                         onSave={handleSave}
                     />
@@ -131,7 +131,7 @@ function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage })
     );
 }
 
-EmployeeTable.propTypes = {
+EmployeeeAuthorityTable.propTypes = {
     data: PropTypes.arrayOf(
         PropTypes.shape({
             id: PropTypes.number.isRequired,
@@ -152,4 +152,4 @@ EmployeeTable.propTypes = {
     itemsPerPage: PropTypes.number,
 };
 
-export default EmployeeTable;
+export default EmployeeeAuthorityTable;

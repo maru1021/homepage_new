@@ -1,7 +1,7 @@
 import React from 'react';
 
-import EmployeeTable from './EmployeeTable';
-import EmployeeForm from './EmployeeForm';
+import EmployeeeAuthorityTable from './EmployeeeAuthorityTable';
+import EmployeeeAuthorityForm from './EmployeeeAuthorityForm';
 import TableMaster from '../../script/table/TableMaster';
 
 import API_BASE_URL from '../../baseURL';
@@ -27,16 +27,16 @@ const ExcelInput = async (loadData) => {
     importExcel(`${API_BASE_URL}/api/authoritys/import_excel`, token, () => loadData());
 };
 
-const Employee = () => (
+const EmployeeeAuthority = () => (
     <TableMaster
-        title='従業員一覧'
+        title='権限一覧'
         fetchData={fetchEmployees}
-        TableComponent={EmployeeTable}
-        modalTitle='従業員登録'
-        FormComponent={EmployeeForm}
+        TableComponent={EmployeeeAuthorityTable}
+        modalTitle='従業員権限登録'
+        FormComponent={EmployeeeAuthorityForm}
         ExcelOutput={ExcelOutput}
         ExcelInput={ExcelInput}
     />
 );
 
-export default Employee;
+export default EmployeeeAuthority;
