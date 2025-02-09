@@ -21,16 +21,12 @@ def run_websocket(db: Session):
 
 
 def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10, return_total_count=True):
-    query = db.query(Employee).options(joinedload(Employee.departments))
+    query = db.query(Employee).options(
+        joinedload(Employee.departments),
+        joinedload(Employee.info)  # EmployeeInfo を事前にロード
+    )
 
     if search:
-        # 管理者権限検索用の変換
-        is_admin = None
-        if search == "管理者":
-            is_admin = True
-        elif search == "利用者":
-            is_admin = False
-
         # 部署名で検索
         department_query = db.query(EmployeeAuthority.employee_id).join(
             general_models.Department,
@@ -42,18 +38,9 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10,
         # クエリに条件を追加
         query = query.filter(
             or_(
-                Employee.name.contains(search),  # 名前で検索
-                Employee.employee_no.contains(search),  # 社員番号で検索
-                Employee.id.in_(department_query),  # 部署名で検索
-                and_(
-                    is_admin is not None,
-                    exists().where(
-                        and_(
-                            EmployeeAuthority.employee_id == Employee.id,
-                            EmployeeAuthority.admin == is_admin
-                        )
-                    )
-                )
+                Employee.name.contains(search),
+                Employee.employee_no.contains(search),
+                Employee.id.in_(department_query),
             )
         )
 
@@ -63,6 +50,7 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10,
     total_count = query.count()  # 検索結果の総件数
 
     employees = query.offset((page - 1) * limit).limit(limit).all()  # ページネーション処理
+    print(employees)
 
     # レスポンス用データ構築
     employees_data = [
@@ -70,21 +58,18 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10,
             "id": employee.id,
             "employee_no": employee.employee_no,
             "name": employee.name,
-            "departments": [
-                {
-                    "id": dep.id,
-                    "name": dep.name,
-                    "admin": next(
-                        (row.admin for row in db.query(EmployeeAuthority)
-                         .filter(
-                             EmployeeAuthority.employee_id == employee.id,
-                             EmployeeAuthority.department_id == dep.id
-                         ).all()),
-                        False
-                    )
-                }
-                for dep in employee.departments
-            ]
+            "departments": [dep.name for dep in employee.departments],  # 部署名のみ
+            "info": {
+                "phone_number": employee.info.phone_number if employee.info else None,
+                "gender": employee.info.gender if employee.info else None,
+                "emergency_contact": employee.info.emergency_contact if employee.info else None,
+                "address": employee.info.address if employee.info else None,
+                "birth_date": employee.info.birth_date if employee.info else None,
+                "employment_type": employee.info.employment_type if employee.info else None,
+                "hire_date": employee.info.hire_date if employee.info else None,
+                "leave_date": employee.info.leave_date if employee.info else None,
+                "contract_expiration": employee.info.contract_expiration if employee.info else None,
+            } if employee.info else None
         }
         for employee in employees
     ]
@@ -113,7 +98,7 @@ def create_employee(db: Session, employee: schemas.EmployeeCreate, background_ta
         db.flush()
         db.refresh(db_employee)
 
-        # **認証情報を保存**
+        # 認証情報を保存
         hashed_password = hash_password.hashed_password("password")
         employee_credential = EmployeeCredential(
             employee_id=db_employee.id,
@@ -121,17 +106,6 @@ def create_employee(db: Session, employee: schemas.EmployeeCreate, background_ta
         )
         db.add(employee_credential)
 
-        # 部署・権限情報を中間テーブルに保存
-        employee_authorities = [
-            EmployeeAuthority(
-                employee_id=db_employee.id,
-                department_id=form.department,
-                admin=form.admin,
-            )
-            for form in employee.forms
-        ]
-
-        db.bulk_save_objects(employee_authorities)
         db.commit()
 
         background_tasks.add_task(run_websocket, db)
@@ -145,29 +119,13 @@ def create_employee(db: Session, employee: schemas.EmployeeCreate, background_ta
 
 
 def update_employee(db: Session, employee_id: int, employee_data: schemas.EmployeeUpdate, background_tasks: BackgroundTasks):
+    print('test')
     employee = db.query(Employee).filter(Employee.id == employee_id).first()
     if not employee:
         raise ValueError("Employee not found")
 
-    # 従業員情報を更新
     employee.name = employee_data.name
     employee.employee_no = employee_data.employee_no
-
-    # 中間テーブルのデータを削除
-    stmt = delete(EmployeeAuthority).where(EmployeeAuthority.employee_id == employee_id)
-    db.execute(stmt)
-
-    # 部署・権限情報を中間テーブルに保存
-    employee_authorities = [
-        EmployeeAuthority(
-            employee_id=employee_id,
-            department_id=form.department,
-            admin=form.admin,
-        )
-        for form in employee_data.forms
-    ]
-
-    db.bulk_save_objects(employee_authorities)
 
     db.commit()
 

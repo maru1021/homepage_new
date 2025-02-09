@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from typing import TYPE_CHECKING
 
@@ -6,7 +6,7 @@ from backend.database import Base
 from backend.scripts.get_time import today
 
 if TYPE_CHECKING:
-    from backend.authority.models import EmployeeCredentials, EmployeeAuthority
+    from backend.authority.models import EmployeeCredential, EmployeeAuthority
 
 # 部署モデル
 class Department(Base):
@@ -38,18 +38,6 @@ class Employee(Base):
     employee_no = Column(String, unique=True, index=True, nullable=False)
     name = Column(String, index=True, nullable=False)
     email = Column(String, index=True, nullable=True)
-    phone_number = Column(String, nullable=True)
-    gender = Column(String(2), nullable=True)
-    emergency_contact = Column(String(20), nullable=True)  #緊急連絡先
-    address = Column(String, nullable=True)
-    birth_date = Column(DateTime, nullable=True)
-
-    # 雇用情報
-    employment_type = Column(String(20), nullable=False, default="正社員")  # 雇用形態
-    hire_date = Column(DateTime, nullable=False, default=today)  # 入社日
-    leave_date = Column(DateTime, nullable=True)  #退職日
-    contract_expiration = Column(DateTime, nullable=True)  # 契約満了日
-
     last_login = Column(DateTime, nullable=True)
 
     employee_authorities = relationship(
@@ -67,8 +55,33 @@ class Employee(Base):
         overlaps="employee_authorities,employee"
     )
 
-    credentials = relationship("EmployeeCredentials",
+    credential = relationship("EmployeeCredential",
         uselist=False,
         back_populates="employee",
         cascade="all, delete-orphan"
     )
+
+    info = relationship("EmployeeInfo",
+        uselist=False,
+        back_populates="employee",
+        cascade="all, delete-orphan"
+    )
+
+class EmployeeInfo(Base):
+    __tablename__ = "employeeinfos"
+    __table_args__ = {"extend_existing": True}
+
+    employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), primary_key=True)
+    phone_number = Column(String, nullable=True)
+    gender = Column(String(2), nullable=True)
+    emergency_contact = Column(String(20), nullable=True)  #緊急連絡先
+    address = Column(String, nullable=True)
+    birth_date = Column(Date, nullable=True)
+
+    # 雇用情報
+    employment_type = Column(String(20), nullable=False, default="正社員")  # 雇用形態
+    hire_date = Column(Date, nullable=False, default=today)  # 入社日
+    leave_date = Column(Date, nullable=True)  #退職日
+    contract_expiration = Column(Date, nullable=True)  # 契約満了日
+
+    employee = relationship("Employee", back_populates="info")

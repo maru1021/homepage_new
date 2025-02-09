@@ -34,7 +34,7 @@ function DepartmentEditForm({ department, onSave }) {
         };
 
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE_URL}/api/departments/${department?.id || ''}`, {
+        const response = await fetch(`${API_BASE_URL}/api/general/department/${department?.id || ''}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

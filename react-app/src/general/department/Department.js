@@ -13,19 +13,19 @@ import importExcel from '../../script/Excel/import_excel';
 // 従業員データを取得する関数
 const fetchDepartments = async (searchQuery = '', currentPage = 1, itemsPerPage = 10) => {
     const token = localStorage.getItem('token');
-    return fetchData(`${API_BASE_URL}/api/departments`, token, searchQuery, currentPage, itemsPerPage, 'departments');
+    return fetchData(`${API_BASE_URL}/api/general/department`, token, searchQuery, currentPage, itemsPerPage, 'departments');
 };
 
 // Excel出力する関数
 const ExcelOutput = async (searchQuery) => {
     const token = localStorage.getItem('token');
-    exportExcel(`${API_BASE_URL}/api/departments/export_excel?searchQuery=${searchQuery}`, token);
+    exportExcel(`${API_BASE_URL}/api/general/department/export_excel?searchQuery=${searchQuery}`, token);
 };
 
 // Excel入力する関数
 const ExcelInput = async (loadData) => {
     const token = localStorage.getItem('token');
-    importExcel(`${API_BASE_URL}/api/departments/import_excel`, token, () => loadData());
+    importExcel(`${API_BASE_URL}/api/general/department/import_excel`, token, () => loadData());
 };
 
 const Department = () => (

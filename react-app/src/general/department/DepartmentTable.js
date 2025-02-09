@@ -41,7 +41,7 @@ function DepartmentTable({ data, onSave, searchQuery, currentPage, itemsPerPage 
         closeDeleteModal,
     } = useModalManager();
 
-    setTableData(data, setDepartments, `${API_BASE_URL.replace("http", "ws")}/ws/departments`, searchQuery, currentPage, itemsPerPage);
+    setTableData(data, setDepartments, `${API_BASE_URL.replace("http", "ws")}/ws/general/department`, searchQuery, currentPage, itemsPerPage);
 
     const handleMenuAction = (action) => {
         const department = departments.find((depart) => depart.id === hoveredRowId);
@@ -54,7 +54,7 @@ function DepartmentTable({ data, onSave, searchQuery, currentPage, itemsPerPage 
     };
 
     const departmentDelete = async () => {
-        handleDelete(`${API_BASE_URL}/api/departments/${selectedItem.id}`, onSave, closeDeleteModal);
+        handleDelete(`${API_BASE_URL}/api/general/department/${selectedItem.id}`, onSave, closeDeleteModal);
     };
 
     const handleSave = (updatedDepartment) => {

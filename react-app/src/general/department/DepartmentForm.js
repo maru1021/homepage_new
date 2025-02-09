@@ -28,7 +28,7 @@ function DepartmentForm({ onRegister }) {
         if (!inputValid()) return;
 
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE_URL}/api/departments/`, {
+        const response = await fetch(`${API_BASE_URL}/api/general/department/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
