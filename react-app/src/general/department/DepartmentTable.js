@@ -44,8 +44,7 @@ function DepartmentTable({ data, onSave, searchQuery, currentPage, itemsPerPage 
     setTableData(data, setDepartments, `${API_BASE_URL.replace("http", "ws")}/ws/departments`, searchQuery, currentPage, itemsPerPage);
 
     const handleMenuAction = (action) => {
-        setIsMenuVisible(false);
-        const department = data.find((depart) => depart.id === hoveredRowId);
+        const department = departments.find((depart) => depart.id === hoveredRowId);
 
         if (action === 'Edit') {
             openModal(department);
