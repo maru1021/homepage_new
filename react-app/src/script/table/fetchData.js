@@ -1,6 +1,6 @@
-const fetchData = async (url, token, query = '', page = 1, limit = 10, model='') => {
+const fetchData = async (url, token, searchQuery = '', currentPage = 1, itemsPerPage = 10, model='') => {
   try {
-      const response = await fetch(`${url}?search=${query}&page=${page}&limit=${limit}`, {
+      const response = await fetch(`${url}?searchQuery=${searchQuery}&currentPage=${currentPage}&itemsPerPage=${itemsPerPage}`, {
           headers: {
               Authorization: `Bearer ${token}`,
           },

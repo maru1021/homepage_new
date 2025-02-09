@@ -10,9 +10,9 @@ import fetchData from '../../script/table/fetchData';
 import importExcel from '../../script/Excel/import_excel';
 
 // 従業員データを取得する関数
-const fetchEmployees = async (query = '', page = 1, limit = 10) => {
+const fetchEmployees = async (searchQuery = '', currentPage = 1, itemsPerPage = 10) => {
     const token = localStorage.getItem('token');
-    return fetchData(`${API_BASE_URL}/api/employees`, token, query, page, limit, 'employees');
+    return fetchData(`${API_BASE_URL}/api/employees`, token, searchQuery, currentPage, itemsPerPage, 'employees');
 };
 
 // Excel出力する関数

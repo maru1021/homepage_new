@@ -32,7 +32,6 @@ const fetchDepartments = async () => {
 };
 
 function EmployeeForm({ onRegister }) {
-    // 入力フォームの内容
     const [employee_no, setEmployeeNo] = useState('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
