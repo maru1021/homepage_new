@@ -3,20 +3,26 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from backend.authority.employee import crud, schemas, excel_operation
+from backend.authority.employee_authority import crud, schemas, excel_operation
 from backend.database import get_db
 
 router = APIRouter()
 
 @router.get("/", response_model=schemas.PaginatedEmployeeResponse)
-async def read_employees(search: str = Query("", description="Search query"), page: int = 1, limit: int = 10, db: Session = Depends(get_db)):
-    employees, total_count = crud.get_employees(db, search, page, limit)
+async def read_employees(
+    db: Session = Depends(get_db),
+    searchQuery: str = Query(""),
+    currentPage: int = Query(1),
+    itemsPerPage: int = Query(10),
+):
+    employees, total_count = crud.get_employees(db, searchQuery, currentPage, itemsPerPage)
     return schemas.PaginatedEmployeeResponse(employees=employees, totalCount=total_count)
 
 
 @router.post("/", response_model=schemas.EmployeeResponse)
 async def create_employee(employee: schemas.EmployeeCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     employee_data = employee.dict()
+    print(employee_data)
 
     try:
         return crud.create_employee(db=db, employee=schemas.EmployeeCreate(**employee_data), background_tasks=background_tasks)

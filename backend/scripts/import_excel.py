@@ -5,7 +5,7 @@ from backend.column_name import COLUMN_NAME
 
 
 def import_excel(db, file, model_name, model, required_columns, websocket_func, before_add_func=None,
-                 delete_check_func=None, name_duplication_check=True):
+                 after_add_func=None, delete_check_func=None, name_duplication_check=True):
     try:
       # ExcelファイルをDataFrameに変換
       contents = file.file.read()  # 非同期でファイルを読み込む
@@ -53,14 +53,18 @@ def import_excel(db, file, model_name, model, required_columns, websocket_func, 
           if name_duplication_check:
             duplication_check_data = db.query(model).filter(model.name == row["name"]).first()
             if duplication_check_data:
-              raise ValueError(f"部署名: {row['name']} はすでに登録されています。")
+              raise ValueError(f"名称: {row['name']} はすでに登録されています。")
 
           del row["action"]
 
-          row = before_add_func(row)
+          if before_add_func:
+            row = before_add_func(row)
 
           new_model = model(**row)
           db.add(new_model)
+
+          if after_add_func:
+            after_add_func(new_model, db)
           continue
 
         if not id:

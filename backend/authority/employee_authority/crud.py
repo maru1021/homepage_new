@@ -5,8 +5,9 @@ from sqlalchemy.orm import joinedload, Session
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import delete, exists, or_, and_
 
-from backend.authority import models
-from backend.authority.employee import schemas
+from backend.authority.models import EmployeeAuthority
+from backend.general.models import Employee
+from backend.authority.employee_authority import schemas
 from backend.general import models as general_models
 from backend.scripts import hash_password
 from backend.websocket import websocket_manager
@@ -20,7 +21,7 @@ def run_websocket(db: Session):
 
 
 def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10, return_total_count=True):
-    query = db.query(models.Employee).options(joinedload(models.Employee.departments))
+    query = db.query(Employee).options(joinedload(Employee.departments))
 
     if search:
         # 管理者権限検索用の変換
@@ -31,9 +32,9 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10,
             is_admin = False
 
         # 部署名で検索
-        department_query = db.query(models.EmployeeAuthority.employee_id).join(
+        department_query = db.query(EmployeeAuthority.employee_id).join(
             general_models.Department,
-            models.EmployeeAuthority.department_id == general_models.Department.id
+            EmployeeAuthority.department_id == general_models.Department.id
         ).filter(
             general_models.Department.name.contains(search)
         )
@@ -41,15 +42,15 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10,
         # クエリに条件を追加
         query = query.filter(
             or_(
-                models.Employee.name.contains(search),  # 名前で検索
-                models.Employee.employee_no.contains(search),  # 社員番号で検索
-                models.Employee.id.in_(department_query),  # 部署名で検索
+                Employee.name.contains(search),  # 名前で検索
+                Employee.employee_no.contains(search),  # 社員番号で検索
+                Employee.id.in_(department_query),  # 部署名で検索
                 and_(
                     is_admin is not None,
                     exists().where(
                         and_(
-                            models.EmployeeAuthority.employee_id == models.Employee.id,
-                            models.EmployeeAuthority.admin == is_admin
+                            EmployeeAuthority.employee_id == Employee.id,
+                            EmployeeAuthority.admin == is_admin
                         )
                     )
                 )
@@ -74,10 +75,10 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10,
                     "id": dep.id,
                     "name": dep.name,
                     "admin": next(
-                        (row.admin for row in db.query(models.EmployeeAuthority)
+                        (row.admin for row in db.query(EmployeeAuthority)
                          .filter(
-                             models.EmployeeAuthority.employee_id == employee.id,
-                             models.EmployeeAuthority.department_id == dep.id
+                             EmployeeAuthority.employee_id == employee.id,
+                             EmployeeAuthority.department_id == dep.id
                          ).all()),
                         False
                     )
@@ -93,31 +94,36 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10,
 
 
 def existing_employee(db: Session, employee_no: str):
-    return db.query(models.Employee).filter(models.Employee.employee_no == employee_no).first()
+    return db.query(Employee).filter(Employee.employee_no == employee_no).first()
 
 def create_employee(db: Session, employee: schemas.EmployeeCreate, background_tasks: BackgroundTasks):
+    from backend.authority.models import EmployeeCredentials
     try:
         # 従業員番号の重複チェック
         if existing_employee(db, employee.employee_no):
             return {"success": False, "message": "従業員番号が重複しています", "field": "employee_no"}
 
-        # パスワードをハッシュ化
-        hashed_password = hash_password.hashed_password(employee.password)
-
         # 新しい従業員を作成
-        db_employee = models.Employee(
+        db_employee = Employee(
             name=employee.name,
             employee_no=employee.employee_no,
             email=employee.email,
-            hashed_password=hashed_password,
         )
         db.add(db_employee)
         db.flush()
         db.refresh(db_employee)
 
+        # **認証情報を保存**
+        hashed_password = hash_password.hashed_password("password")
+        employee_credentials = EmployeeCredentials(
+            employee_id=db_employee.id,
+            hashed_password=hashed_password
+        )
+        db.add(employee_credentials)
+
         # 部署・権限情報を中間テーブルに保存
         employee_authorities = [
-            models.EmployeeAuthority(
+            EmployeeAuthority(
                 employee_id=db_employee.id,
                 department_id=form.department,
                 admin=form.admin,
@@ -140,7 +146,7 @@ def create_employee(db: Session, employee: schemas.EmployeeCreate, background_ta
 
 def update_employee(db: Session, employee_id: int, employee_data: schemas.EmployeeUpdate, background_tasks: BackgroundTasks):
     print('test')
-    employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
+    employee = db.query(Employee).filter(Employee.id == employee_id).first()
     if not employee:
         raise ValueError("Employee not found")
 
@@ -149,12 +155,12 @@ def update_employee(db: Session, employee_id: int, employee_data: schemas.Employ
     employee.employee_no = employee_data.employee_no
 
     # 中間テーブルのデータを削除
-    stmt = delete(models.EmployeeAuthority).where(models.EmployeeAuthority.employee_id == employee_id)
+    stmt = delete(EmployeeAuthority).where(EmployeeAuthority.employee_id == employee_id)
     db.execute(stmt)
 
     # 部署・権限情報を中間テーブルに保存
     employee_authorities = [
-        models.EmployeeAuthority(
+        EmployeeAuthority(
             employee_id=employee_id,
             department_id=form.department,
             admin=form.admin,
@@ -172,7 +178,7 @@ def update_employee(db: Session, employee_id: int, employee_data: schemas.Employ
 
 
 def delete_employee(db: Session, employee_id: int, background_tasks: BackgroundTasks):
-    employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
+    employee = db.query(Employee).filter(Employee.id == employee_id).first()
     if not employee:
         return {"success": False, "message": "対象の従業員が存在しません"}
 

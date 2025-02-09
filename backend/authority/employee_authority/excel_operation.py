@@ -2,8 +2,9 @@ from fastapi import BackgroundTasks
 import pandas as pd
 from sqlalchemy.orm import Session
 
-from backend.authority import models
-from backend.authority.employee.crud import get_employees
+from backend.authority.models import EmployeeAuthority, EmployeeCredentials
+
+from backend.authority.employee_authority.crud import get_employees, run_websocket
 from backend.scripts.export_excel import export_excel
 from backend.scripts.import_excel import import_excel
 from backend.scripts.hash_password import hashed_password
@@ -27,10 +28,9 @@ def export_excel_employees(db: Session, search):
 
 
 def import_excel_employees(db: Session, file, background_tasks=BackgroundTasks):
-    from backend.authority.employee.crud import run_websocket
-    from backend.general.models import Department
+    from backend.general.models import Department, Employee
 
-    model = models.Employee
+    model = Employee
     required_columns = {"操作", "ID", "従業員名", "社員番号", "メールアドレス"}
     websocket_func = lambda: background_tasks.add_task(run_websocket, db)
 
@@ -40,20 +40,30 @@ def import_excel_employees(db: Session, file, background_tasks=BackgroundTasks):
         if existing_employee:
             raise ValueError(f"社員番号 '{row_data['employee_no']}' は既に存在しています。")
 
-        row_data["hashed_password"] = hashed_password("password")
         department = db.query(Department).filter(Department.name=="未設定").first()
         row_data["employee_authorities"] = [
-            models.EmployeeAuthority(
+            EmployeeAuthority(
                 department_id=department.id,
                 admin=False,
             )
         ]
         return row_data
 
+    def after_add_func(employee_data, db: Session):
+        print('test')
+        password = hashed_password("password")
+        employee_credential = EmployeeCredentials(
+            employee_id=employee_data.id,
+            hashed_password = password
+        )
+        db.add(employee_credential)
+        return
+
     return import_excel(db, file,
                         "employee",
                         model,
                         required_columns, websocket_func,
                         before_add_func=before_add_func,
+                        after_add_func=after_add_func,
                         name_duplication_check=False
                         )

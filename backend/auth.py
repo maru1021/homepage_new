@@ -3,12 +3,12 @@ from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-
 import jwt
 from jwt import PyJWTError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, join
 
-from backend.authority.models import Employee
+from backend.authority.models import EmployeeCredentials
+from backend.general.models import Employee
 from backend.database import get_db
 from scripts.get_time import now
 from scripts.hash_password import verify_password, hashed_password
@@ -26,22 +26,12 @@ router = APIRouter()
 
 # ユーザー認証
 def authenticate_user(db: Session, employee_no: str, password: str):
-    employee = db.query(Employee).filter(Employee.employee_no == employee_no).first()
-    # 初期ユーザー作成
-    if employee_no=="maru123" and password=="password" and not employee:
-        employee = Employee(
-            employee_no="maru123",
-            name="maru",
-            email="",
-            hashed_password=hashed_password("password")
-        )
+    employee = (db.query(Employee)
+                .outerjoin(EmployeeCredentials)
+                .filter(Employee.employee_no == employee_no)
+                .first())
 
-        db.add(employee)
-        db.commit()
-        db.refresh(employee)
-
-        return employee
-    if not employee or not verify_password(password, employee.hashed_password):
+    if not employee or not verify_password(password, employee.credentials.hashed_password):
         return False
     return employee
 
@@ -77,6 +67,7 @@ def verify_token(token: str = Depends(oauth2_scheme)):
 @router.post("/token")
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = authenticate_user(db, form_data.username, form_data.password)
+
     if not user:
         raise HTTPException(status_code=401, detail="社員番号またはパスワードが間違っています")
 
