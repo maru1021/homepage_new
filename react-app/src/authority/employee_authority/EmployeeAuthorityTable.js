@@ -15,12 +15,12 @@ import {
     useContextMenu,
 } from '../../script/table/basicTableModules';
 
-import EmployeeeAuthorityEditForm from './EmployeeeAuthorityEditForm';
+import EmployeeAuthorityEditForm from './EmployeeAuthorityEditForm';
 
 import useModalManager from '../../script/modal/useModalManager'
 
 
-function EmployeeeAuthorityTable({ data, onSave, searchQuery, currentPage, itemsPerPage }) {
+function EmployeeAuthorityTable({ data, onSave, searchQuery, currentPage, itemsPerPage }) {
     const [employees, setEmployees] = useState(data);
 
     const {
@@ -41,7 +41,7 @@ function EmployeeeAuthorityTable({ data, onSave, searchQuery, currentPage, items
         closeDeleteModal,
     } = useModalManager();
 
-    setTableData(data, setEmployees, `${API_BASE_URL.replace("http", "ws")}/ws/authoritys`, searchQuery, currentPage, itemsPerPage);
+    setTableData(data, setEmployees, `${API_BASE_URL.replace("http", "ws")}/ws/authority/employee_authority`, searchQuery, currentPage, itemsPerPage);
 
     const handleMenuAction = (action) => {
         const employee = employees.find((emp) => emp.id === hoveredRowId);
@@ -54,7 +54,7 @@ function EmployeeeAuthorityTable({ data, onSave, searchQuery, currentPage, items
     };
 
     const employeeDelete = async () => {
-        handleDelete(`${API_BASE_URL}/api/authoritys/${selectedItem.id}`, onSave, closeDeleteModal);
+        handleDelete(`${API_BASE_URL}/api/authority/employee_authority/${selectedItem.id}`, onSave, closeDeleteModal);
     };
 
     const handleSave = (updatedEmployee) => {
@@ -110,7 +110,7 @@ function EmployeeeAuthorityTable({ data, onSave, searchQuery, currentPage, items
                 onClose={closeModal}
                 title='従業員情報編集'
                 FormComponent={() => (
-                    <EmployeeeAuthorityEditForm
+                    <EmployeeAuthorityEditForm
                         employee={selectedItem}
                         onSave={handleSave}
                     />
@@ -131,7 +131,7 @@ function EmployeeeAuthorityTable({ data, onSave, searchQuery, currentPage, items
     );
 }
 
-EmployeeeAuthorityTable.propTypes = {
+EmployeeAuthorityTable.propTypes = {
     data: PropTypes.arrayOf(
         PropTypes.shape({
             id: PropTypes.number.isRequired,
@@ -152,4 +152,4 @@ EmployeeeAuthorityTable.propTypes = {
     itemsPerPage: PropTypes.number,
 };
 
-export default EmployeeeAuthorityTable;
+export default EmployeeAuthorityTable;

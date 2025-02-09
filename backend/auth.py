@@ -7,7 +7,7 @@ import jwt
 from jwt import PyJWTError
 from sqlalchemy.orm import Session, join
 
-from backend.authority.models import EmployeeCredentials
+from backend.authority.models import EmployeeCredential
 from backend.general.models import Employee
 from backend.database import get_db
 from scripts.get_time import now
@@ -27,11 +27,11 @@ router = APIRouter()
 # ユーザー認証
 def authenticate_user(db: Session, employee_no: str, password: str):
     employee = (db.query(Employee)
-                .outerjoin(EmployeeCredentials)
+                .outerjoin(EmployeeCredential)
                 .filter(Employee.employee_no == employee_no)
                 .first())
 
-    if not employee or not verify_password(password, employee.credentials.hashed_password):
+    if not employee or not verify_password(password, employee.credential.hashed_password):
         return False
     return employee
 

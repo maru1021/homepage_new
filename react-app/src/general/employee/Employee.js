@@ -1,7 +1,7 @@
 import React from 'react';
 
-import EmployeeeAuthorityTable from './EmployeeeAuthorityTable';
-import EmployeeeAuthorityForm from './EmployeeeAuthorityForm';
+import EmployeeTable from './EmployeeTable';
+import EmployeeForm from './EmployeeForm';
 import TableMaster from '../../script/table/TableMaster';
 
 import API_BASE_URL from '../../baseURL';
@@ -12,31 +12,31 @@ import importExcel from '../../script/Excel/import_excel';
 // 従業員データを取得する関数
 const fetchEmployees = async (searchQuery = '', currentPage = 1, itemsPerPage = 10) => {
     const token = localStorage.getItem('token');
-    return fetchData(`${API_BASE_URL}/api/authoritys`, token, searchQuery, currentPage, itemsPerPage, 'employees');
+    return fetchData(`${API_BASE_URL}/api/general/employee`, token, searchQuery, currentPage, itemsPerPage, 'employees');
 };
 
 // Excel出力する関数
 const ExcelOutput = async (searchQuery) => {
     const token = localStorage.getItem('token');
-    exportExcel(`${API_BASE_URL}/api/authoritys/export_excel?searchQuery=${searchQuery}`, token);
+    exportExcel(`${API_BASE_URL}/api/general/employee/export_excel?searchQuery=${searchQuery}`, token);
 };
 
 // Excel入力する関数
 const ExcelInput = async (loadData) => {
     const token = localStorage.getItem('token');
-    importExcel(`${API_BASE_URL}/api/authoritys/import_excel`, token, () => loadData());
+    importExcel(`${API_BASE_URL}/api/general/employee/import_excel`, token, () => loadData());
 };
 
-const EmployeeeAuthority = () => (
+const Employee = () => (
     <TableMaster
-        title='権限一覧'
+        title='従業員一覧'
         fetchData={fetchEmployees}
-        TableComponent={EmployeeeAuthorityTable}
+        TableComponent={EmployeeTable}
         modalTitle='従業員権限登録'
-        FormComponent={EmployeeeAuthorityForm}
+        FormComponent={EmployeeForm}
         ExcelOutput={ExcelOutput}
         ExcelInput={ExcelInput}
     />
 );
 
-export default EmployeeeAuthority;
+export default Employee;

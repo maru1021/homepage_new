@@ -90,6 +90,9 @@ function Sidebar({ setToken }) {
             <ListItem button component='a' href='/general/department'>
               <ListItemText primary='部署一覧' />
             </ListItem>
+            <ListItem button component='a' href='/general/employee'>
+              <ListItemText primary='従業員一覧' />
+            </ListItem>
             <ListItem button component='a' href='/authority/employee_authority'>
               <ListItemText primary='従業員権限一覧' />
             </ListItem>

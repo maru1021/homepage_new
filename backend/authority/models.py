@@ -25,11 +25,11 @@ class EmployeeAuthority(Base):
 
 
 # 従業員の認証情報モデル
-class EmployeeCredentials(Base):
-    __tablename__ = "employee_credentials"
+class EmployeeCredential(Base):
+    __tablename__ = "employee_credential"
 
     employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), primary_key=True)
     hashed_password = Column(String, nullable=False)
     password_updated_at = Column(Date, nullable=False, default=today)  # パスワード変更日
 
-    employee = relationship("Employee", back_populates="credentials")
+    employee = relationship("Employee", back_populates="credential")
