@@ -18,10 +18,10 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
     const closeRegisterModal = () => setIsRegisterModalOpen(false);
 
     // テーブルのデータの取得
-    const loadData = async (query, page, limit) => {
-        const data = await fetchData(query, page, limit);
+    const loadData = async (searchQuery = '', currentPage = 1, itemsPerPage = 10) => {
+        const data = await fetchData(searchQuery, currentPage, itemsPerPage);
         setTableDatas(data.tableDatas || []);
-        setTotalPages(Math.ceil(data.totalCount / limit));
+        setTotalPages(Math.ceil(data.totalCount / itemsPerPage));
     };
 
     // 検索、ページ移動時にloadDataを実行

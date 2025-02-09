@@ -9,8 +9,13 @@ router = APIRouter()
 
 # 部署一覧取得
 @router.get("/", response_model=schemas.PaginatedDepartmentResponse)
-def read_departments(db: Session = Depends(get_db), search: str = Query("", description="SearchQuery"), page: int = 1, limit: int = 10):
-    departments, total_count = crud.get_departments(db, search, page, limit)
+def read_departments(
+    db: Session = Depends(get_db),
+    searchQuery: str = Query("", description="SearchQuery"),
+    currentPage: int = Query(1, alias="currentPage"),
+    itemsPerPage: int = Query(10, alias="itemsPerPage"),
+):
+    departments, total_count = crud.get_departments(db, searchQuery, currentPage, itemsPerPage)
     return schemas.PaginatedDepartmentResponse(departments=departments, totalCount=total_count)
 
 # 部署作成

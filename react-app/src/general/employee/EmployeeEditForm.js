@@ -27,6 +27,7 @@ const fetchDepartments = async () => {
 };
 
 function EmployeeEditForm({ employee, onSave }) {
+    console.log(employee)
     const [employee_no, setEmployeeNo] = useState(employee?.employee_no || '');
     const [name, setName] = useState(employee?.name || '');
     const [departments, setDepartments] = useState([]);

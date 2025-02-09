@@ -15,7 +15,7 @@ const useWebSocket = (url, updateFunc, searchQuery, currentPage, itemsPerPage) =
         }
 
         const token = localStorage.getItem("token");
-        wsRef.current = new WebSocket(`${url}?token=${token}`);
+        wsRef.current = new WebSocket(`${url}?searchQuery=${searchQuery}&currentPage=${currentPage}&itemsPerPage=${itemsPerPage}&token=${token}`);
 
         wsRef.current.onopen = () => {
             console.log("WebSocket 接続成功");

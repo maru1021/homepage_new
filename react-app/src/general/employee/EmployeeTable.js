@@ -44,8 +44,7 @@ function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage })
     setTableData(data, setEmployees, `${API_BASE_URL.replace("http", "ws")}/ws/employees`, searchQuery, currentPage, itemsPerPage);
 
     const handleMenuAction = (action) => {
-        setTimeout(() => setIsMenuVisible(false), 0);
-        const employee = data.find((emp) => emp.id === hoveredRowId);
+        const employee = employees.find((emp) => emp.id === hoveredRowId);
 
         if (action === 'Edit') {
             openModal(employee);
