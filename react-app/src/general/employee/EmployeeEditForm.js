@@ -121,7 +121,7 @@ function EmployeeEditForm({ employee, onSave }) {
         };
 
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE_URL}/api/employees/${employee?.id || ''}`, {
+        const response = await fetch(`${API_BASE_URL}/api/authoritys/${employee?.id || ''}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

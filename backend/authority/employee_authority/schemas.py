@@ -15,7 +15,6 @@ class Department(BaseModel):
 class EmployeeCreate(BaseModel):
     name: str
     employee_no: str = Field(..., pattern=r'^[a-zA-Z0-9]{7}$')
-    password: str
     email: EmailStr
     forms: List[EmployeeDepartment]
 

@@ -3,8 +3,8 @@ from fastapi import BackgroundTasks
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from backend.authority import models as authority_models
-from backend.general import models
+from backend.authority.models import EmployeeAuthority
+from backend.general.models import Department
 from backend.general.department import schemas
 from backend.websocket import websocket_manager
 
@@ -18,10 +18,10 @@ def run_websocket(db: Session):
 
 # 部署一覧取得
 def get_departments(db: Session, search: str = "", page: int = 1, limit: int = 10, return_total_count=True):
-    query = db.query(models.Department)
+    query = db.query(Department)
 
     if search:
-        query = query.filter(models.Department.name.contains(search))
+        query = query.filter(Department.name.contains(search))
 
     if return_total_count == False:
         return query
@@ -37,10 +37,10 @@ def get_departments(db: Session, search: str = "", page: int = 1, limit: int = 1
 # 部署作成
 def create_department(db: Session, department: schemas.DepartmentBase, background_tasks: BackgroundTasks):
     try:
-        if db.query(models.Department).filter(models.Department.name == department.name).first():
+        if db.query(Department).filter(Department.name == department.name).first():
             return {"success": False, "message": "その部署は既に存在しています", "field": "name"}
 
-        db_department = models.Department(name=department.name)
+        db_department = Department(name=department.name)
         db.add(db_department)
         db.commit()
         db.refresh(db_department)
@@ -55,12 +55,12 @@ def create_department(db: Session, department: schemas.DepartmentBase, backgroun
 
 # 部署編集
 def update_department(db: Session, department_id: int, department_data: schemas.DepartmentBase, background_tasks: BackgroundTasks):
-    department = db.query(models.Department).filter(models.Department.id == department_id).first()
+    department = db.query(Department).filter(Department.id == department_id).first()
     if not department:
         raise ValueError("部署が見つかりません。")
 
-    if db.query(models.Department).filter(models.Department.name == department_data.name,
-                                          models.Department.id != department_id).first():
+    if db.query(Department).filter(Department.name == department_data.name,
+                                          Department.id != department_id).first():
         return {"success": False, "message": "その部署は既に存在しています", "field": "name"}
 
     department.name = department_data.name
@@ -82,11 +82,11 @@ def update_department(db: Session, department_id: int, department_data: schemas.
 
 # 部署削除
 def delete_department(db: Session, department_id: int, background_tasks: BackgroundTasks):
-    department = db.query(models.Department).filter(models.Department.id == department_id).first()
+    department = db.query(Department).filter(Department.id == department_id).first()
     if not department:
         raise ValueError("部署が見つかりません。")
 
-    employee_count = db.query(authority_models.EmployeeAuthority).filter(authority_models.EmployeeAuthority.department_id == department_id).count()
+    employee_count = db.query(EmployeeAuthority).filter(EmployeeAuthority.department_id == department_id).count()
     if employee_count > 0:
         return {"success": False, "message": "所属している従業員がいるため削除できません", "field": ""}
 

@@ -2,17 +2,15 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
     Button, TextField, FormControl, FormHelperText,
-     IconButton, InputAdornment, Stack, DialogActions
+     Stack, DialogActions
 } from '@mui/material';
 import Select from 'react-select';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 import API_BASE_URL from '../../baseURL';
 import { successNoti, errorNoti } from '../../script/noti';
 import employeeValid from '../../script/valid/employeeValid';
-import passwordValid from '../../script/valid/passwordValid';
 
 
 // 部署データを取得する関数
@@ -36,7 +34,6 @@ function EmployeeForm({ onRegister }) {
     const [employee_no, setEmployeeNo] = useState('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
 
     // 部署リスト
     const [departments, setDepartments] = useState([]);
@@ -44,8 +41,6 @@ function EmployeeForm({ onRegister }) {
     // 各インプットのエラーメッセージ用の状態
     const [employeeNoError, setEmployeeNoError] = useState('');
     const [nameError, setNameError] = useState('');
-    const [passwordError, setPasswordError] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
     const [emailError, setEmailError] = useState('');
     const [formErrors, setFormErrors] = useState([]);
 
@@ -97,13 +92,6 @@ function EmployeeForm({ onRegister }) {
             setNameError('名前を入力してください。');
             isValid = false;
         }
-        if (!password) {
-            setPasswordError('パスワードを入力してください。');
-            isValid = false;
-        } else if (!passwordValid(password)) {
-            setPasswordError('パスワードは8〜20桁の英数字、記号で入力してください。');
-            isValid = false;
-        }
         if (!email) {
             setEmailError('メールアドレスを入力してください。');
             isValid = false;
@@ -133,7 +121,6 @@ function EmployeeForm({ onRegister }) {
         // エラーメッセージの初期化
         setEmployeeNoError('');
         setNameError('');
-        setPasswordError('');
         setEmailError('');
         setFormErrors([]);
 
@@ -141,7 +128,7 @@ function EmployeeForm({ onRegister }) {
         if (!inputValid()) return;
 
         const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE_URL}/api/employees/`, {
+        const response = await fetch(`${API_BASE_URL}/api/authoritys/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -150,7 +137,6 @@ function EmployeeForm({ onRegister }) {
             body: JSON.stringify({
                 name,
                 employee_no,
-                password,
                 email,
                 forms: formattedForms,
             }),
@@ -161,7 +147,6 @@ function EmployeeForm({ onRegister }) {
         if (response.ok && data.success) {
             setEmployeeNo('');
             setName('');
-            setPassword('');
             setEmail('');
             setForms([{ department: '', admin: 'false' }]);
             onRegister();
@@ -203,24 +188,6 @@ function EmployeeForm({ onRegister }) {
                     onChange={(e) => setEmail(e.target.value)}
                     error={Boolean(emailError)}
                     helperText={emailError}
-                />
-                <TextField
-                    fullWidth
-                    label='パスワード'
-                    type={showPassword ? 'text' : 'password'}  // 表示/非表示を切り替え
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    error={Boolean(passwordError)}
-                    helperText={passwordError}
-                    InputProps={{
-                        endAdornment: (
-                            <InputAdornment position='end'>
-                                <IconButton onClick={() => setShowPassword(!showPassword)} edge='end'>
-                                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                                </IconButton>
-                            </InputAdornment>
-                        ),
-                    }}
                 />
 
                 <hr />

@@ -41,7 +41,7 @@ function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage })
         closeDeleteModal,
     } = useModalManager();
 
-    setTableData(data, setEmployees, `${API_BASE_URL.replace("http", "ws")}/ws/employees`, searchQuery, currentPage, itemsPerPage);
+    setTableData(data, setEmployees, `${API_BASE_URL.replace("http", "ws")}/ws/authoritys`, searchQuery, currentPage, itemsPerPage);
 
     const handleMenuAction = (action) => {
         const employee = employees.find((emp) => emp.id === hoveredRowId);
@@ -54,7 +54,7 @@ function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage })
     };
 
     const employeeDelete = async () => {
-        handleDelete(`${API_BASE_URL}/api/employees/${selectedItem.id}`, onSave, closeDeleteModal);
+        handleDelete(`${API_BASE_URL}/api/authoritys/${selectedItem.id}`, onSave, closeDeleteModal);
     };
 
     const handleSave = (updatedEmployee) => {

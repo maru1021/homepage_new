@@ -13,11 +13,23 @@ docker compose up --build
 docker compose up  
 で起動します  
 
-パスワード  
 初回  
-ユーザー名 maru123  
+ユーザー名 admin12  
 パスワード password  
 で起動します。
 
 以降従業員登録で登録した社員番号、パスワードでログインできるようになります。  
 現在codespaceだとうまく動作しません。
+
+APIの構成は  
+http://localhost:8000/docs
+で見ることができます。
+
+データベースは  
+http://localhost:8080/  
+データベースの種類 PostgreQL  
+ユーザー名 user  
+パスワード password  
+データベース mydatabase  
+で操作することができます。
+
