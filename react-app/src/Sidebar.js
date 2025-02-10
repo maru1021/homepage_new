@@ -5,11 +5,9 @@ import PropTypes from 'prop-types';
 import { FaIndustry, FaUsers, FaSignOutAlt, FaToolbox } from 'react-icons/fa';
 import './CSS/sidebar.css';
 
-
 function Sidebar({ setToken }) {
   const navigate = useNavigate();
 
-  // ローカルストレージから開閉状態を読み込む
   const [openManufacturing, setOpenManufacturing] = useState(
     JSON.parse(localStorage.getItem('openManufacturing')) || false
   );
@@ -20,7 +18,6 @@ function Sidebar({ setToken }) {
     JSON.parse(localStorage.getItem('openGeneral')) || false
   );
 
-  // 開閉状態をローカルストレージに保存
   useEffect(() => {
     localStorage.setItem('openManufacturing', JSON.stringify(openManufacturing));
     localStorage.setItem('openTools', JSON.stringify(openTools));
@@ -34,44 +31,68 @@ function Sidebar({ setToken }) {
   };
 
   return (
-    <Drawer variant='permanent'>
-      <List >
-        <Typography variant='h6' sx={{ p: 2, textAlign: 'center', fontWeight: 'bold', color: 'black' }}>
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: 250,
+        background: 'rgba(250, 250, 250, 0.6)', // 柔らかい背景
+        boxShadow: 'inset 4px 4px 10px rgba(209, 217, 230, 0.5), inset -4px -4px 10px rgba(255, 255, 255, 0.6)', // ニューモーフィズム風の影
+        padding: "10px"
+      }}
+    >
+      <List sx={{ p: 2 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            textAlign: "center",
+            fontWeight: "bold",
+            color: "#666",
+            mb: 2,
+          }}
+        >
           メニュー
         </Typography>
-        <Divider />
+        <Divider sx={{ mb: 2 }} />
 
         {/* 製造部 */}
-        <ListItem button onClick={() => setOpenManufacturing(!openManufacturing)}>
-          <ListItemIcon>
+        <ListItem
+          button
+          onClick={() => setOpenManufacturing(!openManufacturing)}
+          sx={{
+            borderRadius: "10px",
+            transition: "0.2s ease-in-out",
+            "&:hover": { background: "rgba(255, 255, 255, 0.8)", transform: "scale(1.02)" },
+          }}
+        >
+          <ListItemIcon sx={{ color: "#666", opacity: 0.8 }}>
             <FaIndustry />
           </ListItemIcon>
-          <ListItemText primary='製造部' />
+          <ListItemText primary="製造部" />
         </ListItem>
-        <Collapse in={openManufacturing} timeout='auto' unmountOnExit>
+        <Collapse in={openManufacturing} timeout="auto" unmountOnExit>
           <List sx={{ pl: 4 }}>
-            <ListItem button component='a' href='#progress'>
-              <ListItemText primary='進捗' />
+            <ListItem button>
+              <ListItemText primary="進捗" />
             </ListItem>
-            <ListItem button component='a' href='#material'>
-              <ListItemText primary='素材一覧' />
+            <ListItem button>
+              <ListItemText primary="素材一覧" />
             </ListItem>
             <ListItem button onClick={() => setOpenTools(!openTools)}>
-              <ListItemIcon>
+              <ListItemIcon sx={{ color: "#666", opacity: 0.8 }}>
                 <FaToolbox />
               </ListItemIcon>
-              <ListItemText primary='工具管理' />
+              <ListItemText primary="工具管理" />
             </ListItem>
-            <Collapse in={openTools} timeout='auto' unmountOnExit>
+            <Collapse in={openTools} timeout="auto" unmountOnExit>
               <List sx={{ pl: 4 }}>
-                <ListItem button component='a' href='#shuken'>
-                  <ListItemText primary='集研' />
+                <ListItem button>
+                  <ListItemText primary="集研" />
                 </ListItem>
-                <ListItem button component='a' href='#preset'>
-                  <ListItemText primary='プリセット' />
+                <ListItem button>
+                  <ListItemText primary="プリセット" />
                 </ListItem>
-                <ListItem button component='a' href='#tool-change'>
-                  <ListItemText primary='工具交換' />
+                <ListItem button>
+                  <ListItemText primary="工具交換" />
                 </ListItem>
               </List>
             </Collapse>
@@ -79,11 +100,19 @@ function Sidebar({ setToken }) {
         </Collapse>
 
         {/* 総務部 */}
-        <ListItem button onClick={() => setOpenGeneral(!openGeneral)}>
-          <ListItemIcon>
+        <ListItem
+          button
+          onClick={() => setOpenGeneral(!openGeneral)}
+          sx={{
+            borderRadius: "10px",
+            transition: "0.2s ease-in-out",
+            "&:hover": { background: "rgba(255, 255, 255, 0.8)", transform: "scale(1.02)" },
+          }}
+        >
+          <ListItemIcon sx={{ color: "#666", opacity: 0.8 }}>
             <FaUsers />
           </ListItemIcon>
-          <ListItemText primary='総務部' />
+          <ListItemText primary="総務部" />
         </ListItem>
         <Collapse in={openGeneral} timeout='auto' unmountOnExit>
           <List sx={{ pl: 4 }}>
@@ -99,16 +128,24 @@ function Sidebar({ setToken }) {
           </List>
         </Collapse>
 
-        <Divider sx={{ mt: 'auto' }} />
+        <Divider sx={{ mt: "auto", mb: 2 }} />
 
         {/* ログアウト */}
-        <ListItem sx={{ justifyContent: 'center', mt: 2 }}>
+        <ListItem sx={{ justifyContent: "center" }}>
           <Button
-            variant='contained'
-            color='error'
+            variant="contained"
             startIcon={<FaSignOutAlt />}
             onClick={handleLogout}
-            sx={{ width: '100%', fontWeight: 'bold' }}
+            sx={{
+              width: "90%",
+              background: "#e57373",
+              color: "white",
+              fontWeight: "bold",
+              borderRadius: "10px",
+              transition: "0.2s ease-in-out",
+              "&:hover": { background: "#ef5350", transform: "scale(1.03)" },
+              "&:active": { background: "#e57373" },
+            }}
           >
             ログアウト
           </Button>
