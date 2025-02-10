@@ -52,44 +52,85 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
     return (
         <div className='TableWithActions'>
             <header>
-            <Grid container alignItems='center' spacing={2} sx={{ paddingY: 2, paddingLeft: '17%' }}>
-                <Grid item xs={7}>
-                    <Typography variant='h2' fontWeight='bold'>
-                        {title}
-                    </Typography>
+                <Grid container alignItems='center' spacing={2} sx={{ paddingY: 2, paddingLeft: '17%' }}>
+                    <Grid item xs={7}>
+                        <Typography
+                            variant="h2"
+                            fontWeight="bold"
+                            sx={{
+                                color: '#444',
+                                textShadow: '2px 2px 6px rgba(150, 150, 150, 0.65)',
+                            }}
+                        >
+                            {title}
+                        </Typography>
+                    </Grid>
+
+
+                    {ExcelOutput && (
+                        <Grid item xs={2}>
+                            <Button
+                                variant="contained"
+                                size="small"
+                                startIcon={<SaveAltIcon />}
+                                fullWidth
+                                onClick={() => ExcelOutput(searchQuery)}
+                                sx={{
+                                    background: 'linear-gradient(to right, #8dbaf2, #6b9ef3)',
+                                    color: 'white',
+                                    borderRadius: '12px',
+                                    boxShadow: '4px 4px 10px rgba(180, 200, 255, 0.4)',
+                                    padding: '8px',
+                                    fontWeight: 'bold',
+                                    transition: 'all 0.2s ease-in-out',
+                                    '&:hover': {
+                                        background: 'linear-gradient(to right, #79a5f0, #4d8ef0)',
+                                        transform: 'scale(1.02)',
+                                    },
+                                    '&:active': {
+                                        boxShadow: 'inset 2px 2px 6px rgba(100, 100, 255, 0.3), inset -2px -2px 6px rgba(255, 255, 255, 0.6)',
+                                        transform: 'scale(1)',
+                                    },
+                                }}
+                            >
+                                Excel出力
+                            </Button>
+                        </Grid>
+                    )}
+
+                    {ExcelInput && (
+                        <Grid item xs={2}>
+                            <Button
+                                variant="contained"
+                                size="small"
+                                startIcon={<UploadFileIcon />}
+                                fullWidth
+                                onClick={() => ExcelInput(loadData)}
+                                sx={{
+                                    background: 'linear-gradient(to right, #f3a683, #f89466)',
+                                    color: 'white',
+                                    borderRadius: '12px',
+                                    boxShadow: '4px 4px 10px rgba(255, 180, 180, 0.4)',
+                                    padding: '8px',
+                                    fontWeight: 'bold',
+                                    transition: 'all 0.2s ease-in-out',
+                                    '&:hover': {
+                                        background: 'linear-gradient(to right, #f39569, #f57b40)',
+                                        transform: 'scale(1.02)',
+                                    },
+                                    '&:active': {
+                                        boxShadow: 'inset 2px 2px 6px rgba(255, 100, 100, 0.3), inset -2px -2px 6px rgba(255, 255, 255, 0.6)',
+                                        transform: 'scale(1)',
+                                    },
+                                }}
+                            >
+                                Excel入力
+                            </Button>
+                        </Grid>
+                    )}
+
                 </Grid>
-
-                {ExcelOutput && (
-                    <Grid item xs={2}>
-                        <Button
-                            variant='contained'
-                            color='primary'
-                            size='small'
-                            startIcon={<SaveAltIcon />}
-                            fullWidth
-                            onClick={() => ExcelOutput(searchQuery)}
-                        >
-                            Excel出力
-                        </Button>
-                    </Grid>
-                )}
-
-                {ExcelInput && (
-                    <Grid item xs={2}>
-                        <Button
-                            variant='contained'
-                            color='primary'
-                            size='small'
-                            startIcon={<UploadFileIcon />}
-                            fullWidth
-                            onClick={() => ExcelInput(loadData)}
-                        >
-                            Excel入力
-                        </Button>
-                    </Grid>
-                )}
-            </Grid>
-        </header>
+            </header>
 
             <TableActions
                 itemsPerPage={itemsPerPage}
