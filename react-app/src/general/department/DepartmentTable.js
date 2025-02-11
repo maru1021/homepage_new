@@ -1,34 +1,22 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import {
-    Paper, Table, TableBody, TableCell, TableContainer,
-    TableRow
-} from '@mui/material';
-
+import { Paper, Table, TableBody, TableCell, TableContainer, TableRow } from '@mui/material';
+import { FaEdit, FaTrash } from 'react-icons/fa';
+import { API_BASE_URL, ConfirmDeleteModal, handleDelete, Modal, setTableData, TableHeader, useContextMenu } from '../../script/table/basicTableModules';
+import useModalManager from '../../script/modal/useModalManager';
+import ContextMenu from '../../script/contextmenu/ContextMenu';
 import DepartmentEditForm from './DepartmentEditForm';
-
-import {
-    API_BASE_URL,
-    ConfirmDeleteModal,
-    ContextMenu,
-    handleDelete,
-    Modal,
-    setTableData,
-    TableHeader,
-    useContextMenu,
-} from '../../script/table/basicTableModules';
-import useModalManager from '../../script/modal/useModalManager'
-
 
 function DepartmentTable({ data, onSave, searchQuery, currentPage, itemsPerPage }) {
     const [departments, setDepartments] = useState(data);
 
     const {
         menuPosition,
-        hoveredRowId,
         isMenuVisible,
-        setIsMenuVisible,
+        hoveredRowId,
         handleContextMenu,
+        setIsMenuVisible,
+        menuRef,
     } = useContextMenu();
 
     const {
@@ -43,14 +31,16 @@ function DepartmentTable({ data, onSave, searchQuery, currentPage, itemsPerPage 
 
     setTableData(data, setDepartments, `${API_BASE_URL.replace("http", "ws")}/ws/general/department`, searchQuery, currentPage, itemsPerPage);
 
-    const handleMenuAction = (action) => {
-        const department = departments.find((depart) => depart.id === hoveredRowId);
+    const handleEdit = () => {
+        const department = departments.find((dept) => dept.id === hoveredRowId);
+        openModal(department);
+        setIsMenuVisible(false);
+    };
 
-        if (action === 'Edit') {
-            openModal(department);
-        } else if (action === 'Delete') {
-            openDeleteModal(department);
-        }
+    const handleDeleteDepartment = () => {
+        const department = departments.find((dept) => dept.id === hoveredRowId);
+        openDeleteModal(department);
+        setIsMenuVisible(false);
     };
 
     const departmentDelete = async () => {
@@ -62,9 +52,14 @@ function DepartmentTable({ data, onSave, searchQuery, currentPage, itemsPerPage 
         onSave(updatedDepartment);
     };
 
+    const contextMenuActions = [
+        { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
+        { label: '削除', icon: <FaTrash color='#E57373' />, onClick: handleDeleteDepartment }
+    ];
+
     return (
-        <div onClick={() => setIsMenuVisible(false)} style={{ position: 'relative' }}>
-            <TableContainer component={Paper} elevation={3}>
+        <>
+            <TableContainer component={Paper} elevation={3} sx={{ overflowX: "auto" }}>
                 <Table>
                     <TableHeader columns={['部署名']} />
 
@@ -85,12 +80,7 @@ function DepartmentTable({ data, onSave, searchQuery, currentPage, itemsPerPage 
                 </Table>
             </TableContainer>
 
-            {isMenuVisible && (
-                <ContextMenu
-                    position={menuPosition}
-                    onActionSelect={handleMenuAction}
-                />
-            )}
+            {isMenuVisible && <ContextMenu position={menuPosition} actions={contextMenuActions} menuRef={menuRef} />}
 
             <Modal
                 show={isModalOpen}
@@ -108,13 +98,9 @@ function DepartmentTable({ data, onSave, searchQuery, currentPage, itemsPerPage 
                 show={isDeleteModalOpen}
                 onClose={closeDeleteModal}
                 onConfirm={departmentDelete}
-                message={
-                    selectedItem
-                        ? `${selectedItem.name}を削除してもよろしいですか？`
-                        : '選択された部署が見つかりません。'
-                }
+                message={selectedItem ? `${selectedItem.name}を削除してもよろしいですか？` : '選択された部署が見つかりません。'}
             />
-        </div>
+        </>
     );
 }
 

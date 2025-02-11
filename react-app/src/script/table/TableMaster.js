@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Grid, Typography, Button } from '@mui/material';
+import { Grid, Typography, Button, Box } from '@mui/material';
 import { SaveAlt as SaveAltIcon, UploadFile as UploadFileIcon } from '@mui/icons-material';
 import TableActions from './TableActions';
 import PaginationComponent from './Pagination';
 import Modal from '../modal/Modal';
 
-const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormComponent, ExcelOutput=null, ExcelInput=null }) => {
+
+const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormComponent, ExcelOutput = null, ExcelInput = null }) => {
     const [tableDatas, setTableDatas] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -50,7 +51,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
     };
 
     return (
-        <div className='TableWithActions'>
+        <Box className='TableWithActions' sx={{ paddingLeft: '5%' }}>
             <header>
                 <Grid container alignItems='center' spacing={2} sx={{ paddingY: 2, paddingLeft: '17%' }}>
                     <Grid item xs={7}>
@@ -65,7 +66,6 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                             {title}
                         </Typography>
                     </Grid>
-
 
                     {ExcelOutput && (
                         <Grid item xs={2}>
@@ -128,7 +128,6 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                             </Button>
                         </Grid>
                     )}
-
                 </Grid>
             </header>
 
@@ -141,8 +140,10 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                 modalClosed={!isModalOpen}
             />
 
+
             <div className='table-container'>
-                <TableComponent data={tableDatas}
+                <TableComponent
+                    data={tableDatas}
                     onSave={handleDataUpdate}
                     searchQuery={searchQuery}
                     currentPage={currentPage}
@@ -163,7 +164,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                 title={modalTitle}
                 FormComponent={FormComponent}
             />
-        </div>
+        </Box>
     );
 };
 

@@ -4,6 +4,8 @@ import {
     Table, TableBody, TableCell, TableContainer,
     TableRow, Paper
 } from '@mui/material';
+import { FaEdit, FaTrash } from 'react-icons/fa';
+
 import {
     API_BASE_URL,
     ConfirmDeleteModal,
@@ -29,6 +31,7 @@ function EmployeeAuthorityTable({ data, onSave, searchQuery, currentPage, itemsP
         isMenuVisible,
         setIsMenuVisible,
         handleContextMenu,
+        menuRef,
     } = useContextMenu();
 
     const {
@@ -43,14 +46,16 @@ function EmployeeAuthorityTable({ data, onSave, searchQuery, currentPage, itemsP
 
     setTableData(data, setEmployees, `${API_BASE_URL.replace("http", "ws")}/ws/authority/employee_authority`, searchQuery, currentPage, itemsPerPage);
 
-    const handleMenuAction = (action) => {
+    const handleEdit = () => {
         const employee = employees.find((emp) => emp.id === hoveredRowId);
+        openModal(employee);
+        setIsMenuVisible(false);
+    };
 
-        if (action === 'Edit') {
-            openModal(employee);
-        } else if (action === 'Delete') {
-            openDeleteModal(employee);
-        }
+    const handleDeleteEmployee = () => {
+        const employee = employees.find((emp) => emp.id === hoveredRowId);
+        openDeleteModal(employee);
+        setIsMenuVisible(false);
     };
 
     const employeeDelete = async () => {
@@ -62,8 +67,13 @@ function EmployeeAuthorityTable({ data, onSave, searchQuery, currentPage, itemsP
         onSave(updatedEmployee);
     };
 
+    const contextMenuActions = [
+        { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
+        { label: '削除', icon: <FaTrash color='#E57373' />, onClick: handleDeleteEmployee }
+    ];
+
     return (
-        <div onClick={() => setIsMenuVisible(false)} style={{ position: 'relative' }}>
+        <>
             <TableContainer component={Paper} elevation={3}>
                 <Table>
                     <TableHeader columns={['社員番号', '名前', '部署', '権限']} />
@@ -98,12 +108,7 @@ function EmployeeAuthorityTable({ data, onSave, searchQuery, currentPage, itemsP
                 </Table>
             </TableContainer>
 
-            {isMenuVisible && (
-                <ContextMenu
-                    position={menuPosition}
-                    onActionSelect={handleMenuAction}
-                />
-            )}
+            {isMenuVisible && <ContextMenu position={menuPosition} actions={contextMenuActions} menuRef={menuRef} />}
 
             <Modal
                 show={isModalOpen}
@@ -127,7 +132,7 @@ function EmployeeAuthorityTable({ data, onSave, searchQuery, currentPage, itemsP
                         : '選択された従業員が見つかりません。'
                 }
             />
-        </div>
+        </>
     );
 }
 

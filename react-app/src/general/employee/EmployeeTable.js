@@ -4,6 +4,8 @@ import {
     Table, TableBody, TableCell, TableContainer,
     TableRow, Paper
 } from '@mui/material';
+import { FaEdit, FaTrash } from 'react-icons/fa';
+
 import {
     API_BASE_URL,
     ConfirmDeleteModal,
@@ -29,6 +31,7 @@ function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage })
         isMenuVisible,
         setIsMenuVisible,
         handleContextMenu,
+        menuRef,
     } = useContextMenu();
 
     const {
@@ -43,14 +46,16 @@ function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage })
 
     setTableData(data, setEmployees, `${API_BASE_URL.replace("http", "ws")}/ws/general/employee`, searchQuery, currentPage, itemsPerPage);
 
-    const handleMenuAction = (action) => {
+    const handleEdit = () => {
         const employee = employees.find((emp) => emp.id === hoveredRowId);
+        openModal(employee);
+        setIsMenuVisible(false);
+    };
 
-        if (action === 'Edit') {
-            openModal(employee);
-        } else if (action === 'Delete') {
-            openDeleteModal(employee);
-        }
+    const handleDeleteEmployee = () => {
+        const employee = employees.find((emp) => emp.id === hoveredRowId);
+        openDeleteModal(employee);
+        setIsMenuVisible(false);
     };
 
     const employeeDelete = async () => {
@@ -62,8 +67,13 @@ function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage })
         onSave(updatedEmployee);
     };
 
+    const contextMenuActions = [
+        { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
+        { label: '削除', icon:<FaTrash color='#E57373' />, onClick: handleDeleteEmployee }
+    ];
+
     return (
-        <div onClick={() => setIsMenuVisible(false)} style={{ position: 'relative' }}>
+        <>
             <TableContainer component={Paper} elevation={3} sx={{ overflowX: "auto" }}>
                 <Table sx={{ minWidth: 1800 }}>
                     <TableHeader columns={['部署', '社員番号', '雇用情報', '名前', '性別', '住所',
@@ -98,12 +108,7 @@ function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage })
                 </Table>
             </TableContainer>
 
-            {isMenuVisible && (
-                <ContextMenu
-                    position={menuPosition}
-                    onActionSelect={handleMenuAction}
-                />
-            )}
+            {isMenuVisible && <ContextMenu position={menuPosition} actions={contextMenuActions} menuRef={menuRef} />}
 
             <Modal
                 show={isModalOpen}
@@ -127,7 +132,7 @@ function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage })
                         : '選択された従業員が見つかりません。'
                 }
             />
-        </div>
+        </>
     );
 }
 
@@ -141,9 +146,19 @@ EmployeeTable.propTypes = {
                 PropTypes.shape({
                     id: PropTypes.number.isRequired,
                     name: PropTypes.string.isRequired,
-                    admin: PropTypes.bool.isRequired,
                 })
             ),
+            info: PropTypes.shape({
+                phone_number: PropTypes.string,
+                gender: PropTypes.string,
+                emergency_contact: PropTypes.string,
+                address: PropTypes.string,
+                birth_date: PropTypes.string,
+                employment_type: PropTypes.string.isRequired,
+                hire_date: PropTypes.string.isRequired,
+                leave_date: PropTypes.string,
+                contract_expiration: PropTypes.string,
+            }),
         })
     ).isRequired,
     onSave: PropTypes.func.isRequired,

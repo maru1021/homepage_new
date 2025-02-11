@@ -58,7 +58,9 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10,
             "id": employee.id,
             "employee_no": employee.employee_no,
             "name": employee.name,
-            "departments": [dep.name for dep in employee.departments],  # 部署名のみ
+            "departments": [
+                {"id": dep.id, "name": dep.name} for dep in employee.departments
+            ],
             "info": {
                 "phone_number": employee.info.phone_number if employee.info else None,
                 "gender": employee.info.gender if employee.info else None,

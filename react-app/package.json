@@ -17,6 +17,7 @@
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.5",
     "react-contexify": "^6.0.0",
+    "react-datepicker": "^8.0.0",
     "react-dom": "^18.3.1",
     "react-icons": "^4.12.0",
     "react-router-dom": "^6.15.0",

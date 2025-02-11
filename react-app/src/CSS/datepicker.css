@@ -1,0 +1,53 @@
+/* カレンダー全体の背景色を少し優しい水色に */
+.react-datepicker {
+  background-color: #ffffff; /* ほんのり水色 */
+  border: 1px solid #90caf9;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ヘッダー（年・月の部分）のデザインをもう少し薄い水色に */
+.react-datepicker__header {
+  background-color: #b3e5fc;
+  color: #75b9ed;
+  border-bottom: 1px solid #90caf9;
+}
+
+/* 曜日の部分 */
+.react-datepicker__day-name {
+  color: #5f7f9f;
+  font-weight: bold;
+}
+
+/* 日付の部分 */
+.react-datepicker__day {
+  background-color: white;
+  color: #6c879b;
+  border-radius: 50%;
+  padding: 5px;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+/* 選択された日付 */
+.react-datepicker__day--selected {
+  background-color: #82b1d6;
+  color: rgb(32, 76, 95);
+  font-weight: bold;
+}
+
+/* 今日の日付 */
+.react-datepicker__day--today {
+  background-color: #bbdefb;
+  font-weight: bold;
+}
+
+/* 前の月、次の月の灰色の部分 */
+.react-datepicker__day--outside-month {
+  color: #bad9e9;
+}
+
+/* ナビゲーションボタン（前月・次月） */
+.react-datepicker__navigation {
+  top: 10px;
+}

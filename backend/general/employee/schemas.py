@@ -18,8 +18,6 @@ class EmployeeInfo(BaseModel):
     emergency_contact: Optional[str] = None
     address:Optional[str] = None
     birth_date: Optional[date] = None
-
-    # 雇用情報
     employment_type: Optional[str] = None
     hire_date: Optional[date] = None
     leave_date: Optional[date] = None

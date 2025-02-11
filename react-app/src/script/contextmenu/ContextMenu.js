@@ -1,27 +1,42 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FaEdit, FaTrash } from 'react-icons/fa';
 
-
-function ContextMenu({ position, onActionSelect }) {
+function ContextMenu({ position, actions, menuRef }) {
     return (
         <div
-            className='context-menu'
+            ref={menuRef} // useContextMenu の menuRef を適用
+            className="context-menu"
             style={{
                 top: `${position.y}px`,
                 left: `${position.x}px`,
+                position: 'absolute',
+                background: 'white',
+                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
+                borderRadius: '6px',
+                padding: '8px',
+                zIndex: 1000,
             }}
-            onClick={(e) => e.stopPropagation()}
+            // onClick={(e) => e.stopPropagation()} // メニュー内をクリックしても閉じないようにする
         >
-            <ul>
-                <li onClick={() => onActionSelect('Edit')}>
-                    <FaEdit className='edit-icon' />
-                    編集
-                </li>
-                <li onClick={() => onActionSelect('Delete')}>
-                    <FaTrash className='delete-icon' />
-                    削除
-                </li>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {actions.map((action, index) => (
+                    <li
+                        key={index}
+                        onClick={() => {
+                            action.onClick();
+                        }}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '8px',
+                            cursor: 'pointer',
+                            borderBottom: index !== actions.length - 1 ? '1px solid #ddd' : 'none',
+                        }}
+                    >
+                        {action.icon}
+                        <span style={{ marginLeft: '8px' }}>{action.label}</span>
+                    </li>
+                ))}
             </ul>
         </div>
     );
@@ -32,7 +47,14 @@ ContextMenu.propTypes = {
         x: PropTypes.number.isRequired,
         y: PropTypes.number.isRequired,
     }).isRequired,
-    onActionSelect: PropTypes.func.isRequired,
+    actions: PropTypes.arrayOf(
+        PropTypes.shape({
+            label: PropTypes.string.isRequired,
+            icon: PropTypes.node.isRequired,
+            onClick: PropTypes.func.isRequired,
+        })
+    ).isRequired,
+    menuRef: PropTypes.object.isRequired,
 };
 
 export default ContextMenu;

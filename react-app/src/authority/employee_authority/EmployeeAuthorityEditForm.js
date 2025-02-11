@@ -207,7 +207,7 @@ function EmployeeAuthorityEditForm({ employee, onSave }) {
                                 ]}
                                 value={form.admin !== undefined ? { value: form.admin, label: form.admin ? '管理者' : '利用者' } : null}
                                 onChange={(selectedOption) => handleFormChange(index, "admin", selectedOption.value)}
-                                isSearchable={false} // 検索を無効化
+                                isSearchable={false}
                                 placeholder="権限を選択"
                             />
                         </FormControl>

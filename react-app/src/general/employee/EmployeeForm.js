@@ -1,90 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
-    Button, TextField, FormControl, FormHelperText,
-     Stack, DialogActions
+    Button, TextField, FormControl, Stack, DialogActions, MenuItem, Select, InputLabel
 } from '@mui/material';
-import Select from 'react-select';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
+import 'react-datepicker/dist/react-datepicker.css';
 
 import API_BASE_URL from '../../baseURL';
 import { successNoti, errorNoti } from '../../script/noti';
-import employeeValid from '../../script/valid/employeeValid';
+import DateField from '../../script/form/date';
 
 
-// 部署データを取得する関数
-const fetchDepartments = async () => {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/api/general/department`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    if (response.ok) {
-        const data = await response.json();
-        return data.departments || [];
-    } else {
-        console.error('Failed to fetch departments');
-        return [];
-    }
-};
-
-function EmployeeAuthorityForm({ onRegister }) {
+function EmployeeForm({ onRegister }) {
     const [employee_no, setEmployeeNo] = useState('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [phone_number, setPhoneNumber] = useState('');
+    const [gender, setGender] = useState('');
+    const [address, setAddress] = useState('');
+    const [birthDate, setBirthDate] = useState(null);
+    const [hireDate, setHireDate] = useState(null);
+    const [employment_type, setEmploymentType] = useState('');
+    const [contract_expiration, setContractExpiration] = useState(null);
+    const [selectedDepartment, setSelectedDepartment] = useState('');
 
-    // 部署リスト
-    const [departments, setDepartments] = useState([]);
-
-    // 各インプットのエラーメッセージ用の状態
+    // エラーメッセージ
     const [employeeNoError, setEmployeeNoError] = useState('');
     const [nameError, setNameError] = useState('');
     const [emailError, setEmailError] = useState('');
-    const [formErrors, setFormErrors] = useState([]);
 
-    // 部署と権限のフォームの状態
-    const [forms, setForms] = useState([
-        { department: '', admin: false },
-    ]);
-
-    // 部署データを取得
-    useEffect(() => {
-        const loadDepartments = async () => {
-            const data = await fetchDepartments();
-            setDepartments(data);
-        };
-        loadDepartments();
-    }, []);
-
-    // 部署と権限フォームの追加
-    const handleAddForm = () => {
-        setForms([...forms, { department: '', admin: 'false' }]);
-    };
-
-    // 部署と権限フォームの削除
-    const handleRemoveForm = (index) => {
-        const updatedForms = forms.filter((_, i) => i !== index);
-        setForms(updatedForms);
-    };
-
-    // 部署と権限フォームのデータ変更
-    const handleFormChange = (index, field, value) => {
-        const updatedForms = [...forms];
-        updatedForms[index][field] = value;
-        setForms(updatedForms);
-    };
-
-    // 入力フォームのバリデーション
-    const inputValid = () => {
+    // 入力チェック
+    const validateInput = () => {
         let isValid = true;
-        const errors = [];
+        setEmployeeNoError('');
+        setNameError('');
+        setEmailError('');
 
-        if (!employee_no) {
-            setEmployeeNoError('社員番号を入力してください。');
-            isValid = false;
-        } else if (!employeeValid(employee_no)) {
+        if (!employee_no.match(/^[a-zA-Z0-9]{7}$/)) {
             setEmployeeNoError('社員番号は7桁の英数字で入力してください。');
             isValid = false;
         }
@@ -92,40 +43,17 @@ function EmployeeAuthorityForm({ onRegister }) {
             setNameError('名前を入力してください。');
             isValid = false;
         }
-        if (!email) {
-            setEmailError('メールアドレスを入力してください。');
+        if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            setEmailError('正しいメールアドレスを入力してください。');
             isValid = false;
         }
-
-        forms.forEach((form, index) => {
-            if (!form.department) {
-                errors[index] = '部署を選択してください。';
-                isValid = false;
-            }
-        });
-
-        setFormErrors(errors);
         return isValid;
     };
 
-    // 登録時の処理
+    // 登録処理
     const handleSubmit = async (event) => {
         event.preventDefault();
-
-        // selectの形式を戻さないとサーバーサイドで弾かれる
-        const formattedForms = forms.map(form => ({
-            department: form.department.value,
-            admin: form.admin
-        }));
-
-        // エラーメッセージの初期化
-        setEmployeeNoError('');
-        setNameError('');
-        setEmailError('');
-        setFormErrors([]);
-
-        // バリデーションエラーがあれば送信を中止
-        if (!inputValid()) return;
+        if (!validateInput()) return;
 
         const token = localStorage.getItem('token');
         const response = await fetch(`${API_BASE_URL}/api/general/employee/`, {
@@ -135,33 +63,44 @@ function EmployeeAuthorityForm({ onRegister }) {
                 Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-                name,
                 employee_no,
+                name,
                 email,
-                forms: formattedForms,
+                phone_number,
+                gender,
+                address,
+                birth_date: birthDate ? birthDate.toISOString().split('T')[0] : null,
+                hire_date: hireDate ? hireDate.toISOString().split('T')[0] : null,
+                employment_type,
+                contract_expiration: employment_type === '派遣社員' || employment_type === '業務委託' ? 
+                    (contract_expiration ? contract_expiration.toISOString().split('T')[0] : null) 
+                    : null,
+                department_id: selectedDepartment,
             }),
         });
 
         const data = await response.json();
-
         if (response.ok && data.success) {
             setEmployeeNo('');
             setName('');
             setEmail('');
-            setForms([{ department: '', admin: 'false' }]);
+            setPhoneNumber('');
+            setGender('');
+            setAddress('');
+            setBirthDate(null);
+            setHireDate(null);
+            setEmploymentType('');
+            setContractExpiration(null);
+            setSelectedDepartment('');
             onRegister();
-            successNoti(data.message);
+            successNoti('登録成功しました！');
         } else {
-            if (data.field === 'employee_no') {
-                setEmployeeNoError(data.message);
-            } else {
-                errorNoti('登録に失敗しました。');
-            }
+            errorNoti(data.message || '登録に失敗しました。');
         }
     };
 
     return (
-        <form>
+        <form onSubmit={handleSubmit}>
             <Stack spacing={2}>
                 <TextField
                     fullWidth
@@ -173,83 +112,90 @@ function EmployeeAuthorityForm({ onRegister }) {
                     autoFocus
                 />
 
-                <TextField
-                    fullWidth
-                    label='名前'
+                <TextField fullWidth label='名前'
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     error={Boolean(nameError)}
                     helperText={nameError}
                 />
+
                 <TextField
                     fullWidth
                     label='メールアドレス'
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={email} onChange={(e) => setEmail(e.target.value)}
                     error={Boolean(emailError)}
-                    helperText={emailError}
+                    helperText={emailError} 
                 />
 
-                <hr />
+                <TextField
+                    fullWidth
+                    label='電話番号'
+                    value={phone_number}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                />
 
-                {forms.map((form, index) => (
-                    <Stack key={index} spacing={2} sx={{ border: '1px solid #ccc', padding: 2, borderRadius: 1 }}>
-                        <Stack direction='row' justifyContent='space-between' alignItems='center'>
-                            <h6>部署と権限 {index + 1}</h6>
-                            {index > 0 && (
-                                <Button
-                                    variant='contained'
-                                    size='small'
-                                    startIcon={<RemoveIcon />}
-                                    color='error'
-                                    onClick={() => handleRemoveForm(index)}
-                                >
-                                    削除
-                                </Button>
-                            )}
-                        </Stack>
+                <TextField
+                    fullWidth
+                    label='住所'
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                />
 
-                        <FormControl fullWidth error={Boolean(formErrors[index])}>
-                            <Select
-                                options={departments.map(department => ({
-                                    value: department.id,
-                                    label: department.name
-                                }))}
-                                value={form.department}
-                                onChange={(selectedOption) => handleFormChange(index, "department", selectedOption)}
-                                isSearchable={true}
-                                placeholder="部署を選択"
-                            />
-                            {formErrors[index] && <FormHelperText>{formErrors[index]}</FormHelperText>}
-                        </FormControl>
+                <FormControl fullWidth>
+                    <InputLabel>性別</InputLabel>
+                    <Select value={gender} onChange={(e) => setGender(e.target.value)}>
+                        <MenuItem value='男性'>男性</MenuItem>
+                        <MenuItem value='女性'>女性</MenuItem>
+                        <MenuItem value='その他'>その他</MenuItem>
+                    </Select>
+                </FormControl>
 
-                        <FormControl fullWidth>
-                            <Select
-                                options={[
-                                    { value: false, label: '利用者' },
-                                    { value: true, label: '管理者' }
-                                ]}
-                                value={{ value: form.admin ?? false, label: form.admin ? '管理者' : '利用者' }}
-                                onChange={(selectedOption) => handleFormChange(index, "admin", selectedOption.value)}
-                                isSearchable={false} // 検索を無効化
-                                placeholder="権限を選択"
-                            />
-                        </FormControl>
-                    </Stack>
-                ))}
-                <Stack direction='row' justifyContent='flex-start'>
-                    <Button
-                        variant='contained'
-                        size='small'
-                        startIcon={<AddIcon />}
-                        color='success'
-                        onClick={handleAddForm}
-                    >
-                        追加
-                    </Button>
-                </Stack>
+                <DateField
+                    selectedDate={birthDate}
+                    setDate={setBirthDate}
+                    label="生年月日"
+                />
+
+                <DateField
+                    selectedDate={hireDate}
+                    setDate={setHireDate}
+                    label="入社日"
+                />
+
+                <FormControl fullWidth>
+                    <InputLabel>雇用形態</InputLabel>
+                    <Select value={employment_type} onChange={(e) => setEmploymentType(e.target.value)}>
+                        <MenuItem value='正社員'>正社員</MenuItem>
+                        <MenuItem value='派遣社員'>派遣社員</MenuItem>
+                        <MenuItem value='業務委託'>業務委託</MenuItem>
+                        <MenuItem value='アルバイト'>アルバイト</MenuItem>
+                    </Select>
+                </FormControl>
+
+                {(employment_type === '派遣社員' || employment_type === '業務委託') && (
+                    <DateField
+                        selectedDate={contract_expiration}
+                        setDate={setContractExpiration}
+                        label="契約満了日"
+                    />
+                )}
+
                 <DialogActions>
-                    <Button type='submit' variant='contained' color='primary' onClick={handleSubmit}>
+                    <Button type='submit'
+                        variant='contained'
+                        fullWidth
+                        sx={{ background: 'linear-gradient(to right, #8dbaf2, #6b9ef3)',
+                            borderRadius: '12px',
+                            boxShadow: '4px 4px 10px rgba(180, 200, 255, 0.4)',
+                            padding: '8px 20px',
+                            fontWeight: 'bold',
+                            transition: 'all 0.2s ease-in-out',
+                            '&:hover': {
+                                background: 'linear-gradient(to right, #79a5f0, #4d8ef0)',
+                                transform: 'scale(1.02)',
+                            },
+                        }}
+                    >
                         登録
                     </Button>
                 </DialogActions>
@@ -258,8 +204,6 @@ function EmployeeAuthorityForm({ onRegister }) {
     );
 }
 
-EmployeeAuthorityForm.propTypes = {
-    onRegister: PropTypes.func.isRequired,
-};
+EmployeeForm.propTypes = { onRegister: PropTypes.func.isRequired };
 
-export default EmployeeAuthorityForm;
+export default EmployeeForm;

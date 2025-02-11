@@ -38,8 +38,10 @@ const useWebSocket = (url, updateFunc, searchQuery, currentPage, itemsPerPage) =
         // WebSocketでデータが送られてきた時の処理
         wsRef.current.onmessage = (event) => {
             try {
-                const updatedData = JSON.parse(event.data);
-                updateFunc(updatedData);
+                if(wsRef.current != null){
+                    const updatedData = JSON.parse(event.data);
+                    updateFunc(updatedData);
+                }
             } catch (error) {
                 console.error("WebSocketメッセージのパースに失敗:", error);
             }
