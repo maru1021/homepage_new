@@ -13,10 +13,12 @@ docker compose up --build
 docker compose up  
 で起動します  
 
-初回  
+
+backend/main.pyを開き、create_initial_data()のコメントアウトを外してからリロードし、初期データを登録して下さい。
+初期データのユーザーを使用し、  
 ユーザー名 admin12  
 パスワード password  
-で起動します。
+でログインできます。  
 
 以降従業員登録で登録した社員番号、パスワードでログインできるようになります。  
 現在codespaceだとうまく動作しません。

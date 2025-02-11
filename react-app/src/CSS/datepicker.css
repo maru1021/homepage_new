@@ -1,13 +1,13 @@
-/* カレンダー全体の背景色を少し優しい水色に */
+/* カレンダー全体 */
 .react-datepicker {
-  background-color: #ffffff; /* ほんのり水色 */
+  background-color: #ffffff;
   border: 1px solid #90caf9;
   border-radius: 8px;
   padding: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* ヘッダー（年・月の部分）のデザインをもう少し薄い水色に */
+/* ヘッダー（年・月の部分）の部分 */
 .react-datepicker__header {
   background-color: #b3e5fc;
   color: #75b9ed;
