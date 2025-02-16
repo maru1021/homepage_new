@@ -15,54 +15,21 @@ def export_excel_employees(db: Session, search):
 
     df = pd.DataFrame([
         {
-            "操作": "",
             "ID": employee.id,
-            "従業員名": employee.name,
             "社員番号": employee.employee_no,
-            "メールアドレス": employee.email
+            "従業員名": employee.name,
+            "メールアドレス": employee.email,
+            "電話番号": employee.info.phone_number,
+            "住所": employee.info.address,
+            "性別": employee.info.gender,
+            "生年月日": employee.info.birth_date,
+            "雇用形態": employee.info.employment_type,
+            "入社日": employee.info.hire_date,
+            "退社日": employee.info.leave_date,
+            "契約満了日": employee.info.contract_expiration,
+            "緊急連絡先": employee.info.emergency_contact,
         }
         for employee in employees
     ])
 
     return export_excel(df, "employees.xlsx")
-
-
-def import_excel_employees(db: Session, file, background_tasks=BackgroundTasks):
-    from backend.general.models import Department, Employee
-
-    model = Employee
-    required_columns = {"操作", "ID", "従業員名", "社員番号", "メールアドレス"}
-    websocket_func = lambda: background_tasks.add_task(run_websocket, db)
-
-    def before_add_func(row_data):
-        if row_data["employee_no"]:
-            existing_employee = db.query(model).filter(model.employee_no == row_data["employee_no"]).first()
-        if existing_employee:
-            raise ValueError(f"社員番号 '{row_data['employee_no']}' は既に存在しています。")
-
-        department = db.query(Department).filter(Department.name=="未設定").first()
-        row_data["employee_authorities"] = [
-            EmployeeAuthority(
-                department_id=department.id,
-                admin=False,
-            )
-        ]
-        return row_data
-
-    def after_add_func(employee_data, db: Session):
-        password = hashed_password("password")
-        employee_credential = EmployeeCredential(
-            employee_id=employee_data.id,
-            hashed_password = password
-        )
-        db.add(employee_credential)
-        return
-
-    return import_excel(db, file,
-                        "employee",
-                        model,
-                        required_columns, websocket_func,
-                        before_add_func=before_add_func,
-                        after_add_func=after_add_func,
-                        name_duplication_check=False
-                        )

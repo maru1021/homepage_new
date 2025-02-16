@@ -132,7 +132,6 @@ def create_employee(db: Session, employee: schemas.EmployeeCreate, background_ta
         )
 
         db.add(db_employee_info)
-        print(employee)
 
         db.commit()
 
