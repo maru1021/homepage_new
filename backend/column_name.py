@@ -12,5 +12,14 @@ COLUMN_NAME = {
         "メールアドレス": "email",
         "部署名": "department_name",
         "管理者権限": "admin",
+        "電話番号": "phone_number",
+        "性別": "gender",
+        "緊急連絡先": "emergency_contact",
+        "住所": "address",
+        "生年月日": "birth_date",
+        "雇用形態": "employment_type",
+        "入社日": "hire_date",
+        "退社日": "leave_date",
+        "契約満了日": "contract_expiration",
     }
 }
