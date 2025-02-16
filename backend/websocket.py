@@ -45,7 +45,7 @@ class WebSocketManager:
             items_per_page = filters["itemsPerPage"]
 
             updated_data, total_count = get_func(db, search_query, current_page, items_per_page)
-            message = json.dumps({"updated_data": updated_data, "totalCount": total_count})
+            message = json.dumps({"updated_data": updated_data, "totalCount": total_count}, default=str)
 
             try:
                 await websocket.send_text(message)

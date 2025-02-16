@@ -12,7 +12,7 @@ from backend.scripts.initial_data import create_initial_data
 app = FastAPI()
 
 # 初期データ作成
-# create_initial_data()
+create_initial_data()
 
 # CORS設定
 app.add_middleware(

@@ -20,8 +20,16 @@ class EmployeeAuthority(Base):
     start_date = Column(Date, nullable=False, default=today)  # 配属日
     end_date = Column(Date, nullable=True)  #異動日
 
-    employee = relationship("Employee", back_populates="employee_authorities", overlaps="departments,employee")
-    department = relationship("Department", back_populates="department_authorities", overlaps="employees")
+    employee = relationship(
+        "Employee",
+        back_populates="employee_authorities",
+        overlaps="departments, department_authorities",
+    )
+    department = relationship(
+        "Department",
+        back_populates="department_authorities",
+        overlaps="employees, employee_authorities"
+    )
 
 
 # 従業員の認証情報モデル

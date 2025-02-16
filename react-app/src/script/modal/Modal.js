@@ -4,7 +4,7 @@ import { Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 
-function Modal({ show, onClose, title, FormComponent, onRegister }) {
+function Modal({ show, onClose, title, FormComponent, onSuccess }) {
     return (
         <Dialog open={show} onClose={onClose} fullWidth maxWidth='sm'>
             <DialogTitle>
@@ -23,7 +23,7 @@ function Modal({ show, onClose, title, FormComponent, onRegister }) {
                 </IconButton>
             </DialogTitle>
             <DialogContent dividers>
-                <FormComponent onRegister={onRegister} />
+                <FormComponent onSuccess={onSuccess} />
             </DialogContent>
         </Dialog>
     );
@@ -34,7 +34,7 @@ Modal.propTypes = {
     onClose: PropTypes.func.isRequired,
     title: PropTypes.string.isRequired,
     FormComponent: PropTypes.elementType.isRequired,
-    onRegister: PropTypes.func,
+    onSuccess: PropTypes.func,
 };
 
 export default Modal;
