@@ -19,14 +19,14 @@ class Department(Base):
     department_authorities = relationship(
         "EmployeeAuthority",
         back_populates="department",
-        overlaps="employees"
+        overlaps="employees",
     )
 
     employees = relationship(
         "Employee",
         secondary="employee_authority",
         back_populates="departments",
-        overlaps="department_authorities"
+        overlaps="employee_authorities, department_authorities",
     )
 
 # 従業員モデル
@@ -43,8 +43,8 @@ class Employee(Base):
     employee_authorities = relationship(
         "EmployeeAuthority",
         back_populates="employee",
-        overlaps="departments",
         cascade="all, delete-orphan",
+        overlaps="departments, department_authorities",
     )
 
     # 部署とのリレーション
@@ -52,7 +52,7 @@ class Employee(Base):
         "Department",
         secondary="employee_authority",
         back_populates="employees",
-        overlaps="employee_authorities,employee"
+        overlaps="employee_authorities, department_authorities",
     )
 
     credential = relationship("EmployeeCredential",

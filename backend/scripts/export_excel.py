@@ -30,8 +30,13 @@ def export_excel(df, file_name):
 
     wb.save(file_path)
 
+    headers = {
+        "Content-Disposition": f'attachment; filename="{file_name}"',
+        "Access-Control-Expose-Headers": "Content-Disposition"  # フロントエンドがヘッダーを取得できるように設定
+    }
+
     return FileResponse(
         file_path,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f'attachment; filename="{file_name}"'}
+        headers=headers
     )

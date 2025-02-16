@@ -4,14 +4,15 @@ import { createRoot } from 'react-dom/client';
 import { ToastContainer } from 'react-toastify';
 import reportWebVitals from './reportWebVitals';
 import './CSS/index.css';
-import Sidebar from './Sidebar';
+import Sidebar from './components/Sidebar';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './CSS/table.css';
 import './CSS/modal.css';
 import './CSS/contextmenu.css';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import AppRoutes from './routes/AppRoutes';
-import Login from './login';
+
+import Login from './pages/login';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || null);

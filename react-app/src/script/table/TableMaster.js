@@ -105,7 +105,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                                 size="small"
                                 startIcon={<UploadFileIcon />}
                                 fullWidth
-                                onClick={() => ExcelInput(loadData)}
+                                onClick={() => ExcelInput()}
                                 sx={{
                                     background: 'linear-gradient(to right, #f3a683, #f89466)',
                                     color: 'white',
@@ -160,7 +160,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
             <Modal
                 show={isModalOpen}
                 onClose={closeRegisterModal}
-                onRegister={handleDataUpdate}
+                onSuccess={closeRegisterModal}
                 title={modalTitle}
                 FormComponent={FormComponent}
             />

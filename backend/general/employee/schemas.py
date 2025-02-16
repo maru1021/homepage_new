@@ -29,6 +29,15 @@ class EmployeeCreate(BaseModel):
     name: str
     employee_no: str = Field(..., pattern=r'^[a-zA-Z0-9]{7}$')
     email: EmailStr
+    phone_number: Optional[str] = None
+    gender: Optional[str] = None
+    emergency_contact: Optional[str] = None
+    address:Optional[str] = None
+    birth_date: Optional[date] = None
+    employment_type: Optional[str] = None
+    hire_date: Optional[date] = None
+    leave_date: Optional[date] = None
+    contract_expiration: Optional[date] = None
 
     class Config:
         from_attributes = True
@@ -41,6 +50,16 @@ class EmployeeDepartmentUpdate(BaseModel):
 class EmployeeUpdate(BaseModel):
     name: str
     employee_no: str = Field(..., pattern=r'^[a-zA-Z0-9]{7}$')
+    email: EmailStr
+    phone_number: Optional[str] = None
+    gender: Optional[str] = None
+    emergency_contact: Optional[str] = None
+    address:Optional[str] = None
+    birth_date: Optional[date] = None
+    employment_type: Optional[str] = None
+    hire_date: Optional[date] = None
+    leave_date: Optional[date] = None
+    contract_expiration: Optional[date] = None
 
     class Config:
         from_attributes = True
@@ -51,6 +70,7 @@ class Employee(BaseModel):
     id: int
     employee_no: str = Field(..., pattern=r'^[a-zA-Z0-9]{7}$')
     name: str
+    email: Optional[str] = None
     departments: List[Department]
     info: Optional[EmployeeInfo] = None
 

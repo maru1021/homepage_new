@@ -47,7 +47,6 @@ def delete_department(department_id: int, background_tasks: BackgroundTasks, db:
 # Excel出力
 @router.get("/export_excel")
 def export_departments_to_excel(db: Session = Depends(get_db), searchQuery: str = Query("", alias="searchQuery")):
-    print(searchQuery)
     try:
         return excel_operation.export_excel_departments(db, searchQuery)
     except ValueError as e:

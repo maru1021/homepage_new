@@ -26,6 +26,7 @@ def create_initial_data():
         admin = Employee(
             id=1,
             employee_no="admin12",
+            email='test@test.com',
             name="admin",
         )
         db.add(admin)

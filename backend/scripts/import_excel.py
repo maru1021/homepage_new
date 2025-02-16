@@ -62,6 +62,8 @@ def import_excel(db, file, model_name, model, required_columns, websocket_func, 
 
           new_model = model(**row)
           db.add(new_model)
+          db.flush()
+          db.refresh(new_model)
 
           if after_add_func:
             after_add_func(new_model, db)
