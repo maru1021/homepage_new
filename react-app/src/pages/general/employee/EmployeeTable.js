@@ -20,6 +20,7 @@ import EmployeeEditForm from './EmployeeEditForm';
 
 import useModalManager from '../../../hooks/useModalManager'
 import handleAPI from '../../../utils/handleAPI';
+import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
 
 
 function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage }) {
@@ -44,19 +45,15 @@ function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage })
         closeDeleteModal,
     } = useModalManager();
 
+    const { handleEdit, handleDelete } = useContextMenuActions(
+        employees,
+        hoveredRowId,
+        openModal,
+        openDeleteModal,
+        setIsMenuVisible
+    );
+
     setTableData(data, setEmployees, `${API_BASE_URL.replace("http", "ws")}/ws/general/employee`, searchQuery, currentPage, itemsPerPage);
-
-    const handleEdit = () => {
-        const employee = employees.find((emp) => emp.id === hoveredRowId);
-        openModal(employee);
-        setIsMenuVisible(false);
-    };
-
-    const handleDeleteEmployee = () => {
-        const employee = employees.find((emp) => emp.id === hoveredRowId);
-        openDeleteModal(employee);
-        setIsMenuVisible(false);
-    };
 
     const employeeDelete = async () => {
         const url = `${API_BASE_URL}/api/general/employee/${selectedItem.id}`
@@ -70,7 +67,7 @@ function EmployeeTable({ data, onSave, searchQuery, currentPage, itemsPerPage })
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
-        { label: '削除', icon:<FaTrash color='#E57373' />, onClick: handleDeleteEmployee }
+        { label: '削除', icon:<FaTrash color='#E57373' />, onClick: handleDelete }
     ];
 
     const columns = ['部署', '社員番号', '名前', 'メールアドレス', '雇用情報', '性別', '住所',

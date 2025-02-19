@@ -8,6 +8,7 @@ import useModalManager from '../../../hooks/useModalManager';
 import ContextMenu from '../../../components/ContextMenu';
 import DepartmentEditForm from './DepartmentEditForm';
 import handleAPI from '../../../utils/handleAPI';
+import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
 
 
 function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
@@ -32,19 +33,15 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
         closeDeleteModal,
     } = useModalManager();
 
+    const { handleEdit, handleDelete } = useContextMenuActions(
+        departments,
+        hoveredRowId,
+        openModal,
+        openDeleteModal,
+        setIsMenuVisible
+    );
+
     setTableData(data, setDepartments, `${API_BASE_URL.replace("http", "ws")}/ws/general/department`, searchQuery, currentPage, itemsPerPage);
-
-    const handleEdit = () => {
-        const department = departments.find((dept) => dept.id === hoveredRowId);
-        openModal(department);
-        setIsMenuVisible(false);
-    };
-
-    const handleDeleteDepartment = () => {
-        const department = departments.find((dept) => dept.id === hoveredRowId);
-        openDeleteModal(department);
-        setIsMenuVisible(false);
-    };
 
     const departmentDelete = async () => {
         const url = `${API_BASE_URL}/api/general/department/${selectedItem.id}`
@@ -53,7 +50,7 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
-        { label: '削除', icon: <FaTrash color='#E57373' />, onClick: handleDeleteDepartment }
+        { label: '削除', icon: <FaTrash color='#E57373' />, onClick: handleDelete }
     ];
 
     const columns = ['部署名']

@@ -16,10 +16,10 @@ import Login from './pages/login';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || null);
-  const [sidebar, setSidebar] = useState('homepage'); // デフォルトのサイドバー
+  const [sidebar, setSidebar] = useState('productionManagement');
   const navigate = useNavigate();
 
-  // **トークンの管理（有効期限チェック & 自動ログアウト）**
+  // トークンの管理（有効期限チェック & 自動ログアウト）
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
     if (savedToken && savedToken !== token) {
@@ -40,14 +40,14 @@ function App() {
     }
   }, []);
 
-  // **新しいトークンをセットする関数**
+  // 新しいトークンをセットする関数
   const handleSetToken = (newToken, newExpirationTime) => {
     setToken(newToken);
     localStorage.setItem('token', newToken);
     localStorage.setItem('expiration_time', newExpirationTime);
   };
 
-  // **ログアウト処理**
+  // ログアウト処理
   const handleLogout = () => {
     setToken(null);
     localStorage.removeItem('token');
@@ -55,13 +55,13 @@ function App() {
     navigate('/login');
   };
 
-  // **サイドバーのマッピング**
+  // サイドバーのマッピング
   const sidebarComponents = {
     homepage: HomepageSidebar,
     productionManagement: ProductionManagementSidebar,
   };
 
-  // **選択されたサイドバーを動的にレンダリング**
+  // 選択されたサイドバーを動的にレンダリング
   const SelectedSidebar = sidebarComponents[sidebar] || HomepageSidebar;
 
   return (

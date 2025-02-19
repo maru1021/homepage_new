@@ -20,6 +20,7 @@ import EmployeeAuthorityEditForm from './EmployeeAuthorityEditForm';
 
 import useModalManager from '../../../hooks/useModalManager'
 import handleAPI from '../../../utils/handleAPI';
+import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
 
 
 function EmployeeAuthorityTable({ data, searchQuery, currentPage, itemsPerPage }) {
@@ -46,17 +47,13 @@ function EmployeeAuthorityTable({ data, searchQuery, currentPage, itemsPerPage }
 
     setTableData(data, setEmployees, `${API_BASE_URL.replace("http", "ws")}/ws/authority/employee_authority`, searchQuery, currentPage, itemsPerPage);
 
-    const handleEdit = () => {
-        const employee = employees.find((emp) => emp.id === hoveredRowId);
-        openModal(employee);
-        setIsMenuVisible(false);
-    };
-
-    const handleDeleteEmployee = () => {
-        const employee = employees.find((emp) => emp.id === hoveredRowId);
-        openDeleteModal(employee);
-        setIsMenuVisible(false);
-    };
+    const { handleEdit, handleDelete } = useContextMenuActions(
+        employees,
+        hoveredRowId,
+        openModal,
+        openDeleteModal,
+        setIsMenuVisible
+    );
 
     const employeeDelete = async () => {
         const url = `${API_BASE_URL}/api/authority/employee_authority/${selectedItem.id}`
@@ -65,7 +62,7 @@ function EmployeeAuthorityTable({ data, searchQuery, currentPage, itemsPerPage }
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
-        { label: '削除', icon: <FaTrash color='#E57373' />, onClick: handleDeleteEmployee }
+        { label: '削除', icon: <FaTrash color='#E57373' />, onClick: handleDelete }
     ];
 
     const columns = ['部署', '権限', '社員番号', '名前', 'メールアドレス'];
