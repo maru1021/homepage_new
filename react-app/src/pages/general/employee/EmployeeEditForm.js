@@ -12,7 +12,6 @@ import handleAPI from '../../../utils/handleAPI';
 
 
 function EmployeeEditForm({ employee, onSuccess }) {
-    console.log(employee)
     const [employee_no, setEmployeeNo] = useState(employee?.employee_no || '');
     const [name, setName] = useState(employee?.name || '');
     const [email, setEmail] = useState(employee?.email || '');

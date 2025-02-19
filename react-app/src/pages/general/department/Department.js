@@ -3,7 +3,7 @@ import React from 'react';
 import API_BASE_URL from '../../../config/baseURL';
 import DepartmentForm from './DepartmentForm';
 import DepartmentTable from './DepartmentTable'
-import TableMaster from '../../../script/table/TableMaster';
+import TableMaster from '../../../components/table/TableMaster';
 
 import exportExcel from '../../../utils/Excel/export_excel';
 import fetchData from '../../../utils/fetchData';

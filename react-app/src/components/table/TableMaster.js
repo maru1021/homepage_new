@@ -52,7 +52,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
 
     return (
         <Box className='TableWithActions' sx={{ paddingLeft: '5%' }}>
-            <header>
+            <Box component={"header"}>
                 <Grid container alignItems='center' spacing={2} sx={{ paddingY: 2, paddingLeft: '17%' }}>
                     <Grid item xs={7}>
                         <Typography
@@ -129,7 +129,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                         </Grid>
                     )}
                 </Grid>
-            </header>
+            </Box>
 
             <TableActions
                 itemsPerPage={itemsPerPage}
@@ -141,7 +141,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
             />
 
 
-            <div className='table-container'>
+            <Box className='table-container'>
                 <TableComponent
                     data={tableDatas}
                     onSave={handleDataUpdate}
@@ -155,7 +155,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                     currentPage={currentPage}
                     onPageChange={handlePageChange}
                 />
-            </div>
+            </Box>
 
             <Modal
                 show={isModalOpen}

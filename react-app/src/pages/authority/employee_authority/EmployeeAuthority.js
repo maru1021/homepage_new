@@ -2,7 +2,7 @@ import React from 'react';
 
 import EmployeeAuthorityTable from './EmployeeAuthorityTable';
 import EmployeeAuthorityForm from './EmployeeAuthorityForm';
-import TableMaster from '../../../script/table/TableMaster';
+import TableMaster from '../../../components/table/TableMaster';
 
 import API_BASE_URL from '../../../config/baseURL';
 import exportExcel from '../../../utils/Excel/export_excel';

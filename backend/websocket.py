@@ -4,6 +4,7 @@ import json
 from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect 
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
+from starlette.websockets import WebSocketState
 
 from backend.auth import SECRET_KEY, ALGORITHM
 from backend.database import get_db
@@ -59,9 +60,11 @@ websocket_manager = WebSocketManager()
 async def websocket_handler(websocket: WebSocket, token: str = Query(...), db: Session = Depends(get_db)):
     await websocket_manager.connect(websocket, token)
 
+    # 30分操作がなければ切断する
     async def timeout_disconnect():
-        await asyncio.sleep(30 * 60)  # 切断までの時間
-        await websocket.close()
+        await asyncio.sleep(30 * 60)
+        if websocket.client_state == WebSocketState.CONNECTED:
+            await websocket.close()
         websocket_manager.disconnect(websocket)
 
     timeout_task = asyncio.create_task(timeout_disconnect())
