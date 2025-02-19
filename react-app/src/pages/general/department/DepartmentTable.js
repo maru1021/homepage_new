@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Paper, Table, TableBody, TableCell, TableContainer, TableRow } from '@mui/material';
+import { Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 
 import { API_BASE_URL, ConfirmDeleteModal, Modal, setTableData, TableHeader, useContextMenu } from '../../../index/basicTableModules';
@@ -56,26 +56,39 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
         { label: '削除', icon: <FaTrash color='#E57373' />, onClick: handleDeleteDepartment }
     ];
 
+    const columns = ['部署名']
+
     return (
         <>
             <TableContainer component={Paper} elevation={3} sx={{ overflowX: "auto" }}>
                 <Table>
-                    <TableHeader columns={['部署名']} />
+                    <TableHeader columns={columns} />
 
                     <TableBody>
-                        {departments?.map((department) => (
-                            <TableRow
-                                key={department.id}
-                                onContextMenu={(event) => handleContextMenu(event, department.id)}
-                                id={`department-row-${department.id}`}
-                                hover
-                            >
-                                <TableCell>
-                                    {department.name}
+                        {data.length > 0 ? (
+                            departments.map((department) => (
+                                <TableRow
+                                    key={department.id}
+                                    onContextMenu={(event) => handleContextMenu(event, department.id)}
+                                    id={`department-row-${department.id}`}
+                                    hover
+                                >
+                                    <TableCell>
+                                        {department.name}
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} align="center">
+                                    <Typography sx={{ textAlign: 'center', color: '#888' }}>
+                                        データがありません
+                                    </Typography>
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        )}
                     </TableBody>
+
                 </Table>
             </TableContainer>
 
