@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Collapse, Drawer, List, ListItem, ListItemIcon, ListItemText, Button, Divider, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { FaIndustry, FaUsers, FaSignOutAlt, FaToolbox, FaChevronDown, FaChevronRight } from 'react-icons/fa';
-import '../CSS/sidebar.css';
+import { FaIndustry, FaUsers, FaSignOutAlt, FaToolbox, FaChevronDown, FaChevronRight, FaCogs } from 'react-icons/fa';
+import '../..//CSS/sidebar.css';
 
-function Sidebar({ setToken }) {
+function ProductionManagementSidebar({ setToken, setSidebar }) {
   const navigate = useNavigate();
 
   const [openManufacturing, setOpenManufacturing] = useState(false);
@@ -22,10 +22,10 @@ function Sidebar({ setToken }) {
     <Drawer
       variant="permanent"
       sx={{
-        width: 250,
         background: 'rgba(250, 250, 250, 0.9)',
         boxShadow: 'inset 4px 4px 10px rgba(209, 217, 230, 0.5), inset -4px -4px 10px rgba(255, 255, 255, 0.6)',
         padding: '10px',
+        flexShrink: 0,
       }}
     >
       <List sx={{ p: 2 }}>
@@ -115,6 +115,22 @@ function Sidebar({ setToken }) {
 
         <Divider sx={{ mt: 'auto', mb: 2 }} />
 
+        <ListItem
+          button
+          onClick={() => setSidebar("homepage")} // sidebar を変更
+          sx={{
+            borderRadius: '10px',
+            transition: '0.2s ease-in-out',
+            background: 'rgba(255, 255, 255, 0.8)',
+            '&:hover': { background: 'rgba(180, 230, 255, 0.4)', transform: 'scale(1.02)' },
+          }}
+        >
+          <ListItemIcon sx={{ color: '#666', opacity: 0.8 }}>
+            <FaCogs />
+          </ListItemIcon>
+          <ListItemText primary="ホームページ" />
+        </ListItem>
+
         {/* ログアウト */}
         <ListItem sx={{ justifyContent: 'center' }}>
           <Button
@@ -122,7 +138,7 @@ function Sidebar({ setToken }) {
             startIcon={<FaSignOutAlt />}
             onClick={handleLogout}
             sx={{
-              width: '90%',
+              width: '150px',
               background: '#e57373',
               color: 'white',
               fontWeight: 'bold',
@@ -140,8 +156,9 @@ function Sidebar({ setToken }) {
   );
 }
 
-Sidebar.propTypes = {
+ProductionManagementSidebar.propTypes = {
   setToken: PropTypes.func.isRequired,
+  setSidebar: PropTypes.func.isRequired,
 };
 
-export default Sidebar;
+export default ProductionManagementSidebar;
