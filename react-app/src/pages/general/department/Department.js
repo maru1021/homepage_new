@@ -10,17 +10,14 @@ import fetchData from '../../../utils/fetchData';
 import importExcel from '../../../utils/Excel/import_excel';
 
 
-// 従業員データを取得する関数
 const fetchDepartments = async (searchQuery = '', currentPage = 1, itemsPerPage = 10) => {
     return fetchData(`${API_BASE_URL}/api/general/department`, searchQuery, currentPage, itemsPerPage, 'departments');
 };
 
-// Excel出力する関数
 const ExcelOutput = async (searchQuery) => {
     exportExcel(`${API_BASE_URL}/api/general/department/export_excel?searchQuery=${searchQuery}`);
 };
 
-// Excel入力する関数
 const ExcelInput = async () => {
     importExcel(`${API_BASE_URL}/api/general/department/import_excel`);
 };

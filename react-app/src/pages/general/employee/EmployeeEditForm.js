@@ -11,19 +11,19 @@ import DateField from '../../../components/form/date';
 import handleAPI from '../../../utils/handleAPI';
 
 
-function EmployeeEditForm({ employee, onSuccess }) {
-    const [employee_no, setEmployeeNo] = useState(employee?.employee_no || '');
-    const [name, setName] = useState(employee?.name || '');
-    const [email, setEmail] = useState(employee?.email || '');
-    const [phone_number, setPhoneNumber] = useState(employee?.info?.phone_number || '');
-    const [gender, setGender] = useState(employee?.info?.gender || '');
-    const [address, setAddress] = useState(employee?.info?.address || '');
-    const [emergency_contact, setEmergency_contact] = useState(employee?.info?.emergency_contact || '')
-    const [birthDate, setBirthDate] = useState(employee?.info?.birth_date ? new Date(employee.info.birth_date) : null);
-    const [hireDate, setHireDate] = useState(employee?.info?.hire_date ? new Date(employee.info.hire_date) : null);
-    const [leaveDate, setLeaveDate] = useState(employee?.info?.leave_date ? new Date(employee.info.leave_date) : null)
-    const [employment_type, setEmploymentType] = useState(employee?.info?.employment_type || '');
-    const [contract_expiration, setContractExpiration] = useState(employee?.info?.contract_expiration ? new Date(employee.info.contract_expiration) : null);
+function EmployeeEditForm({ editData, closeModal }) {
+    const [employee_no, setEmployeeNo] = useState(editData?.employee_no || '');
+    const [name, setName] = useState(editData?.name || '');
+    const [email, setEmail] = useState(editData?.email || '');
+    const [phone_number, setPhoneNumber] = useState(editData?.info?.phone_number || '');
+    const [gender, setGender] = useState(editData?.info?.gender || '');
+    const [address, setAddress] = useState(editData?.info?.address || '');
+    const [emergency_contact, setEmergency_contact] = useState(editData?.info?.emergency_contact || '')
+    const [birthDate, setBirthDate] = useState(editData?.info?.birth_date ? new Date(editData.info.birth_date) : null);
+    const [hireDate, setHireDate] = useState(editData?.info?.hire_date ? new Date(editData.info.hire_date) : null);
+    const [leaveDate, setLeaveDate] = useState(editData?.info?.leave_date ? new Date(editData.info.leave_date) : null)
+    const [employment_type, setEmploymentType] = useState(editData?.info?.employment_type || '');
+    const [contract_expiration, setContractExpiration] = useState(editData?.info?.contract_expiration ? new Date(editData.info.contract_expiration) : null);
 
     // エラーメッセージ
     const [employeeNoError, setEmployeeNoError] = useState('');
@@ -71,9 +71,9 @@ function EmployeeEditForm({ employee, onSuccess }) {
             name: setNameError,
         }
 
-        const url = `${API_BASE_URL}/api/general/employee/${employee?.id}`
+        const url = `${API_BASE_URL}/api/general/employee/${editData?.id}`
 
-        handleAPI(url, 'PUT', onSuccess, sendData, errorFieldMap)
+        handleAPI(url, 'PUT', closeModal, sendData, errorFieldMap)
     };
 
     return (
@@ -198,7 +198,7 @@ function EmployeeEditForm({ employee, onSuccess }) {
 
 
 EmployeeEditForm.propTypes = {
-    employee: PropTypes.shape({
+    editData: PropTypes.shape({
         id: PropTypes.number,
         employee_no: PropTypes.string,
         name: PropTypes.string,
@@ -215,7 +215,7 @@ EmployeeEditForm.propTypes = {
             contract_expiration: PropTypes.string
         })
     }),
-    onSuccess: PropTypes.func.isRequired,
+    closeModal: PropTypes.func.isRequired,
 };
 
 export default EmployeeEditForm;

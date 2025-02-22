@@ -8,9 +8,7 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 
 import {
     API_BASE_URL,
-    ConfirmDeleteModal,
     ContextMenu,
-    Modal,
     setTableData,
     TableHeader,
     useContextMenu,
@@ -18,8 +16,6 @@ import {
 
 import EmployeeAuthorityEditForm from './EmployeeAuthorityEditForm';
 
-import useModalManager from '../../../hooks/useModalManager'
-import handleAPI from '../../../utils/handleAPI';
 import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
 
 
@@ -35,30 +31,19 @@ function EmployeeAuthorityTable({ data, searchQuery, currentPage, itemsPerPage }
         menuRef,
     } = useContextMenu();
 
-    const {
-        isModalOpen,
-        isDeleteModalOpen,
-        selectedItem,
-        openModal,
-        closeModal,
-        openDeleteModal,
-        closeDeleteModal,
-    } = useModalManager();
-
-    setTableData(data, setEmployees, `${API_BASE_URL.replace("http", "ws")}/ws/authority/employee_authority`, searchQuery, currentPage, itemsPerPage);
+    const url = `${API_BASE_URL}/api/authority/employee_authority`
 
     const { handleEdit, handleDelete } = useContextMenuActions(
         employees,
         hoveredRowId,
-        openModal,
-        openDeleteModal,
-        setIsMenuVisible
+        url,
+        "name",
+        setIsMenuVisible,
+        "権限編集",
+        EmployeeAuthorityEditForm
     );
 
-    const employeeDelete = async () => {
-        const url = `${API_BASE_URL}/api/authority/employee_authority/${selectedItem.id}`
-        handleAPI(url, 'DELETE', closeDeleteModal )
-    };
+    setTableData(data, setEmployees, `${API_BASE_URL.replace("http", "ws")}/ws/authority/employee_authority`, searchQuery, currentPage, itemsPerPage);
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
@@ -116,29 +101,6 @@ function EmployeeAuthorityTable({ data, searchQuery, currentPage, itemsPerPage }
             </TableContainer>
 
             {isMenuVisible && <ContextMenu position={menuPosition} actions={contextMenuActions} menuRef={menuRef} />}
-
-            <Modal
-                show={isModalOpen}
-                onClose={closeModal}
-                title='従業員情報編集'
-                FormComponent={() => (
-                    <EmployeeAuthorityEditForm
-                        employee={selectedItem}
-                        onSuccess={closeModal}
-                    />
-                )}
-            />
-
-            <ConfirmDeleteModal
-                show={isDeleteModalOpen}
-                onClose={closeDeleteModal}
-                onConfirm={employeeDelete}
-                message={
-                    selectedItem
-                        ? `${selectedItem.employee_no}を削除してもよろしいですか？`
-                        : '選択された従業員が見つかりません。'
-                }
-            />
         </>
     );
 }
@@ -159,7 +121,6 @@ EmployeeAuthorityTable.propTypes = {
             ),
         })
     ).isRequired,
-    onSave: PropTypes.func.isRequired,
     searchQuery: PropTypes.string,
     currentPage: PropTypes.number,
     itemsPerPage: PropTypes.number,

@@ -4,7 +4,6 @@ import { Grid, Typography, Button, Box } from '@mui/material';
 import { SaveAlt as SaveAltIcon, UploadFile as UploadFileIcon } from '@mui/icons-material';
 import TableActions from './TableActions';
 import PaginationComponent from './Pagination';
-import Modal from '../modal/Modal';
 
 
 const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormComponent, ExcelOutput = null, ExcelInput = null }) => {
@@ -13,10 +12,6 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1); // 現在のページ
     const [totalPages, setTotalPages] = useState(1); // ページの合計
-    const [isModalOpen, setIsRegisterModalOpen] = useState(false);
-
-    const openRegisterModal = () => setIsRegisterModalOpen(true);
-    const closeRegisterModal = () => setIsRegisterModalOpen(false);
 
     // テーブルのデータの取得
     const loadData = async (searchQuery = '', currentPage = 1, itemsPerPage = 10) => {
@@ -29,12 +24,6 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
     useEffect(() => {
         loadData(searchQuery, currentPage, itemsPerPage);
     }, [searchQuery, currentPage, itemsPerPage]);
-
-    // 編集または登録後の処理
-    const handleDataUpdate = () => {
-        loadData(searchQuery, currentPage, itemsPerPage);
-        closeRegisterModal();
-    };
 
     const handleItemsPerPageChange = (newItemsPerPage) => {
         setItemsPerPage(newItemsPerPage);
@@ -52,7 +41,8 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
 
     return (
         <Box className='TableWithActions' sx={{ paddingLeft: '5%' }}>
-            <Box component={"header"}>
+            <Box component={"header"
+            }>
                 <Grid container alignItems='center' spacing={2} sx={{ paddingY: 2, paddingLeft: '17%' }}>
                     <Grid item xs={7}>
                         <Typography
@@ -136,15 +126,14 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                 onItemsPerPageChange={handleItemsPerPageChange}
                 searchQuery={searchQuery}
                 onSearchChange={handleSearchChange}
-                onOpenRegisterModal={openRegisterModal}
-                modalClosed={!isModalOpen}
+                modalTitle={modalTitle}
+                FormComponent={FormComponent}
             />
 
 
             <Box className='table-container'>
                 <TableComponent
                     data={tableDatas}
-                    onSave={handleDataUpdate}
                     searchQuery={searchQuery}
                     currentPage={currentPage}
                     itemsPerPage={itemsPerPage}
@@ -156,14 +145,6 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                     onPageChange={handlePageChange}
                 />
             </Box>
-
-            <Modal
-                show={isModalOpen}
-                onClose={closeRegisterModal}
-                onSuccess={closeRegisterModal}
-                title={modalTitle}
-                FormComponent={FormComponent}
-            />
         </Box>
     );
 };

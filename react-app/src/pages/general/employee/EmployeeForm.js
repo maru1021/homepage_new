@@ -11,7 +11,7 @@ import validateFields from '../../../utils/validFields';
 import handleAPI from '../../../utils/handleAPI';
 
 
-function EmployeeForm({ onSuccess }) {
+function EmployeeForm({ closeModal }) {
     const [employee_no, setEmployeeNo] = useState('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -72,7 +72,7 @@ function EmployeeForm({ onSuccess }) {
                 : null,
         }
 
-        handleAPI(url, 'POST', onSuccess, sendData, errorFieldMap)
+        handleAPI(url, 'POST', closeModal, sendData, errorFieldMap)
     };
 
     return (
@@ -195,6 +195,6 @@ function EmployeeForm({ onSuccess }) {
     );
 }
 
-EmployeeForm.propTypes = { onSuccess: PropTypes.func };
+EmployeeForm.propTypes = { closeModal: PropTypes.func };
 
 export default EmployeeForm;

@@ -3,11 +3,10 @@ import PropTypes from 'prop-types';
 import { Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 
-import { API_BASE_URL, ConfirmDeleteModal, Modal, setTableData, TableHeader, useContextMenu } from '../../../index/basicTableModules';
-import useModalManager from '../../../hooks/useModalManager';
-import ContextMenu from '../../../components/ContextMenu';
 import DepartmentEditForm from './DepartmentEditForm';
-import handleAPI from '../../../utils/handleAPI';
+
+import { API_BASE_URL, setTableData, TableHeader, useContextMenu } from '../../../index/basicTableModules';
+import ContextMenu from '../../../components/ContextMenu';
 import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
 
 
@@ -23,30 +22,19 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
         menuRef,
     } = useContextMenu();
 
-    const {
-        isModalOpen,
-        isDeleteModalOpen,
-        selectedItem,
-        openModal,
-        closeModal,
-        openDeleteModal,
-        closeDeleteModal,
-    } = useModalManager();
+    const url = `${API_BASE_URL}/api/general/department`
 
     const { handleEdit, handleDelete } = useContextMenuActions(
         departments,
         hoveredRowId,
-        openModal,
-        openDeleteModal,
-        setIsMenuVisible
+        url,
+        "name",
+        setIsMenuVisible,
+        "部署編集",
+        DepartmentEditForm
     );
 
     setTableData(data, setDepartments, `${API_BASE_URL.replace("http", "ws")}/ws/general/department`, searchQuery, currentPage, itemsPerPage);
-
-    const departmentDelete = async () => {
-        const url = `${API_BASE_URL}/api/general/department/${selectedItem.id}`
-        handleAPI(url, 'DELETE', closeDeleteModal )
-    };
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
@@ -90,25 +78,6 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
             </TableContainer>
 
             {isMenuVisible && <ContextMenu position={menuPosition} actions={contextMenuActions} menuRef={menuRef} />}
-
-            <Modal
-                show={isModalOpen}
-                onClose={closeModal}
-                title='部署情報編集'
-                FormComponent={() => (
-                    <DepartmentEditForm
-                        department={selectedItem}
-                        onSuccess={closeModal}
-                    />
-                )}
-            />
-
-            <ConfirmDeleteModal
-                show={isDeleteModalOpen}
-                onClose={closeDeleteModal}
-                onConfirm={departmentDelete}
-                message={selectedItem ? `${selectedItem.name}を削除してもよろしいですか？` : '選択された部署が見つかりません。'}
-            />
         </>
     );
 }
