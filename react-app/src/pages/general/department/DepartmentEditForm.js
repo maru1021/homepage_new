@@ -7,8 +7,8 @@ import validateFields from '../../../utils/validFields';
 import handleAPI from '../../../utils/handleAPI';
 
 
-function DepartmentEditForm({ department, onSuccess }) {
-    const [name, setName] = useState(department?.name || '');
+function DepartmentEditForm({ editData, closeModal }) {
+    const [name, setName] = useState(editData?.name || '');
 
     const [nameError, setNameError] = useState('');
 
@@ -33,9 +33,9 @@ function DepartmentEditForm({ department, onSuccess }) {
             name: setNameError,
         }
 
-        const url = `${API_BASE_URL}/api/general/department/${department?.id}`
+        const url = `${API_BASE_URL}/api/general/department/${editData?.id}`
 
-        handleAPI(url, 'PUT', onSuccess, sendData, errorFieldMap)
+        handleAPI(url, 'PUT', closeModal, sendData, errorFieldMap)
     };
 
     return (
@@ -59,11 +59,11 @@ function DepartmentEditForm({ department, onSuccess }) {
 }
 
 DepartmentEditForm.propTypes = {
-    department: PropTypes.shape({
+    editData: PropTypes.shape({
         id: PropTypes.number,
         name: PropTypes.string,
     }),
-    onSuccess: PropTypes.func.isRequired,
+    closeModal: PropTypes.func.isRequired,
     searchQuery: PropTypes.string,
     currentPage: PropTypes.number,
     itemsPerPage: PropTypes.number

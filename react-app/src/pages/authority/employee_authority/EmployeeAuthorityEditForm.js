@@ -26,9 +26,9 @@ const fetchDepartments = async () => {
     }
 };
 
-function EmployeeAuthorityEditForm({ employee, onSuccess }) {
-    const [employee_no, setEmployeeNo] = useState(employee?.employee_no || '');
-    const [name, setName] = useState(employee?.name || '');
+function EmployeeAuthorityEditForm({ editData, closeModal }) {
+    const [employee_no, setEmployeeNo] = useState(editData?.employee_no || '');
+    const [name, setName] = useState(editData?.name || '');
     const [departments, setDepartments] = useState([]);
     const [employeeNoError, setEmployeeNoError] = useState('');
     const [nameError, setNameError] = useState('');
@@ -36,7 +36,7 @@ function EmployeeAuthorityEditForm({ employee, onSuccess }) {
 
     // 部署と権限のフォームの状態
     const [forms, setForms] = useState(
-        employee?.departments?.map((dep) => ({
+        editData?.departments?.map((dep) => ({
             department: { value: dep.id, label: dep.name },
             admin: dep.admin ?? false,
         })) || [{ department: null, admin: false }]
@@ -102,9 +102,9 @@ function EmployeeAuthorityEditForm({ employee, onSuccess }) {
             forms: formattedForms,
         };
 
-        const url = `${API_BASE_URL}/api/authority/employee_authority/${employee?.id}`
+        const url = `${API_BASE_URL}/api/authority/employee_authority/${editData?.id}`
 
-        handleAPI(url, "PUT", onSuccess, send_data, errorFieldMap)
+        handleAPI(url, "PUT", closeModal, send_data, errorFieldMap)
     };
 
     return (
@@ -201,7 +201,7 @@ function EmployeeAuthorityEditForm({ employee, onSuccess }) {
 
 
 EmployeeAuthorityEditForm.propTypes = {
-    employee: PropTypes.shape({
+    editData: PropTypes.shape({
         id: PropTypes.number,
         employee_no: PropTypes.string,
         name: PropTypes.string,
@@ -213,7 +213,7 @@ EmployeeAuthorityEditForm.propTypes = {
             })
         ),
     }),
-    onSuccess: PropTypes.func.isRequired,
+    closeModal: PropTypes.func.isRequired,
 };
 
 export default EmployeeAuthorityEditForm;

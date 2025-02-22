@@ -7,7 +7,8 @@ import validateFields from '../../../utils/validFields';
 import handleAPI from '../../../utils/handleAPI';
 
 
-function DepartmentForm({ onSuccess }) {
+function DepartmentForm({ closeModal }) {
+    console.log(closeModal)
     const [name, setName] = useState('');
     const [nameError, setNameError] = useState('');
 
@@ -34,7 +35,7 @@ function DepartmentForm({ onSuccess }) {
 
         const url = `${API_BASE_URL}/api/general/department/`
 
-        handleAPI(url, 'POST', onSuccess, sendData, errorFieldMap)
+        handleAPI(url, 'POST', closeModal, sendData, errorFieldMap)
     };
 
     return (
@@ -59,9 +60,8 @@ function DepartmentForm({ onSuccess }) {
     );
 }
 
-// PropTypesの型定義を追加
 DepartmentForm.propTypes = {
-    onSuccess: PropTypes.func,
+    closeModal: PropTypes.func.isRequired,
 };
 
 export default DepartmentForm;

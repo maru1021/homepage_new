@@ -30,7 +30,7 @@ const fetchDepartments = async () => {
     }
 };
 
-function EmployeeAuthorityForm({ onSuccess }) {
+function EmployeeAuthorityForm({ closeModal }) {
     const [employee_no, setEmployeeNo] = useState('');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -115,7 +115,7 @@ function EmployeeAuthorityForm({ onSuccess }) {
 
         const url = `${API_BASE_URL}/api/authority/employee_authority/`
 
-        handleRegister(url, "POST", onSuccess, sendData, errorFieldMap)
+        handleRegister(url, "POST", closeModal, sendData, errorFieldMap)
     };
 
     return (
@@ -217,7 +217,7 @@ function EmployeeAuthorityForm({ onSuccess }) {
 }
 
 EmployeeAuthorityForm.propTypes = {
-    onSuccess: PropTypes.func.isRequired,
+    closeModal: PropTypes.func.isRequired,
 };
 
 export default EmployeeAuthorityForm;

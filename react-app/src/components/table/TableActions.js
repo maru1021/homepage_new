@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 import {
     FormControl,
@@ -10,23 +10,25 @@ import {
     Grid,
 } from '@mui/material';
 
+import Modal from '../modal/Modal';
+
 
 function TableActions ({
     itemsPerPage,
     onItemsPerPageChange,
     searchQuery,
     onSearchChange,
-    onOpenRegisterModal,
-    modalClosed
+    modalTitle,
+    FormComponent
 }) {
     const searchInputRef = useRef(null);
 
-    // モーダルが閉じられたら検索ボックスにフォーカスを設定
-    useEffect(() => {
-        if (modalClosed && searchInputRef.current) {
-            searchInputRef.current.focus();
-        }
-    }, [modalClosed]);
+    const onOpenRegisterModal = async () => {
+        await Modal.call({
+            title: modalTitle,
+            FormComponent: FormComponent,
+        });
+    };
 
     return (
         <Grid
@@ -106,8 +108,8 @@ TableActions.propTypes = {
     onItemsPerPageChange: PropTypes.func.isRequired,
     searchQuery: PropTypes.string.isRequired,
     onSearchChange: PropTypes.func.isRequired,
-    onOpenRegisterModal: PropTypes.func,
-    modalClosed: PropTypes.bool.isRequired,
+    modalTitle: PropTypes.string,
+    FormComponent: PropTypes.func
 };
 
 export default TableActions;

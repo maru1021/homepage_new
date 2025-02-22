@@ -13,6 +13,8 @@ import './CSS/contextmenu.css';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import AppRoutes from './routes/AppRoutes';
 import Login from './pages/login';
+import Modal from "./components/modal/Modal"
+import ConfirmDeleteModal from "./components/modal/ConfirmDeleteModal"
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || null);
@@ -74,6 +76,8 @@ function App() {
       </Routes>
 
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
+      <ConfirmDeleteModal.Root />
+      <Modal.Root />
     </>
   );
 }

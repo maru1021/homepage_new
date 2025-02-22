@@ -1,19 +1,16 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { createCallable } from 'react-call';
 
-
-const ConfirmDeleteModal = ({ show, onClose, onConfirm, message }) => {
-    if (!show) return null;
-
+const ConfirmDeleteModal = createCallable(({ call, message }) => {
     return (
-        <Dialog open={show} onClose={onClose} fullWidth maxWidth='xs'>
+        <Dialog open fullWidth maxWidth="xs" onClose={() => call.end(false)}>
             <DialogTitle>
                 削除確認
                 <IconButton
-                    aria-label='close'
-                    onClick={onClose}
+                    aria-label="close"
+                    onClick={() => call.end(false)}
                     sx={{
                         position: 'absolute',
                         right: 8,
@@ -24,26 +21,21 @@ const ConfirmDeleteModal = ({ show, onClose, onConfirm, message }) => {
                     <CloseIcon />
                 </IconButton>
             </DialogTitle>
+
             <DialogContent dividers>
                 <p>{message}</p>
             </DialogContent>
+
             <DialogActions>
-                <Button onClick={onClose} color='secondary' variant='outlined'>
+                <Button onClick={() => call.end(false)} color="secondary" variant="outlined">
                     キャンセル
                 </Button>
-                <Button onClick={onConfirm} color='error' variant='contained'>
+                <Button onClick={() => call.end(true)} color="error" variant="contained">
                     削除
                 </Button>
             </DialogActions>
         </Dialog>
     );
-};
+});
 
-ConfirmDeleteModal.propTypes = {
-    show: PropTypes.bool.isRequired,
-    onClose: PropTypes.func.isRequired,
-    onConfirm: PropTypes.func.isRequired,
-    message: PropTypes.string.isRequired,
-};
-
-export default ConfirmDeleteModal;
+export default ConfirmDeleteModal
