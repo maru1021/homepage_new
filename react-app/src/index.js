@@ -18,7 +18,7 @@ import ConfirmDeleteModal from "./components/modal/ConfirmDeleteModal"
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || null);
-  const [sidebar, setSidebar] = useState('productionManagement');
+  const [sidebar, setSidebar] = useState('homepage');
   const navigate = useNavigate();
 
   // トークンの管理（有効期限チェック & 自動ログアウト）

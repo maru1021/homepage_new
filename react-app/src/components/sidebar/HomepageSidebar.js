@@ -27,7 +27,12 @@ function HomepageSidebar({ setSidebar }) {
         </Typography>
         <Divider sx={{ mb: 2 }} />
 
-        {/* 製造部 */}
+        <ListItem button onClick={() => navigate('homepage/type')}>
+          <ListItemText primary="項目一覧" />
+        </ListItem>
+        <ListItem button onClick={() => navigate('homepage/classification')}>
+          <ListItemText primary="分類一覧" />
+        </ListItem>
         <ListItem
           button
           onClick={() => setOpenManufacturing(!openManufacturing)}

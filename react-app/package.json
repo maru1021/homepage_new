@@ -16,6 +16,7 @@
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.5",
+    "react-call": "^1.7.0",
     "react-contexify": "^6.0.0",
     "react-datepicker": "^8.0.0",
     "react-dom": "^18.3.1",

@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
     libpq-dev \
+    postgresql-client \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 依存関係をインストール

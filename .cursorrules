@@ -1,0 +1,60 @@
+# バックエンドのPythonファイル
+backend/**/*.py {
+    python_version: "3.11"
+    fastapi_version: "0.109.0"
+    sqlalchemy_version: "2.0.0"
+    alembic_version: "1.13.0"
+    tab_width: 4
+    indent_style: space
+    max_line_length: 120
+    end_of_line: lf
+}
+
+# フロントエンドのReactファイル
+react-app/src/**/*.{js,jsx,ts,tsx} {
+    node_version: "22"
+    react_version: "18.2.0"
+    typescript_version: "5.0.0"
+    tailwind_version: "3.0.0"
+    tab_width: 2
+    indent_style: space
+    max_line_length: 100
+    end_of_line: lf
+    # Next.js App Router directives
+    directives_position: top
+    directives: ["use client", "use server", "react-call"]
+    react_call: {
+        position: top
+        format: strict
+    }
+}
+
+# Docker関連ファイル
+docker-compose.yml {
+    docker_compose_version: "3.8"
+    postgres_version: "13"
+    tab_width: 2
+    indent_style: space
+}
+
+# スクリプトファイル
+backend/scripts/**/*.py {
+    tab_width: 4
+    indent_style: space
+    python_version: "3.11"
+    pandas_version: "2.0.0"
+    openpyxl_version: "3.1.0"
+}
+
+# 共通設定
+* {
+    charset: utf-8
+    trim_trailing_whitespace: true
+    insert_final_newline: true
+}
+
+# バックアップファイル
+backend/backup/*.sql {
+    postgres_version: "13"
+    end_of_line: lf
+}
