@@ -7,9 +7,15 @@ from backend.database import Base, engine
 from backend.router import router as main_router
 from backend.websocket import router as ws_router
 from backend.scripts.initial_data import create_initial_data
+from backend.scripts.backup.restore_database import restore_database
 
 
 app = FastAPI()
+
+# データベースの復元
+# @app.on_event("startup")
+# async def startup_event():
+#     restore_database()
 
 # 初期データ作成
 # create_initial_data()
@@ -22,9 +28,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# テーブル作成
-Base.metadata.create_all(bind=engine)
 
 # ルーターの追加
 app.include_router(main_router, prefix="/api", dependencies=[Depends(verify_token)])

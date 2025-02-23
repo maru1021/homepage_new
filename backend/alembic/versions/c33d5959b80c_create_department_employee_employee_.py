@@ -1,8 +1,8 @@
-"""部署_従業員_権限_従業員情報モデル追加
+"""create_department,employee,employee_authority,employee_info
 
-Revision ID: f8dfcd9ef7c4
-Revises: 
-Create Date: 2025-02-16 05:07:43.591016
+Revision ID: c33d5959b80c
+Revises: c5a9b2a23f2f
+Create Date: 2025-02-23 14:49:59.754669
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f8dfcd9ef7c4'
-down_revision: Union[str, None] = None
+revision: str = 'c33d5959b80c'
+down_revision: Union[str, None] = 'c5a9b2a23f2f'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
