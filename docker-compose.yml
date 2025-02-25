@@ -53,17 +53,5 @@ services:
       - "8080:8080"
 
 
-  # mysql_temp:
-  #   image: mysql:8.0
-  #   environment:
-  #     MYSQL_DATABASE: laravel
-  #     MYSQL_USER: maru
-  #     MYSQL_PASSWORD: Mm19871021
-  #     MYSQL_ROOT_PASSWORD: root_password
-  #   ports:
-  #     - "3306:3306"
-  #   volumes:
-  #     - ./production_dump.sql:/docker-entrypoint-initdb.d/production_dump.sql
-
 volumes:
   db_data:
