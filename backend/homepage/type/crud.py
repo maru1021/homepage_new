@@ -9,14 +9,14 @@ from backend.homepage.type import schemas
 from backend.websocket import websocket_manager
 
 
-# 部署の変更をWebSocketで通知
+# 項目の変更をWebSocketで通知
 async def type_websocket(db: Session):
     await websocket_manager.broadcast_filtered(db, get_types)
 
 def run_websocket(db: Session):
     asyncio.run(type_websocket(db))
 
-# 部署一覧取得
+# 項目一覧取得
 def get_types(db: Session, search: str = "", page: int = 1, limit: int = 10, return_total_count=True):
     try:
         query = db.query(Type)
@@ -40,8 +40,6 @@ def get_types(db: Session, search: str = "", page: int = 1, limit: int = 10, ret
 
 # 項目作成
 def create_type(db: Session, type: schemas.Type, background_tasks: BackgroundTasks):
-    from backend.scripts.backup.restore_database import restore_database
-    restore_database()
     try:
         if db.query(Type).filter(Type.name == type.name).first():
             return {"success": False, "message": "その項目は既に存在しています", "field": "name"}
@@ -83,7 +81,7 @@ def update_type(db: Session, type_id: int, type_data: schemas.Type, background_t
         return {
             "id": type.id,
             "name": type.name,
-            "message": "部署情報を更新しました。",
+            "message": "項目情報を更新しました。",
         }
     except SQLAlchemyError as e:
         db.rollback()
