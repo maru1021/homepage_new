@@ -21,6 +21,7 @@ class TypeUpdate(BaseModel):
 class Type(BaseModel):
     id: int
     name: str
+    sort: int
 
     class Config:
         from_attributes = True

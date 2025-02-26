@@ -9,8 +9,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./react-app:/homepage/react-app        # ホストとコンテナのディレクトリをマウント
-      - /homepage/react-app/node_modules        # コンテナ内のnode_modulesを空ボリュームで確保
+      - ./react-app:/homepage/react-app
+      - /homepage/react-app/node_modules
     command: npm start
 
   # http://localhost:8000/でAPIにアクセスするのに使用

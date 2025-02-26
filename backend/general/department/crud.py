@@ -40,9 +40,6 @@ def get_departments(db: Session, search: str = "", page: int = 1, limit: int = 1
 
 # 部署作成
 def create_department(db: Session, department: schemas.DepartmentBase, background_tasks: BackgroundTasks):
-    from backend.scripts.backup.restore_database import restore_database
-    
-    restore_database()
     try:
         if db.query(Department).filter(Department.name == department.name).first():
             return {"success": False, "message": "その部署は既に存在しています", "field": "name"}
