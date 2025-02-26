@@ -5,18 +5,21 @@
 # docker compose up -d
 
 # ベースイメージ
-FROM node:22
+FROM node:18
 
 # 作業ディレクトリの設定
 WORKDIR /homepage/react-app
 
-# 依存ファイルをコピーしてインストールを実行
-COPY react-app/package*.json .
+# package.jsonとpackage-lock.jsonをコピー
+COPY react-app/package*.json ./
 
-# 一時的なキャッシュディレクトリを使用し、インストール後にキャッシュを削除
-RUN npm install --prefix . --cache /tmp/empty-cache && rm -rf /tmp/empty-cache
+# 依存関係をインストール
+RUN npm install
 
-# アプリケーション全体をコピー
+# 新しいパッケージを追加でインストール
+RUN npm install react-dnd react-dnd-html5-backend immutability-helper
+
+# アプリケーションのソースコードをコピー
 COPY react-app/ .
 
 # ポートのエクスポート
