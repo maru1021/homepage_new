@@ -186,6 +186,55 @@ def restore_database():
                                 print(f"エラー: {str(e)}")
                                 raise e
 
+        # シーケンスを更新
+        cur.execute("""
+            DO $$
+            DECLARE
+                t_name text;
+                max_id integer;
+                has_id_column boolean;
+            BEGIN
+                FOR t_name IN 
+                    SELECT tablename FROM pg_tables 
+                    WHERE schemaname = 'public'
+                    AND tablename != 'alembic_version'
+                LOOP
+                    -- idカラムが存在するか確認
+                    SELECT EXISTS (
+                        SELECT 1 FROM information_schema.columns 
+                        WHERE table_schema = 'public' 
+                        AND table_name = t_name 
+                        AND column_name = 'id'
+                    ) INTO has_id_column;
+
+                    IF has_id_column THEN
+                        -- 既存のシーケンスを削除
+                        EXECUTE format('DROP SEQUENCE IF EXISTS %I_id_seq CASCADE', t_name);
+                        
+                        -- 新しいシーケンスを作成
+                        EXECUTE format('CREATE SEQUENCE %I_id_seq', t_name);
+                        
+                        -- シーケンスをカラムに関連付け
+                        EXECUTE format(
+                            'ALTER TABLE %I ALTER COLUMN id SET DEFAULT nextval(%L)',
+                            t_name,
+                            t_name || '_id_seq'
+                        );
+                        
+                        -- 現在の最大値を取得してシーケンスを設定
+                        EXECUTE format('SELECT COALESCE(MAX(id), 0) + 1 FROM %I', t_name) INTO max_id;
+                        IF max_id IS NOT NULL THEN
+                            EXECUTE format(
+                                'ALTER SEQUENCE %I_id_seq RESTART WITH %s',
+                                t_name,
+                                max_id
+                            );
+                        END IF;
+                    END IF;
+                END LOOP;
+            END $$;
+        """)
+
         cur.close()
         conn.close()
         print("データベースの復元が正常に完了しました。")

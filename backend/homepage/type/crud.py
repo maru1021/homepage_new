@@ -17,29 +17,32 @@ def run_websocket(db: Session):
     asyncio.run(type_websocket(db))
 
 # 項目一覧取得
-def get_types(db: Session, search: str = "", page: int = 1, limit: int = 10, return_total_count=True):
-    try:
-        query = db.query(Type)
+def get_types(db: Session, search_query: str = "", current_page: int = 1, items_per_page: int = 10):
+    query = db.query(Type)
 
-        if search:
-            query = query.filter(Type.name.contains(search))
+    if search_query:
+        query = query.filter(Type.name.ilike(f"%{search_query}%"))
 
-        if not return_total_count:
-            return query
+    query = query.order_by(Type.sort)
 
-        total_count = query.count()
-        types = query.offset((page - 1) * limit).limit(limit).all()
+    total_count = query.count()
 
-        types_data = [
-                {"id": type.id, "name": type.name} for type in types
-            ]
-        return types_data, total_count
-    except SQLAlchemyError as e:
-        print(f"Error occurred: {e}")
-        return {"success": False, "message": "情報の取得に失敗しました", "field": ""}
+    offset = (current_page - 1) * items_per_page
+    types = query.offset(offset).limit(items_per_page).all()
+
+    type_list = []
+    for type_obj in types:
+        type_dict = {
+            "id": type_obj.id,
+            "name": type_obj.name,
+            "sort": type_obj.sort 
+        }
+        type_list.append(type_dict)
+
+    return type_list, total_count
 
 # 項目作成
-def create_type(db: Session, type: schemas.Type, background_tasks: BackgroundTasks):
+def create_type(db: Session, type: schemas.TypeCreate, background_tasks: BackgroundTasks):
     try:
         if db.query(Type).filter(Type.name == type.name).first():
             return {"success": False, "message": "その項目は既に存在しています", "field": "name"}
@@ -47,14 +50,22 @@ def create_type(db: Session, type: schemas.Type, background_tasks: BackgroundTas
         max_sort = db.query(func.max(Type.sort)).scalar() or 0
         next_sort = max_sort + 1
 
-        db_type = Type(name=type.name, sort=next_sort)
+        db_type = Type(
+            name=type.name,
+            sort=next_sort
+        )
+
         db.add(db_type)
         db.commit()
         db.refresh(db_type)
 
         background_tasks.add_task(run_websocket, db)
 
-        return { "message": "項目を作成しました。" }
+        return {
+            "success": True,
+            "message": "項目を作成しました。",
+            "field": ""
+        }
     except SQLAlchemyError as e:
         db.rollback()
         print(f"Error occurred: {e}")

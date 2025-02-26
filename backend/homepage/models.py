@@ -6,11 +6,7 @@ from backend.database import Base
 class Type(Base):
     __tablename__ = "types"
 
-    id = Column(BigInteger,
-                Sequence('types_id_seq', start=1),
-                primary_key=True,
-                index=True,
-                nullable=False)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(32), nullable=False)
     sort = Column(Integer, nullable=False)
 
