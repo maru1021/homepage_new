@@ -20,7 +20,7 @@ async def read_types(
 
 
 @router.post("/", response_model=schemas.TypeResponse)
-async def create_employee(type: schemas.TypeCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+async def create_type(type: schemas.TypeCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     type_data = type.dict()
 
     try:
@@ -48,7 +48,6 @@ async def update_type(type_id: int, type_data: schemas.TypeUpdate, background_ta
 
 @router.delete("/{type_id}", response_model=schemas.TypeResponse)
 async def delete_type(type_id: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    print('-----------------')
     try:
         return crud.delete_type(db, type_id, background_tasks=background_tasks)
     except ValueError as e:

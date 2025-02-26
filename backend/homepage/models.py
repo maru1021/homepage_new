@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, BigInteger, Text
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, BigInteger, Text, Sequence
 from sqlalchemy.orm import relationship
 from backend.database import Base
 
@@ -6,10 +6,13 @@ from backend.database import Base
 class Type(Base):
     __tablename__ = "types"
 
-    id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
+    id = Column(BigInteger,
+                Sequence('types_id_seq', start=1),
+                primary_key=True,
+                index=True,
+                nullable=False)
     name = Column(String(32), nullable=False)
     sort = Column(Integer, nullable=False)
-
 
     classifications = relationship("Classification", back_populates="type", cascade="all, delete-orphan")
     articles = relationship("Article", back_populates="type")
