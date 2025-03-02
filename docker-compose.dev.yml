@@ -23,9 +23,11 @@ services:
     build:
       context: .
       dockerfile: ./backend/Dockerfile
+    user: "${UID}:${GID}"  # ホストのユーザーIDとグループIDを使用
     environment:
       - PYTHONPATH=/app/backend
       - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1  # .pycファイルを生成しない
     command: >
       uvicorn backend.main:app
       --host 0.0.0.0
