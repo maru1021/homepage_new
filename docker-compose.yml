@@ -6,8 +6,8 @@ services:
   # http://localhost:3000/でReactアプリにアクセスするのに使用
   react-app:
     build:
-      context: .
-      dockerfile: ./react-app/Dockerfile
+      context: ./react-app
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     restart: always

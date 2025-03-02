@@ -14,10 +14,10 @@ const fetchClassifications = async (searchQuery = '', currentPage = 1, itemsPerP
 
 const Classification = () => (
     <TableMaster
-        title='項目一覧'
+        title='分類一覧'
         fetchData={fetchClassifications}
         TableComponent={ClassificationTable}
-        modalTitle='項目登録'
+        modalTitle='分類登録'
         FormComponent={ClassificationForm}
     />
 );

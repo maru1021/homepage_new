@@ -1,5 +1,10 @@
+// VSCodeの設定
+// 保存時に自動でフォーマットとLintの修正を実行する設定
+
+
 {
-  "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true,
-  "files.trimFinalNewlines": true
-} 
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "always"
+  }
+}
