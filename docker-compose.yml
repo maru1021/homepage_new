@@ -11,7 +11,6 @@ services:
     command: npm run build && npm install -g serve && serve -s build
     ports:
       - "3000:3000"
-    restart: always
     volumes:
       - ./react-app:/homepage/react-app
       - /homepage/react-app/node_modules
@@ -26,7 +25,6 @@ services:
       - PYTHONUNBUFFERED=1
     ports:
       - "8000:8000"
-    restart: always
     volumes:
       - ./backend:/app/backend
       - ./backend/alembic.ini:/app/alembic.ini
@@ -37,7 +35,6 @@ services:
   # PostgreSQL
   db:
     image: postgres:13
-    restart: always
     environment:
       POSTGRES_DB: mydatabase
       POSTGRES_USER: user
@@ -52,10 +49,8 @@ services:
   # http://localhost:8080/でデータベースの内容を確認するのに使用
   adminer:
     image: adminer
-    restart: always
     ports:
       - "8080:8080"
-
 
 volumes:
   db_data:
