@@ -31,3 +31,5 @@ htmlcov/
 .ipynb_checkpoints
 .pytest_cache/
 coverage/
+alembic/__pycache__/
+alembic/**/__pycache__/
