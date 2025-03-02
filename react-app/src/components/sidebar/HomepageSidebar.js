@@ -1,108 +1,299 @@
-import React, { useState } from 'react';
-import { Collapse, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+    Drawer,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Divider,
+    Typography,
+    Collapse,
+} from '@mui/material';
+import {
+    FaCogs, FaCode, FaLayerGroup, FaTools, FaBook,
+    FaDatabase, FaServer, FaDesktop, FaCloud, FaHtml5,
+    FaCss3Alt, FaBootstrap, FaLinux
+} from 'react-icons/fa';
+import {
+    DiReact, DiPython, DiJavascript1, DiPhp, DiRuby,
+    DiDjango, DiLaravel, DiDocker, DiAws, DiGit,
+} from 'react-icons/di';
+import {
+    SiFastapi,SiRubyonrails
+} from 'react-icons/si';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import {
+    Article as ArticleIcon,
+    PostAdd as PostAddIcon,
+} from '@mui/icons-material';
 import PropTypes from 'prop-types';
-import { FaIndustry, FaToolbox, FaChevronDown, FaChevronRight, FaCogs } from 'react-icons/fa';
+import { API_BASE_URL } from '../../index/basicTableModules';
 import '../../CSS/sidebar.css';
 
-function HomepageSidebar({ setSidebar }) {
-  const navigate = useNavigate();
 
-  const [openManufacturing, setOpenManufacturing] = useState(false);
-  const [openTools, setOpenTools] = useState(false);
+function HomepageSidebar({ setSidebar, mobileOpen = false, onClose = () => {}, isMobile = false }) {
+    const navigate = useNavigate();
+    const [types, setTypes] = useState([]);
+    const [openTypes, setOpenTypes] = useState({});
+    const [openClassifications, setOpenClassifications] = useState({});
 
-  return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        background: 'rgba(250, 250, 250, 0.9)',
-        boxShadow: 'inset 4px 4px 10px rgba(209, 217, 230, 0.5), inset -4px -4px 10px rgba(255, 255, 255, 0.6)',
-        padding: '10px',
-        flexShrink: 0,
-      }}
-    >
-      <List sx={{ p: 2 }}>
-        <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 'bold', color: '#666', mb: 2 }}>
-          メニュー
-        </Typography>
-        <Divider sx={{ mb: 2 }} />
+    // 項目と分類データを取得
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/homepage/side_bar`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setTypes(data.types || []);
+                }
+            } catch (error) {
+                console.error('Error fetching hierarchy:', error);
+            }
+        };
+        fetchData();
+    }, []);
 
-        <ListItem button onClick={() => navigate('homepage/type')}>
-          <ListItemText primary="項目一覧" />
-        </ListItem>
-        <ListItem button onClick={() => navigate('homepage/classification')}>
-          <ListItemText primary="分類一覧" />
-        </ListItem>
-        <ListItem
-          button
-          onClick={() => setOpenManufacturing(!openManufacturing)}
-          sx={{
-            borderRadius: '10px',
-            transition: '0.2s ease-in-out',
-            background: openManufacturing ? 'rgba(180, 230, 255, 0.4)' : 'transparent',
-            '&:hover': { background: 'rgba(255, 255, 255, 0.8)', transform: 'scale(1.02)' },
-          }}
+    // 項目の開閉状態を切り替え
+    const handleTypeClick = (typeId) => {
+        setOpenTypes(prev => ({
+            ...prev,
+            [typeId]: !prev[typeId]
+        }));
+    };
+
+    // 分類の開閉状態を切り替え
+    const handleClassificationClick = (classificationId) => {
+        setOpenClassifications(prev => ({
+            ...prev,
+            [classificationId]: !prev[classificationId]
+        }));
+    };
+
+    // アイコンを選択する関数（項目用）
+    const getTypeIcon = (typeName) => {
+        const iconStyle = { fontSize: '1.2rem' };
+        switch (typeName.toLowerCase()) {
+            case 'プログラミング基礎':
+                return <FaCode style={{ ...iconStyle, color: '#64B5F6' }} />;
+            case 'フレームワーク':
+                return <FaLayerGroup style={{ ...iconStyle, color: '#BA68C8' }} />;
+            case 'データベース':
+                return <FaDatabase style={{ ...iconStyle, color: '#FFB74D' }} />;
+            case 'インフラ':
+                return <FaCloud style={{ ...iconStyle, color: '#4FC3F7' }} />;
+            case 'フロントエンド':
+                return <FaDesktop style={{ ...iconStyle, color: '#81C784' }} />;
+            case 'バックエンド':
+                return <FaServer style={{ ...iconStyle, color: '#90A4AE' }} />;
+            case 'その他':
+                return <FaTools style={{ ...iconStyle, color: '#A1887F' }} />;
+            default:
+                return <FaBook style={{ ...iconStyle, color: '#BDBDBD' }} />;
+        }
+    };
+
+    // アイコンを選択する関数
+    const getClassificationIcon = (name) => {
+        const iconStyle = { fontSize: '1rem' };
+        switch (name.toLowerCase()) {
+            case 'javascript':
+                return <DiJavascript1 style={{ ...iconStyle, color: '#FDD835' }} />;
+            case 'python':
+                return <DiPython style={{ ...iconStyle, color: '#42A5F5' }} />;
+            case 'php':
+                return <DiPhp style={{ ...iconStyle, color: '#9575CD' }} />;
+            case 'ruby':
+                return <DiRuby style={{ ...iconStyle, color: '#EF5350' }} />;
+            case 'html':
+                return <FaHtml5 style={{ ...iconStyle, color: '#FF7043' }} />;
+            case 'css':
+                return <FaCss3Alt style={{ ...iconStyle, color: '#29B6F6' }} />;
+            case 'react':
+                return <DiReact style={{ ...iconStyle, color: '#4DD0E1' }} />;
+            case 'django(基本)':
+            case 'django(orm)':
+                return <DiDjango style={{ ...iconStyle, color: '#2E7D32' }} />;
+            case 'fastapi':
+                return <SiFastapi style={{ ...iconStyle, color: '#26A69A' }} />;
+            case 'laravel':
+                return <DiLaravel style={{ ...iconStyle, color: '#FF7043' }} />;
+            case 'bootstrap':
+                return <FaBootstrap style={{ ...iconStyle, color: '#AB47BC' }} />;
+            case 'ruby on rails':
+            case 'ruby on rails(orm)':
+                return <SiRubyonrails style={{ ...iconStyle, color: '#EF5350' }} />;
+            case 'docker':
+                return <DiDocker style={{ ...iconStyle, color: '#42A5F5' }} />;
+            case 'aws':
+                return <DiAws style={{ ...iconStyle, color: '#FFA726' }} />;
+            case 'git':
+                return <DiGit style={{ ...iconStyle, color: '#FF7043' }} />;
+            case 'linux':
+                return <FaLinux style={{ ...iconStyle, color: '#FFD54F' }} />;
+            default:
+                return <FaBook style={{ ...iconStyle, color: '#BDBDBD', opacity: 0.7 }} />;
+        }
+    };
+
+    const menuItems = [
+        {
+            text: '記事投稿',
+            icon: <PostAddIcon />,
+            path: '/homepage/article/new',
+            color: '#4CAF50'
+        },
+        {
+            text: '最新記事一覧',
+            icon: <ArticleIcon />,
+            path: '/',
+        },
+        {
+            text: '項目一覧',
+            icon: <FaLayerGroup style={{ fontSize: '1.1rem' }} />,
+            path: 'homepage/type',
+        },
+        {
+            text: '分類一覧',
+            icon: <FaBook style={{ fontSize: '1.1rem' }} />,
+            path: 'homepage/classification',
+        },
+    ];
+
+    return (
+        <Drawer
+            variant={isMobile ? "temporary" : "permanent"}
+            open={isMobile ? mobileOpen : true}
+            onClose={onClose}
+            anchor="left"
+            ModalProps={{
+                keepMounted: true
+            }}
+            sx={{
+                display: { xs: 'block', sm: 'block' },
+                '& .MuiDrawer-paper': {
+                    // width: '280px',
+                    background: 'rgba(250, 250, 250, 0.9)',
+                    boxShadow: 'inset 4px 4px 10px rgba(209, 217, 230, 0.5), inset -4px -4px 10px rgba(255, 255, 255, 0.6)',
+                    padding: '10px',
+                    border: 'none',
+                    position: 'fixed'
+                }
+            }}
         >
-          <ListItemIcon sx={{ color: '#666', opacity: 0.8 }}>
-            <FaIndustry />
-          </ListItemIcon>
-          <ListItemText primary="製造部" />
-          {openManufacturing ? <FaChevronDown /> : <FaChevronRight />}
-        </ListItem>
-        <Collapse in={openManufacturing} timeout="auto" unmountOnExit>
-          <List sx={{ pl: 4 }}>
-            <ListItem button onClick={() => navigate('/progress')}>
-              <ListItemText primary="進捗" />
-            </ListItem>
-            <ListItem button onClick={() => navigate('/materials')}>
-              <ListItemText primary="素材一覧" />
-            </ListItem>
-            <ListItem button onClick={() => setOpenTools(!openTools)}>
-              <ListItemIcon sx={{ color: '#666', opacity: 0.8 }}>
-                <FaToolbox />
-              </ListItemIcon>
-              <ListItemText primary="工具管理" />
-              {openTools ? <FaChevronDown /> : <FaChevronRight />}
-            </ListItem>
-            <Collapse in={openTools} timeout="auto" unmountOnExit>
-              <List sx={{ pl: 4 }}>
-                <ListItem button onClick={() => navigate('/tools/shuken')}>
-                  <ListItemText primary="集研" />
-                </ListItem>
-                <ListItem button onClick={() => navigate('/tools/preset')}>
-                  <ListItemText primary="プリセット" />
-                </ListItem>
-                <ListItem button onClick={() => navigate('/tools/change')}>
-                  <ListItemText primary="工具交換" />
-                </ListItem>
-              </List>
-            </Collapse>
-          </List>
-        </Collapse>
+            <List sx={{ p: 2 }}>
+                <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 'bold', color: '#666', mb: 2 }}>
+                    メニュー
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
 
-        {/* 生産管理への切り替えボタン */}
-        <ListItem
-          button
-          onClick={() => setSidebar("productionManagement")} // sidebar を変更
-          sx={{
-            borderRadius: '10px',
-            transition: '0.2s ease-in-out',
-            background: 'rgba(255, 255, 255, 0.8)',
-            '&:hover': { background: 'rgba(180, 230, 255, 0.4)', transform: 'scale(1.02)' },
-          }}
-        >
-          <ListItemIcon sx={{ color: '#666', opacity: 0.8 }}>
-            <FaCogs />
-          </ListItemIcon>
-          <ListItemText primary="生産管理" />
-        </ListItem>
-      </List>
-    </Drawer>
-  );
+                {menuItems.map((item, index) => (
+                    <React.Fragment key={item.text}>
+                        {index === 1 && <Divider sx={{ my: 1 }} />}
+                        <ListItem
+                            button
+                            onClick={() => {
+                                navigate(item.path);
+                                if (isMobile) onClose();
+                            }}
+                            sx={{
+                                '& .MuiListItemIcon-root': {
+                                    color: item.color
+                                }
+                            }}
+                        >
+                            <ListItemIcon>{item.icon}</ListItemIcon>
+                            <ListItemText primary={item.text} />
+                        </ListItem>
+                    </React.Fragment>
+                ))}
+
+                {/* 階層構造の表示 */}
+                {types.map((type) => (
+                    <React.Fragment key={type.id}>
+                        <ListItem button onClick={() => handleTypeClick(type.id)}>
+                            <ListItemIcon sx={{ minWidth: 36 }}>
+                                {getTypeIcon(type.name)}
+                            </ListItemIcon>
+                            <ListItemText primary={type.name} />
+                            {openTypes[type.id] ? <ExpandLess /> : <ExpandMore />}
+                        </ListItem>
+                        <Collapse in={openTypes[type.id]} timeout="auto" unmountOnExit>
+                            <List component="div" disablePadding>
+                                {type.classifications?.map((classification) => (
+                                    <React.Fragment key={classification.id}>
+                                        <ListItem
+                                            button
+                                            sx={{ pl: 4 }}
+                                            onClick={() => handleClassificationClick(classification.id)}
+                                        >
+                                            <ListItemIcon sx={{ minWidth: 36 }}>
+                                                {getClassificationIcon(classification.name)}
+                                            </ListItemIcon>
+                                            <ListItemText primary={classification.name} />
+                                            {classification.articles?.length > 0 && (
+                                                openClassifications[classification.id] ? <ExpandLess /> : <ExpandMore />
+                                            )}
+                                        </ListItem>
+                                        <Collapse in={openClassifications[classification.id]} timeout="auto" unmountOnExit>
+                                            <List component="div" disablePadding>
+                                                {classification.articles?.map((article) => (
+                                                    <ListItem
+                                                        button
+                                                        key={article.id}
+                                                        component={Link}
+                                                        to={`homepage/article/${article.id}`}
+                                                        sx={{ pl: 6 }}
+                                                    >
+                                                        <ListItemIcon sx={{ minWidth: 36 }}>
+                                                            <FaBook style={{ fontSize: '0.8rem', opacity: 0.5 }} />
+                                                        </ListItemIcon>
+                                                        <ListItemText
+                                                            primary={article.title}
+                                                            sx={{
+                                                                '& .MuiTypography-root': {
+                                                                    fontSize: '0.9rem'
+                                                                }
+                                                            }}
+                                                        />
+                                                    </ListItem>
+                                                ))}
+                                            </List>
+                                        </Collapse>
+                                    </React.Fragment>
+                                ))}
+                            </List>
+                        </Collapse>
+                    </React.Fragment>
+                ))}
+
+                {/* 生産管理への切り替えボタン */}
+                <ListItem
+                    button
+                    onClick={() => setSidebar("productionManagement")}
+                    sx={{
+                        borderRadius: '10px',
+                        transition: '0.2s ease-in-out',
+                        background: 'rgba(255, 255, 255, 0.8)',
+                        '&:hover': { background: 'rgba(180, 230, 255, 0.4)', transform: 'scale(1.02)' },
+                    }}
+                >
+                    <ListItemIcon sx={{ color: '#666', opacity: 0.8 }}>
+                        <FaCogs />
+                    </ListItemIcon>
+                    <ListItemText primary="生産管理" />
+                </ListItem>
+            </List>
+        </Drawer>
+    );
 }
 
 HomepageSidebar.propTypes = {
-  setSidebar: PropTypes.func.isRequired,
+    setSidebar: PropTypes.func.isRequired,
+    mobileOpen: PropTypes.bool,
+    onClose: PropTypes.func,
+    isMobile: PropTypes.bool
 };
 
 export default HomepageSidebar;

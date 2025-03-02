@@ -38,7 +38,7 @@ function TypeEditForm({ editData, closeModal }) {
             name: setNameError,
         }
 
-        const url = `${API_BASE_URL}/api/homepage/type/${editData?.id}`
+        const url = `${API_BASE_URL}/homepage/type/${editData?.id}`
 
         handleAPI(url, 'PUT', closeModal, sendData, errorFieldMap)
     };

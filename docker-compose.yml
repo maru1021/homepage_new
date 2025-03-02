@@ -20,15 +20,20 @@ services:
       dockerfile: ./backend/Dockerfile
     volumes:
       - ./backend:/app/backend
-      - ./backend/alembic.ini:/app/alembic.ini  # alembic.iniをマウント
-      - ./backend/alembic:/app/alembic  # Alembicフォルダのマウント
-    working_dir: /app  # /appディレクトリを基準に設定
+      - ./backend/alembic.ini:/app/alembic.ini
+      - ./backend/alembic:/app/alembic
+    working_dir: /app
     ports:
       - "8000:8000"
     environment:
       - PYTHONPATH=/app/backend
-    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --workers 4 --reload
-
+      - PYTHONUNBUFFERED=1
+    command: >
+      uvicorn backend.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload
+      --reload-dir /app/backend
 
   # PostgreSQL
   db:

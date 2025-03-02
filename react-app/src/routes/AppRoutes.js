@@ -1,22 +1,53 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
+
+import Index from '../pages/homepage/index';
 import Type from '../pages/homepage/type/Type';
+import Classification from '../pages/homepage/classification/Classification';
 import Department from '../pages/general/department/Department';
 import Employee from '../pages/general/employee/Employee';
 import EmployeeAuthority from '../pages/authority/employee_authority/EmployeeAuthority';
+import NotFound from '../pages/error/404';
+import Article from '../pages/homepage/article/article';
+import ArticleNew from '../pages/homepage/article/new';
 
-
-const AppRoutes = () => {
+const AppRoutes = ({ isAuthenticated = false }) => {
   return (
     <Routes>
+      {/* パブリックルート（ログイン不要） */}
+      <Route path='/' element={<Index />} />
+      <Route path='/homepage/article/:id' element={<Article />} />
       <Route path='/homepage/type' element={<Type />} />
-      <Route path='/homepage/classification' element={<Department />} />
-      <Route path='/general/department' element={<Department />} />
-      <Route path='/general/employee' element={<Employee />} />
-      <Route path='/authority/employee_authority' element={<EmployeeAuthority />} />
-      <Route path='*' element={<div>404 - Page Not Found</div>} />
+      <Route path='/homepage/classification' element={<Classification />} />
+      <Route path='/homepage/article/new' element={<ArticleNew />} />
+
+      {/* プライベートルート（ログイン必要） */}
+      <Route
+        path='/general/department'
+        element={isAuthenticated ? <Department /> : <Navigate to="/login" replace />}
+      />
+      <Route
+        path='/general/employee'
+        element={isAuthenticated ? <Employee /> : <Navigate to="/login" replace />}
+      />
+      <Route
+        path='/authority/employee_authority'
+        element={isAuthenticated ? <EmployeeAuthority /> : <Navigate to="/login" replace />}
+      />
+
+      {/* 404ページ */}
+      <Route path='*' element={<NotFound />} />
     </Routes>
   );
+};
+
+AppRoutes.propTypes = {
+  isAuthenticated: PropTypes.bool
+};
+
+AppRoutes.defaultProps = {
+  isAuthenticated: false
 };
 
 export default AppRoutes;

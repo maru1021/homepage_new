@@ -40,11 +40,10 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
     };
 
     return (
-        <Box className='TableWithActions' sx={{ paddingLeft: '5%' }}>
-            <Box component={"header"
-            }>
-                <Grid container alignItems='center' spacing={2} sx={{ paddingY: 2, paddingLeft: '17%' }}>
-                    <Grid item xs={7}>
+        <Box className='TableWithActions'>
+            <Box component={"header"}>
+                <Grid container alignItems='center' spacing={1} sx={{ paddingY: 1 }}>
+                    <Grid item xs={8}>
                         <Typography
                             variant="h2"
                             fontWeight="bold"

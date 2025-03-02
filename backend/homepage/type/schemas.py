@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 
 # 登録時の形式
@@ -38,3 +38,29 @@ class TypeResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ArticleBase(BaseModel):
+    id: int
+    title: str
+
+    class Config:
+        from_attributes = True
+
+class ClassificationWithArticles(BaseModel):
+    id: int
+    name: str
+    articles: Optional[List[ArticleBase]] = []
+
+    class Config:
+        from_attributes = True
+
+class TypeWithHierarchy(BaseModel):
+    id: int
+    name: str
+    classifications: Optional[List[ClassificationWithArticles]] = []
+
+    class Config:
+        from_attributes = True
+
+class TypeHierarchyResponse(BaseModel):
+    types: List[TypeWithHierarchy]
