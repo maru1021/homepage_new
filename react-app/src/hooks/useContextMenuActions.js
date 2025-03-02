@@ -15,7 +15,7 @@ export const useContextMenuActions = (datas, hoveredRowId, url, messageKey, setI
         }
     };
 
-  const handleDelete = async () => {
+    const handleDelete = async () => {
         setIsMenuVisible(false)
         const data = datas.find((data) => data.id === hoveredRowId);
         if (data) {
@@ -32,5 +32,3 @@ export const useContextMenuActions = (datas, hoveredRowId, url, messageKey, setI
 
     return { handleEdit, handleDelete };
 };
-
-

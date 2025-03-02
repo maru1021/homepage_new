@@ -37,8 +37,8 @@ function TableActions ({
             spacing={2}
             sx={{ mb: 2 }}
         >
-            <Grid item sx={{ marginLeft:'17%' }}>
-                <FormControl sx={{ minWidth: 90 }} size='small'> {/* 横幅を狭く */}
+            <Grid item>
+                <FormControl sx={{ minWidth: 90 }} size='small'>
                     <InputLabel>件数</InputLabel>
                     <Select
                         value={itemsPerPage}
@@ -59,7 +59,6 @@ function TableActions ({
                 container
                 justifyContent="flex-end"
                 spacing={2}
-                sx={{ marginRight: '8%' }}
             >
                 <Grid item>
                     <TextField

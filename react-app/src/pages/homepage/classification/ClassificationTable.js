@@ -6,7 +6,7 @@ import {
 } from '@mui/material';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 
-import TypeEditForm from './TypeEditForm';
+import ClassificationEditForm from './ClassificationEditForm';
 
 import {
     API_BASE_URL,
@@ -18,8 +18,8 @@ import {
 import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
 
 
-function TypeTable({ data, searchQuery, currentPage, itemsPerPage }) {
-    const [types, setTypes] = useState(data);
+function ClassificationTable({ data, searchQuery, currentPage, itemsPerPage }) {
+    const [classifications, setClassifications] = useState(data);
 
     const {
         menuPosition,
@@ -30,26 +30,26 @@ function TypeTable({ data, searchQuery, currentPage, itemsPerPage }) {
         menuRef,
     } = useContextMenu();
 
-    const url = `${API_BASE_URL}/homepage/type`
+    const url = `${API_BASE_URL}/homepage/classification`
 
     const { handleEdit, handleDelete } = useContextMenuActions(
-        types,
+        classifications,
         hoveredRowId,
         url,
         "name",
         setIsMenuVisible,
-        "項目編集",
-        TypeEditForm
+        "分類編集",
+        ClassificationEditForm
     );
 
-    setTableData(data, setTypes, `${API_BASE_URL.replace("http", "ws")}/ws/homepage/type`, searchQuery, currentPage, itemsPerPage);
+    setTableData(data, setClassifications, `${API_BASE_URL.replace("http", "ws")}/ws/homepage/classification`, searchQuery, currentPage, itemsPerPage);
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
         { label: '削除', icon:<FaTrash color='#E57373' />, onClick: handleDelete }
     ];
 
-    const columns = ['項目']
+    const columns = ['項目', '分類']
 
     return (
         <>
@@ -59,14 +59,15 @@ function TypeTable({ data, searchQuery, currentPage, itemsPerPage }) {
 
                     <TableBody>
                         {data.length > 0 ?
-                            (types?.map((type) => (
+                            (classifications?.map((classification) => (
                                 <TableRow
-                                    key={type.id}
-                                    onContextMenu={(event) => handleContextMenu(event, type.id)}
+                                    key={classification.id}
+                                    onContextMenu={(event) => handleContextMenu(event, classification.id)}
                                     hover
                                     sx={{ transition: '0.3s', '&:hover': { backgroundColor: '#f5f5f5' } }}
                                 >
-                                    <TableCell>{type.name}</TableCell>
+                                    <TableCell>{classification.type_name}</TableCell>
+                                    <TableCell>{classification.name}</TableCell>
                                 </TableRow>
                             ))
                         ) : (
@@ -87,11 +88,12 @@ function TypeTable({ data, searchQuery, currentPage, itemsPerPage }) {
     );
 }
 
-TypeTable.propTypes = {
+ClassificationTable.propTypes = {
     data: PropTypes.arrayOf(
         PropTypes.shape({
             id: PropTypes.number.isRequired,
             name: PropTypes.string.isRequired,
+            type_name: PropTypes.string,
         })
     ).isRequired,
     searchQuery: PropTypes.string,
@@ -99,4 +101,4 @@ TypeTable.propTypes = {
     itemsPerPage: PropTypes.number,
 };
 
-export default TypeTable;
+export default ClassificationTable;

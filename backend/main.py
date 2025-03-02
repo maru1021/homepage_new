@@ -6,6 +6,7 @@ from backend.auth import verify_token
 from backend.database import Base, engine
 from backend.router import router as main_router
 from backend.websocket import router as ws_router
+from backend.homepage.router import router as homepage_router
 
 
 app = FastAPI()
@@ -26,3 +27,4 @@ app.add_middleware(
 app.include_router(main_router, prefix="/api", dependencies=[Depends(verify_token)])
 app.include_router(ws_router, prefix="/ws")
 app.include_router(auth_router, prefix="/auth")
+app.include_router(homepage_router, prefix="/homepage", tags=["Homepage"])

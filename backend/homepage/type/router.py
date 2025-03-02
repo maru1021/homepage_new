@@ -2,7 +2,6 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from typing import List, Dict
 
 from backend.homepage.type import crud, schemas
 from backend.database import get_db
@@ -59,18 +58,6 @@ async def delete_type(type_id: int, background_tasks: BackgroundTasks, db: Sessi
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.put("/sort")
-def update_sort_order(
-    sort_orders: List[Dict[str, int]],
-    db: Session = Depends(get_db)
-):
-    from backend.homepage.models import Type
-    for sort_order in sort_orders:
-        type_id = sort_order["id"]
-        new_sort = sort_order["sort"]
-        db_type = db.query(Type).filter(Type.id == type_id).first()
-        if db_type:
-            db_type.sort = new_sort
-    
-    db.commit()
-    return {"message": "Sort order updated successfully"}
+@router.get("/hierarchy", response_model=schemas.TypeHierarchyResponse)
+async def get_type_hierarchy(db: Session = Depends(get_db)):
+    return crud.get_type_hierarchy(db)
