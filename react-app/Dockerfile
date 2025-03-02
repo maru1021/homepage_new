@@ -5,9 +5,9 @@
 # docker compose up -d
 
 # ビルドステージ
-FROM node:18 AS builder
+FROM node:18
 
-WORKDIR /app
+WORKDIR /app/react-app
 
 # package.jsonをコピー
 COPY react-app/package*.json ./
@@ -19,24 +19,21 @@ RUN npm install --save-dev @babel/plugin-proposal-private-property-in-object@7.2
 # ソースコードをコピー
 COPY react-app/ .
 
-# ビルド
+# 環境変数の設定（デフォルトは本番環境）
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
 ENV SKIP_PREFLIGHT_CHECK=true
-ENV BABEL_ENV=production
-ENV NODE_ENV=production
-RUN npm run build
 
-# 実行ステージ
-FROM node:18-slim
-
-WORKDIR /app
-
-# serveをインストール
-RUN npm install -g serve
-
-# ビルドしたファイルをコピー
-COPY --from=builder /app/build ./build
+# 環境に応じた.envファイルをコピー
+COPY react-app/.env.${NODE_ENV} ./.env
 
 EXPOSE 3000
 
-# アプリケーション起動
-CMD ["serve", "-s", "build"]
+# 環境に応じてコマンドを変更（メモリ制限を増やす）
+CMD if [ "$NODE_ENV" = "production" ] ; then \
+      NODE_OPTIONS="--max-old-space-size=4096" npm run build && \
+      npm install -g serve && \
+      serve -s build ; \
+    else \
+      npm start ; \
+    fi
