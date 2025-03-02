@@ -9,7 +9,6 @@ import { ContextMenu } from '../../../index/basicTableModules';
 import PropTypes from 'prop-types';
 import ConfirmDeleteModal from '../../../components/modal/ConfirmDeleteModal';
 import handleAPI from '../../../utils/handleAPI';
-import { logger } from '../../../utils/logger';
 
 const EditField = ({ value, onChange, onSave, multiline = false }) => (
     <Box>
