@@ -24,16 +24,10 @@ ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 ENV SKIP_PREFLIGHT_CHECK=true
 
-# 環境に応じた.envファイルをコピー
-COPY react-app/.env.${NODE_ENV} ./.env
+# メモリ制限を設定してビルド
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 EXPOSE 3000
 
-# 環境に応じてコマンドを変更（メモリ制限を増やす）
-CMD if [ "$NODE_ENV" = "production" ] ; then \
-      NODE_OPTIONS="--max-old-space-size=4096" npm run build && \
-      npm install -g serve && \
-      serve -s build ; \
-    else \
-      npm start ; \
-    fi
+# ビルドして静的ファイルを配信
+CMD npm run build && npm install -g serve && serve -s build
