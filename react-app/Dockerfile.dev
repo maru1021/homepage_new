@@ -1,0 +1,20 @@
+FROM node:18
+
+WORKDIR /app/react-app
+
+# package.jsonをコピー
+COPY react-app/package*.json ./
+
+# 依存関係をインストール
+RUN npm install --legacy-peer-deps
+RUN npm install --save-dev @babel/plugin-proposal-private-property-in-object@7.21.11
+
+# 開発用の設定
+ENV NODE_ENV=development
+ENV SKIP_PREFLIGHT_CHECK=true
+ENV NODE_OPTIONS=--openssl-legacy-provider
+
+EXPOSE 3000
+
+# 開発サーバー起動
+CMD ["npm", "start"]

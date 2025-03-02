@@ -17,14 +17,14 @@ Base.metadata.create_all(bind=engine)
 # CORS設定
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "https://maruomosquit.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ルーターの追加
+# ルーターの追加順序を変更
+app.include_router(homepage_router, prefix="/homepage", tags=["Homepage"])
+app.include_router(auth_router, prefix="/auth")
 app.include_router(main_router, prefix="/api", dependencies=[Depends(verify_token)])
 app.include_router(ws_router, prefix="/ws")
-app.include_router(auth_router, prefix="/auth")
-app.include_router(homepage_router, prefix="/homepage", tags=["Homepage"])
