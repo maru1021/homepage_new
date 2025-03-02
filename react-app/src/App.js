@@ -15,19 +15,19 @@ import Modal from "./components/modal/Modal"
 import ConfirmDeleteModal from "./components/modal/ConfirmDeleteModal"
 import { Box, IconButton, useMediaQuery, useTheme, Grid } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { logger } from './utils/logger';
+import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 
 function App() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [token, setToken] = useState(localStorage.getItem('token') || null);
   const [sidebar, setSidebar] = useState('homepage');
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(!isMobile);
   const navigate = useNavigate();
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
+  useEffect(() => {
+    setMobileOpen(!isMobile);
+  }, [isMobile]);
 
   // トークンの管理（有効期限チェック & 自動ログアウト）
   useEffect(() => {
@@ -49,10 +49,6 @@ function App() {
       }
     }
   }, []);
-
-  useEffect(() => {
-    logger.log('isMobile:', isMobile);  // 開発環境でのみ表示
-  }, [isMobile]);
 
   // 新しいトークンをセットする関数
   const handleSetToken = (newToken, newExpirationTime) => {
@@ -95,19 +91,29 @@ function App() {
     setSidebar(newSidebar);
   };
 
+  // メニューボタンの表示条件を変更
+  const showMenuButton = isMobile;
+
+  // リンククリック時のハンドラーを追加
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setMobileOpen(false);
+    }
+  };
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {/* モバイルメニューボタン */}
-      {isMobile && (
+      {/* メニューボタン - モバイルのみ表示 */}
+      {showMenuButton && (
         <IconButton
           color="inherit"
-          aria-label="open drawer"
+          aria-label="toggle drawer"
           edge="start"
-          onClick={handleDrawerToggle}
+          onClick={() => setMobileOpen(!mobileOpen)}
           sx={{
             position: 'fixed',
-            left: '10px',
-            top: '10px',
+            left: '20px',  // 位置を固定
+            top: '20px',
             zIndex: 2000,
             backgroundColor: 'white',
             boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
@@ -116,11 +122,11 @@ function App() {
             }
           }}
         >
-          <MenuIcon />
+          {mobileOpen ? <MenuOpenIcon /> : <MenuIcon />}
         </IconButton>
       )}
 
-      <Grid container sx={{ flexGrow: 1 }}>
+      <Grid container sx={{ flexGrow: 1, position: 'relative' }}>
         {/* サイドバー */}
         {shouldShowSidebar() && (
           <Grid
@@ -128,21 +134,30 @@ function App() {
             xs={12}
             sm={sidebarWidth}
             sx={{
-              display: { xs: mobileOpen ? 'block' : 'none', sm: 'block' },  // モバイル時の表示制御
-              maxWidth: '500px',
-              position: { xs: 'fixed', sm: 'relative' },  // モバイル時は固定位置
+              display: isMobile ? (mobileOpen ? 'block' : 'none') : 'block',
+              maxWidth: { xs: '100%', sm: '320px' },
+              width: '100%',
+              position: 'fixed',
+              left: 0,
+              top: 0,
               height: '100vh',
-              zIndex: 1900,
-              backgroundColor: 'background.paper',
-              boxShadow: { xs: 24, sm: 1 }
+              zIndex: 1200,
+              backgroundColor: {
+                xs: '#fff',
+                sm: theme.palette.background.paper
+              },
+              boxShadow: { xs: 24, sm: 1 },
+              overflowY: 'auto',
+              transition: 'all 0.3s'
             }}
           >
             {React.createElement(sidebarComponents[sidebar] || HomepageSidebar, {
               setToken,
               setSidebar: handleSidebarChange,
               mobileOpen,
-              onClose: handleDrawerToggle,
+              onClose: () => setMobileOpen(false),
               isMobile,
+              onLinkClick: handleLinkClick,  // 新しいプロップを追加
               key: sidebar
             })}
           </Grid>
@@ -156,24 +171,34 @@ function App() {
           sx={{
             flexGrow: 1,
             minWidth: 0,
-            marginLeft: { xs: 0, sm: shouldShowSidebar() ? `${sidebarWidth}%` : 0 }  // サイドバーの幅を考慮
+            marginLeft: {
+              xs: 0,
+              sm: shouldShowSidebar() ? '320px' : 0
+            },
+            position: 'relative',
+            zIndex: 1,
+            width: {
+              xs: '100%',
+              sm: shouldShowSidebar() ? 'calc(100% - 320px)' : '100%'
+            },
+            display: 'flex',
+            justifyContent: 'center',
+            backgroundColor: '#fff'
           }}
         >
           <Box
             component="main"
             sx={{
               width: '100%',
+              maxWidth: '1200px',
               minHeight: '100vh',
               boxSizing: 'border-box',
               paddingTop: {
                 xs: token ? '64px' : 0,
-                sm: token ? '20px' : 0
+                sm: token ? '40px' : 0
               },
               paddingX: 3,
-              transition: 'margin-left 0.3s',
-              ...(isMobile && mobileOpen && token && {
-                opacity: 0.7
-              })
+              margin: '0 auto'
             }}
           >
             <Routes>
@@ -183,22 +208,6 @@ function App() {
           </Box>
         </Grid>
       </Grid>
-
-      {/* モバイル時のオーバーレイ */}
-      {isMobile && mobileOpen && token && (
-        <Box
-          onClick={handleDrawerToggle}
-          sx={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 1800
-          }}
-        />
-      )}
 
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
       <ConfirmDeleteModal.Root />

@@ -46,8 +46,4 @@ AppRoutes.propTypes = {
   isAuthenticated: PropTypes.bool
 };
 
-AppRoutes.defaultProps = {
-  isAuthenticated: false
-};
-
 export default AppRoutes;

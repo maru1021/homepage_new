@@ -2,7 +2,7 @@
 # npm install パッケージ名
 # docker compose down
 # docker compose build --no-cache
-# docker compose up -d
+# docker compose up
 
 # ビルドステージ
 FROM node:18
@@ -13,21 +13,21 @@ WORKDIR /app/react-app
 COPY react-app/package*.json ./
 
 # 依存関係をインストール
-RUN npm install
-RUN npm install --save-dev @babel/plugin-proposal-private-property-in-object@7.21.11
+RUN npm install --legacy-peer-deps
+RUN npm install -g serve@14.2.1
 
 # ソースコードをコピー
 COPY react-app/ .
 
-# 環境変数の設定（デフォルトは本番環境）
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
+# 環境変数の設定
+ENV NODE_ENV=production
 ENV SKIP_PREFLIGHT_CHECK=true
-
-# メモリ制限を設定してビルド
 ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+# ビルド
+RUN npm run build
 
 EXPOSE 3000
 
-# ビルドして静的ファイルを配信
-CMD npm run build && npm install -g serve && serve -s build
+# 静的ファイルを配信
+CMD ["serve", "-s", "build", "--listen", "3000", "--no-clipboard"]

@@ -29,11 +29,11 @@ import {
     PostAdd as PostAddIcon,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
-import { API_BASE_URL } from '../../index/basicTableModules';
+import { API_BASE_URL } from '../../utils/config';
 import '../../CSS/sidebar.css';
 
 
-function HomepageSidebar({ setSidebar, mobileOpen = false, onClose = () => {}, isMobile = false }) {
+function HomepageSidebar({ setSidebar, mobileOpen = false, onClose = () => {}, isMobile = false, onLinkClick }) {
     const navigate = useNavigate();
     const [types, setTypes] = useState([]);
     const [openTypes, setOpenTypes] = useState({});
@@ -44,10 +44,11 @@ function HomepageSidebar({ setSidebar, mobileOpen = false, onClose = () => {}, i
         const fetchData = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/homepage/side_bar`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setTypes(data.types || []);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                const data = await response.json();
+                setTypes(data.types || []);
             } catch (error) {
                 console.error('Error fetching hierarchy:', error);
             }
@@ -161,6 +162,11 @@ function HomepageSidebar({ setSidebar, mobileOpen = false, onClose = () => {}, i
         },
     ];
 
+    const handleNavigate = (path) => {
+        navigate(path);
+        onLinkClick?.();
+    };
+
     return (
         <Drawer
             variant={isMobile ? "temporary" : "permanent"}
@@ -193,10 +199,7 @@ function HomepageSidebar({ setSidebar, mobileOpen = false, onClose = () => {}, i
                         {index === 1 && <Divider sx={{ my: 1 }} />}
                         <ListItem
                             button
-                            onClick={() => {
-                                navigate(item.path);
-                                if (isMobile) onClose();
-                            }}
+                            onClick={() => handleNavigate(item.path)}
                             sx={{
                                 '& .MuiListItemIcon-root': {
                                     color: item.color
@@ -293,7 +296,8 @@ HomepageSidebar.propTypes = {
     setSidebar: PropTypes.func.isRequired,
     mobileOpen: PropTypes.bool,
     onClose: PropTypes.func,
-    isMobile: PropTypes.bool
+    isMobile: PropTypes.bool,
+    onLinkClick: PropTypes.func
 };
 
 export default HomepageSidebar;
