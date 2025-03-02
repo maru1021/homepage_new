@@ -4,26 +4,39 @@
 # docker compose build --no-cache
 # docker compose up -d
 
-# ベースイメージ
-FROM node:18
+# ビルドステージ
+FROM node:18 AS builder
 
-# 作業ディレクトリの設定
-WORKDIR /homepage/react-app
+WORKDIR /app
 
-# package.jsonとpackage-lock.jsonをコピー
+# package.jsonをコピー
 COPY react-app/package*.json ./
 
 # 依存関係をインストール
 RUN npm install
+RUN npm install --save-dev @babel/plugin-proposal-private-property-in-object@7.21.11
 
-# 新しいパッケージを追加でインストール
-RUN npm install react-dnd react-dnd-html5-backend immutability-helper
-
-# アプリケーションのソースコードをコピー
+# ソースコードをコピー
 COPY react-app/ .
 
-# ポートのエクスポート
+# ビルド
+ENV SKIP_PREFLIGHT_CHECK=true
+ENV BABEL_ENV=production
+ENV NODE_ENV=production
+RUN npm run build
+
+# 実行ステージ
+FROM node:18-slim
+
+WORKDIR /app
+
+# serveをインストール
+RUN npm install -g serve
+
+# ビルドしたファイルをコピー
+COPY --from=builder /app/build ./build
+
 EXPOSE 3000
 
 # アプリケーション起動
-CMD ["npm", "start"]
+CMD ["serve", "-s", "build"]
