@@ -1,18 +1,23 @@
-# Dockerの定義
-# 本番環境用
-# docker compose up -d --build で実行
+# 開発環境用
+# docker compose -f docker-compose.dev.yml up -d --build で実行
+
+version: '3.8'
 
 services:
-  # http://localhost:3000/でReactアプリにアクセスするのに使用
   react-app:
     build:
       context: .
       dockerfile: ./react-app/Dockerfile
+      args:
+        - NODE_ENV=development
+    volumes:
+      - ./react-app:/app/react-app
+      - /app/react-app/node_modules
+    command: sh -c "npm install && npm start"
     ports:
       - "3000:3000"
     restart: always
 
-  # http://localhost:8000/でAPIにアクセスするのに使用
   fastapi:
     build:
       context: .
@@ -20,19 +25,17 @@ services:
     environment:
       - PYTHONPATH=/app/backend
       - PYTHONUNBUFFERED=1
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app/backend
-      - ./backend/alembic.ini:/app/alembic.ini
-      - ./backend/alembic:/app/alembic
-    working_dir: /app
     command: >
       uvicorn backend.main:app
       --host 0.0.0.0
       --port 8000
-      --workers 4
-      --proxy-headers
+      --reload
+    volumes:
+      - ./backend:/app/backend
+      - ./backend/alembic.ini:/app/alembic.ini
+      - ./backend/alembic:/app/alembic
+    ports:
+      - "8000:8000"
     restart: always
     depends_on:
       db:
@@ -52,13 +55,13 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     restart: always
-    healthcheck:  # ヘルスチェックを追加
+    healthcheck:
       test: ["CMD-SHELL", "pg_isready -U user -d mydatabase"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # http://localhost:8080/でデータベースの内容を確認するのに使用
+  # Adminer
   adminer:
     image: adminer
     ports:
