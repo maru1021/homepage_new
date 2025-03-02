@@ -13,14 +13,16 @@ import AppRoutes from './routes/AppRoutes';
 import Login from './pages/login';
 import Modal from "./components/modal/Modal"
 import ConfirmDeleteModal from "./components/modal/ConfirmDeleteModal"
-import { Box, IconButton, useMediaQuery, Grid } from '@mui/material';
+import { Box, IconButton, useMediaQuery, useTheme, Grid } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import { logger } from './utils/logger';
 
 function App() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [token, setToken] = useState(localStorage.getItem('token') || null);
   const [sidebar, setSidebar] = useState('homepage');
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isMobile = useMediaQuery('(max-width:768px)');
   const navigate = useNavigate();
 
   const handleDrawerToggle = () => {
@@ -47,6 +49,10 @@ function App() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    logger.log('isMobile:', isMobile);  // 開発環境でのみ表示
+  }, [isMobile]);
 
   // 新しいトークンをセットする関数
   const handleSetToken = (newToken, newExpirationTime) => {
@@ -90,9 +96,9 @@ function App() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       {/* モバイルメニューボタン */}
-      {isMobile && token && (
+      {isMobile && (
         <IconButton
           color="inherit"
           aria-label="open drawer"
@@ -102,9 +108,9 @@ function App() {
             position: 'fixed',
             left: '10px',
             top: '10px',
-            zIndex: 1200,
+            zIndex: 2000,
             backgroundColor: 'white',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
             '&:hover': {
               backgroundColor: 'rgba(255, 255, 255, 0.9)'
             }
@@ -114,7 +120,6 @@ function App() {
         </IconButton>
       )}
 
-      {/* メインレイアウト */}
       <Grid container sx={{ flexGrow: 1 }}>
         {/* サイドバー */}
         {shouldShowSidebar() && (
@@ -123,11 +128,13 @@ function App() {
             xs={12}
             sm={sidebarWidth}
             sx={{
-              display: { xs: 'none', sm: 'block' },
+              display: { xs: mobileOpen ? 'block' : 'none', sm: 'block' },  // モバイル時の表示制御
               maxWidth: '500px',
-              '& .MuiDrawer-paper': {
-                maxWidth: '300px'
-              }
+              position: { xs: 'fixed', sm: 'relative' },  // モバイル時は固定位置
+              height: '100vh',
+              zIndex: 1900,
+              backgroundColor: 'background.paper',
+              boxShadow: { xs: 24, sm: 1 }
             }}
           >
             {React.createElement(sidebarComponents[sidebar] || HomepageSidebar, {
@@ -141,14 +148,15 @@ function App() {
           </Grid>
         )}
 
-        {/* メインコンテンツ - 動的な幅設定 */}
+        {/* メインコンテンツ */}
         <Grid
           item
           xs={12}
           sm={shouldShowSidebar() ? mainContentWidth : 12}
           sx={{
             flexGrow: 1,
-            minWidth: 0
+            minWidth: 0,
+            marginLeft: { xs: 0, sm: shouldShowSidebar() ? `${sidebarWidth}%` : 0 }  // サイドバーの幅を考慮
           }}
         >
           <Box
@@ -176,7 +184,7 @@ function App() {
         </Grid>
       </Grid>
 
-      {/* オーバーレイ */}
+      {/* モバイル時のオーバーレイ */}
       {isMobile && mobileOpen && token && (
         <Box
           onClick={handleDrawerToggle}
@@ -187,7 +195,7 @@ function App() {
             width: '100%',
             height: '100%',
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 1150
+            zIndex: 1800
           }}
         />
       )}
