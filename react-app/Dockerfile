@@ -10,6 +10,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 COPY . .
+# メモリ制限を4GBに設定
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build
 
 # 実行ステージ

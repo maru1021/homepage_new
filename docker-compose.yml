@@ -8,6 +8,8 @@ services:
     build:
       context: ./react-app
       dockerfile: Dockerfile
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=4096
     ports:
       - "3000:3000"
     restart: always
