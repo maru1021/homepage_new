@@ -1,6 +1,15 @@
 # Dockerの定義
 # 本番環境用
-# docker compose up -d --build で実行
+# ローカルマシンで
+# cd react-app
+# npm install
+# npm run build
+# rsync -avz --delete build/ maru@$SSH_IP:/var/www/homepage_new/react-app/build/
+# を実行
+
+# 本番環境で
+# cd /var/www/homepage_new
+# docker compose up -d --build
 
 services:
   # http://localhost:3000/でReactアプリにアクセスするのに使用
@@ -8,6 +17,8 @@ services:
     build:
       context: ./react-app
       dockerfile: Dockerfile
+      args:
+        - BUILD_PATH=./build
     environment:
       - NODE_OPTIONS=--max-old-space-size=8192
     ports:
@@ -64,6 +75,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
 
   # http://localhost:8080/でデータベースの内容を確認するのに使用
   adminer:
