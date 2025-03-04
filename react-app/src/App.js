@@ -94,13 +94,6 @@ function App() {
   // メニューボタンの表示条件を変更
   const showMenuButton = isMobile;
 
-  // リンククリック時のハンドラーを追加
-  const handleLinkClick = () => {
-    if (isMobile) {
-      setMobileOpen(false);
-    }
-  };
-
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       {/* メニューボタン - モバイルのみ表示 */}
@@ -112,11 +105,12 @@ function App() {
           onClick={() => setMobileOpen(!mobileOpen)}
           sx={{
             position: 'fixed',
-            left: '20px',  // 位置を固定
+            left: mobileOpen ? '160px' : '20px',
             top: '20px',
             zIndex: 2000,
             backgroundColor: 'white',
             boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            transition: 'left 0.3s',
             '&:hover': {
               backgroundColor: 'rgba(255, 255, 255, 0.9)'
             }
@@ -157,7 +151,6 @@ function App() {
               mobileOpen,
               onClose: () => setMobileOpen(false),
               isMobile,
-              onLinkClick: handleLinkClick,  // 新しいプロップを追加
               key: sidebar
             })}
           </Grid>
