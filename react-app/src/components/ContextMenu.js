@@ -8,7 +8,7 @@ function ContextMenu({ position, actions, menuRef }) {
             className="context-menu"
             style={{
                 top: `${position.y}px`,
-                left: `${position.x}px`,
+                left: `${position.x-320}px`,
                 position: 'absolute',
                 background: 'white',
                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
