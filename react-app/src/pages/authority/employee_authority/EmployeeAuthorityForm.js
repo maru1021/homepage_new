@@ -8,7 +8,7 @@ import Select from 'react-select';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 
-import API_BASE_URL from '../../../config/baseURL';
+import { API_BASE_URL } from '../../../config/baseURL';
 import handleRegister from '../../../utils/handleAPI';
 import validateFields from '../../../utils/validFields';
 

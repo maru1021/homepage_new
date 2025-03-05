@@ -8,6 +8,9 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 
 import {
     API_BASE_URL,
+    WS_BASE_URL,
+} from '../../../config/baseURL';
+import {
     ContextMenu,
     setTableData,
     TableHeader,
@@ -43,7 +46,7 @@ function EmployeeAuthorityTable({ data, searchQuery, currentPage, itemsPerPage }
         EmployeeAuthorityEditForm
     );
 
-    setTableData(data, setEmployees, `${API_BASE_URL.replace("http", "ws")}/ws/authority/employee_authority`, searchQuery, currentPage, itemsPerPage);
+    setTableData(data, setEmployees, `${WS_BASE_URL}/ws/authority/employee_authority`, searchQuery, currentPage, itemsPerPage);
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },

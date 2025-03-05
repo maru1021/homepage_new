@@ -5,7 +5,7 @@ import {
     Stack, DialogActions
 } from '@mui/material';
 
-import API_BASE_URL from '../../../config/baseURL';
+import { API_BASE_URL } from '../../../config/baseURL';
 import validateFields from '../../../utils/validFields';
 import DateField from '../../../components/form/date';
 import handleAPI from '../../../utils/handleAPI';

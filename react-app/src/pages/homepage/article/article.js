@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, Paper, Chip, Tabs, Tab, TextField, Button } from '@mui/material';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { API_BASE_URL } from '../../../index/basicTableModules';
+import { API_BASE_URL } from '../../../config/baseURL';
 import { FaEdit, FaSave, FaTrash } from 'react-icons/fa';
 import { ContextMenu } from '../../../index/basicTableModules';
 import PropTypes from 'prop-types';

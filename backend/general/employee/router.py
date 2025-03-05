@@ -8,7 +8,7 @@ from backend.database import get_db
 
 router = APIRouter()
 
-@router.get("/", response_model=schemas.PaginatedEmployeeResponse)
+@router.get("", response_model=schemas.PaginatedEmployeeResponse)
 async def read_employees(
     db: Session = Depends(get_db),
     searchQuery: str = Query(""),
@@ -19,7 +19,7 @@ async def read_employees(
     return schemas.PaginatedEmployeeResponse(employees=employees, totalCount=total_count)
 
 
-@router.post("/", response_model=schemas.EmployeeResponse)
+@router.post("", response_model=schemas.EmployeeResponse)
 async def create_employee(employee: schemas.EmployeeCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     employee_data = employee.dict()
     print(employee_data)

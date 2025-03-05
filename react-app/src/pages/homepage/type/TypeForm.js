@@ -35,7 +35,7 @@ function TypeForm({ closeModal }) {
             name: setNameError,
         }
 
-        const url = `${API_BASE_URL}/homepage/type/`
+        const url = `${API_BASE_URL}/homepage/type`
 
         const sendData = {
             name,

@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import 'react-datepicker/dist/react-datepicker.css';
 
-import API_BASE_URL from '../../../config/baseURL';
+import { API_BASE_URL } from '../../../config/baseURL';
 import DateField from '../../../components/form/date';
 import validateFields from '../../../utils/validFields';
 import handleAPI from '../../../utils/handleAPI';

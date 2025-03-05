@@ -17,11 +17,7 @@ Base.metadata.create_all(bind=engine)
 # CORS設定
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://maruomosquit.com",
-        "https://www.maruomosquit.com"
-    ],
+    allow_origins=["http://localhost:3000", "https://maruomosquit.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

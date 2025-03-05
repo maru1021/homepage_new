@@ -8,7 +8,7 @@ from backend.database import get_db
 
 router = APIRouter()
 
-@router.get("/", response_model=schemas.PaginatedTypeResponse)
+@router.get("", response_model=schemas.PaginatedTypeResponse)
 async def read_types(
     db: Session = Depends(get_db),
     searchQuery: str = Query(""),
@@ -19,7 +19,7 @@ async def read_types(
     return schemas.PaginatedTypeResponse(types=types, totalCount=total_count)
 
 
-@router.post("/", response_model=schemas.TypeResponse)
+@router.post("", response_model=schemas.TypeResponse)
 async def create_type(type: schemas.TypeCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     type_data = type.dict()
 
@@ -57,7 +57,3 @@ async def delete_type(type_id: int, background_tasks: BackgroundTasks, db: Sessi
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
-@router.get("/hierarchy", response_model=schemas.TypeHierarchyResponse)
-async def get_type_hierarchy(db: Session = Depends(get_db)):
-    return crud.get_type_hierarchy(db)

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Grid, Card, CardContent, CardActionArea } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../../utils/config';
+import { API_BASE_URL } from '../../config/baseURL';
 
 const Index = () => {
     const [latestArticles, setLatestArticles] = useState([]);
@@ -10,7 +10,7 @@ const Index = () => {
     useEffect(() => {
         const fetchLatestArticles = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/homepage/index/`);
+                const response = await fetch(`${API_BASE_URL}/homepage/index`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }

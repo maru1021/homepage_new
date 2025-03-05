@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Container, Card, CardContent, Typography, TextField, Button, IconButton, InputAdornment, Box } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import API_BASE_URL from '../config/baseURL';
+import { API_BASE_URL } from '../config/baseURL';
 
 function Login({ setToken }) {
   const [username, setUsername] = useState('admin12');

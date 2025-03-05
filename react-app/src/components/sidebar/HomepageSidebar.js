@@ -29,7 +29,7 @@ import {
     PostAdd as PostAddIcon,
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
-import { API_BASE_URL } from '../../utils/config';
+import { API_BASE_URL } from '../../config/baseURL';
 import '../../CSS/sidebar.css';
 
 
@@ -43,7 +43,7 @@ function HomepageSidebar({ setSidebar, mobileOpen = false, onClose = () => {}, i
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/homepage/side_bar`);
+                const response = await fetch(`${API_BASE_URL}/homepage/side_bar/`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
