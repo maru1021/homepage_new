@@ -9,10 +9,6 @@ from backend.database import get_db
 router = APIRouter()
 
 
-@router.get("/", response_model=schemas.SideBarResponse, include_in_schema=True)
+@router.get("", response_model=schemas.SideBarResponse, include_in_schema=True)
 async def get_side_bar(db: Session = Depends(get_db)):
-    """
-    認証不要のエンドポイント
-    """
     return crud.get_side_bar(db)
-

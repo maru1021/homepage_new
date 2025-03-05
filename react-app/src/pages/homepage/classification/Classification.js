@@ -9,7 +9,7 @@ import fetchData from '../../../utils/fetchData';
 
 
 const fetchClassifications = async (searchQuery = '', currentPage = 1, itemsPerPage = 10) => {
-    return fetchData(`${API_BASE_URL}/homepage/classification`, searchQuery, currentPage, itemsPerPage, 'classifications');
+    return fetchData(`${API_BASE_URL}/api/homepage/classification`, searchQuery, currentPage, itemsPerPage, 'classifications');
 };
 
 const Classification = () => (

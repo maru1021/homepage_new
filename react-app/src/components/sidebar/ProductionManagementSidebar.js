@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Collapse, Drawer, List, ListItem, ListItemIcon, ListItemText, Button, Divider, Typography } from '@mui/material';
+import { Collapse, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { FaIndustry, FaUsers, FaSignOutAlt, FaToolbox, FaChevronDown, FaChevronRight, FaCogs } from 'react-icons/fa';
+import { FaIndustry, FaUsers, FaToolbox, FaChevronDown, FaChevronRight, FaCogs } from 'react-icons/fa';
+import { Logout as LogoutIcon } from '@mui/icons-material';
 import '../..//CSS/sidebar.css';
 
 function ProductionManagementSidebar({ setToken, setSidebar }) {
@@ -13,7 +14,7 @@ function ProductionManagementSidebar({ setToken, setSidebar }) {
   const [openGeneral, setOpenGeneral] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    localStorage.clear();
     setToken(null);
     navigate('/login');
   };
@@ -132,24 +133,31 @@ function ProductionManagementSidebar({ setToken, setSidebar }) {
         </ListItem>
 
         {/* ログアウト */}
-        <ListItem sx={{ justifyContent: 'center' }}>
-          <Button
-            variant="contained"
-            startIcon={<FaSignOutAlt />}
-            onClick={handleLogout}
+        <ListItem
+          button
+          onClick={handleLogout}
+          sx={{
+            borderRadius: '10px',
+            transition: '0.2s ease-in-out',
+            background: 'rgba(255, 255, 255, 0.8)',
+            '&:hover': {
+              background: 'rgba(255, 100, 100, 0.1)',
+              transform: 'scale(1.02)'
+            },
+          }}
+        >
+          <ListItemIcon sx={{ 
+            color: '#f44336',
+            opacity: 0.8 
+          }}>
+            <LogoutIcon />
+          </ListItemIcon>
+          <ListItemText 
+            primary="ログアウト"
             sx={{
-              width: '150px',
-              background: '#e57373',
-              color: 'white',
-              fontWeight: 'bold',
-              borderRadius: '10px',
-              transition: '0.2s ease-in-out',
-              '&:hover': { background: '#ef5350', transform: 'scale(1.03)' },
-              '&:active': { background: '#e57373' },
+              color: '#f44336'
             }}
-          >
-            ログアウト
-          </Button>
+          />
         </ListItem>
       </List>
     </Drawer>

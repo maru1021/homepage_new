@@ -46,10 +46,6 @@ EditField.propTypes = {
     multiline: PropTypes.bool
 };
 
-EditField.defaultProps = {
-    multiline: false
-};
-
 const Article = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -65,7 +61,7 @@ const Article = () => {
     });
     const [editedContent, setEditedContent] = useState({});
 
-    const url = `${API_BASE_URL}/homepage/article/${id}`
+    const url = `${API_BASE_URL}/public/article/${id}`
 
     // コンテキストメニュー用の状態
     const [menuPosition, setMenuPosition] = useState(null);
@@ -102,7 +98,7 @@ const Article = () => {
 
     const handleSave = async (field) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/homepage/article/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/public/article/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

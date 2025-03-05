@@ -97,10 +97,6 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10,
         print(f"Error occurred: {e}")
         return {"success": False, "message": "情報の取得に失敗しました", "field": ""}
 
-
-
-
-
 def create_employee(db: Session, employee: schemas.EmployeeCreate, background_tasks: BackgroundTasks):
     from backend.scripts.init_employee import init_employee
     try:

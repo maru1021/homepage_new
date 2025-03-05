@@ -10,7 +10,7 @@ const Index = () => {
     useEffect(() => {
         const fetchLatestArticles = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/homepage/index`);
+                const response = await fetch(`${API_BASE_URL}/public/index`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
