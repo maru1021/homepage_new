@@ -18,7 +18,7 @@ import handleAPI from '../../../utils/handleAPI';
 // 項目データを取得する関数
 const fetchTypes = async () => {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/homepage/type`, {
+    const response = await fetch(`${API_BASE_URL}/api/homepage/type`, {
         headers: { Authorization: `Bearer ${token}` },
     });
     if (response.ok) {
@@ -94,7 +94,7 @@ function ClassificationEditForm({ editData, closeModal }) {
             type_id: setTypeError
         }
 
-        const url = `${API_BASE_URL}/homepage/classification/${editData?.id}`
+        const url = `${API_BASE_URL}/api/homepage/classification/${editData?.id}`
 
         handleAPI(url, 'PUT', closeModal, sendData, errorFieldMap)
     };
@@ -135,11 +135,11 @@ function ClassificationEditForm({ editData, closeModal }) {
                 />
 
                 <DialogActions>
-                    <Button 
+                    <Button
                         type='submit'
                         variant='contained'
                         fullWidth
-                        sx={{ 
+                        sx={{
                             background: 'linear-gradient(to right, #8dbaf2, #6b9ef3)',
                             borderRadius: '12px',
                             boxShadow: '4px 4px 10px rgba(180, 200, 255, 0.4)',

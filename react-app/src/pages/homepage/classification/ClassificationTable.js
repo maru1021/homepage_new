@@ -33,7 +33,7 @@ function ClassificationTable({ data, searchQuery, currentPage, itemsPerPage }) {
         menuRef,
     } = useContextMenu();
 
-    const url = `${API_BASE_URL}/homepage/classification`
+    const url = `${API_BASE_URL}/api/homepage/classification`
 
     const { handleEdit, handleDelete } = useContextMenuActions(
         classifications,
@@ -45,7 +45,7 @@ function ClassificationTable({ data, searchQuery, currentPage, itemsPerPage }) {
         ClassificationEditForm
     );
 
-    setTableData(data, setClassifications, `${WS_BASE_URL}/ws/homepage/classification`, searchQuery, currentPage, itemsPerPage);
+    setTableData(data, setClassifications, `${WS_BASE_URL}/ws/api/homepage/classification`, searchQuery, currentPage, itemsPerPage);
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },

@@ -30,7 +30,7 @@ function TypeTable({ data, searchQuery, currentPage, itemsPerPage }) {
         menuRef,
     } = useContextMenu();
 
-    const url = `${API_BASE_URL}/homepage/type/`
+    const url = `${API_BASE_URL}/api/homepage/type`
 
     const { handleEdit, handleDelete } = useContextMenuActions(
         types,
@@ -42,7 +42,7 @@ function TypeTable({ data, searchQuery, currentPage, itemsPerPage }) {
         TypeEditForm
     );
 
-    setTableData(data, setTypes, `${WS_BASE_URL}/ws/homepage/type`, searchQuery, currentPage, itemsPerPage);
+    setTableData(data, setTypes, `${WS_BASE_URL}/ws/api/homepage/type`, searchQuery, currentPage, itemsPerPage);
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },

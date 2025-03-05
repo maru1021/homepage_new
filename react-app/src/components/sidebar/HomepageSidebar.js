@@ -27,23 +27,26 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 import {
     Article as ArticleIcon,
     PostAdd as PostAddIcon,
+    Login as LoginIcon,
+    Logout as LogoutIcon
 } from '@mui/icons-material';
 import PropTypes from 'prop-types';
 import { API_BASE_URL } from '../../config/baseURL';
 import '../../CSS/sidebar.css';
 
 
-function HomepageSidebar({ setSidebar, mobileOpen = false, onClose = () => {}, isMobile = false, onLinkClick }) {
+function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = () => {}, isMobile = false, onLinkClick }) {
     const navigate = useNavigate();
     const [types, setTypes] = useState([]);
     const [openTypes, setOpenTypes] = useState({});
     const [openClassifications, setOpenClassifications] = useState({});
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     // 項目と分類データを取得
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/homepage/side_bar/`);
+                const response = await fetch(`${API_BASE_URL}/public/side_bar`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -54,6 +57,12 @@ function HomepageSidebar({ setSidebar, mobileOpen = false, onClose = () => {}, i
             }
         };
         fetchData();
+    }, []);
+
+    // トークンの存在をチェック
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        setIsLoggedIn(!!token);
     }, []);
 
     // 項目の開閉状態を切り替え
@@ -139,32 +148,48 @@ function HomepageSidebar({ setSidebar, mobileOpen = false, onClose = () => {}, i
     };
 
     const menuItems = [
-        {
-            text: '記事投稿',
-            icon: <PostAddIcon />,
-            path: '/homepage/article/new',
-            color: '#4CAF50'
-        },
+        // ログイン状態でのみ表示する項目
+        ...(isLoggedIn ? [
+            {
+                text: '記事投稿',
+                icon: <PostAddIcon />,
+                path: '/homepage/article/new',
+                color: '#4CAF50'
+            },
+            {
+                text: '項目一覧',
+                icon: <FaLayerGroup style={{ fontSize: '1.1rem' }} />,
+                path: 'homepage/type',
+            },
+            {
+                text: '分類一覧',
+                icon: <FaBook style={{ fontSize: '1.1rem' }} />,
+                path: 'homepage/classification',
+            },
+        ] : []),
+        // 常に表示する項目
         {
             text: '最新記事一覧',
             icon: <ArticleIcon />,
             path: '/',
-        },
-        {
-            text: '項目一覧',
-            icon: <FaLayerGroup style={{ fontSize: '1.1rem' }} />,
-            path: 'homepage/type',
-        },
-        {
-            text: '分類一覧',
-            icon: <FaBook style={{ fontSize: '1.1rem' }} />,
-            path: 'homepage/classification',
         },
     ];
 
     const handleNavigate = (path) => {
         navigate(path);
         onLinkClick?.();
+    };
+
+    // ログアウト処理
+    const handleLogout = () => {
+        localStorage.clear();
+        setToken(null);
+        setIsLoggedIn(false);
+    };
+
+    // ログインページへの遷移処理
+    const handleLogin = () => {
+        navigate('/login');
     };
 
     return (
@@ -196,7 +221,7 @@ function HomepageSidebar({ setSidebar, mobileOpen = false, onClose = () => {}, i
 
                 {menuItems.map((item, index) => (
                     <React.Fragment key={item.text}>
-                        {index === 1 && <Divider sx={{ my: 1 }} />}
+                        {index === (isLoggedIn ? 3 : 0) && <Divider sx={{ my: 1 }} />}
                         <ListItem
                             button
                             onClick={() => handleNavigate(item.path)}
@@ -246,7 +271,7 @@ function HomepageSidebar({ setSidebar, mobileOpen = false, onClose = () => {}, i
                                                         button
                                                         key={article.id}
                                                         component={Link}
-                                                        to={`homepage/article/${article.id}`}
+                                                        to={`article/${article.id}`}
                                                         sx={{ pl: 6 }}
                                                     >
                                                         <ListItemIcon sx={{ minWidth: 36 }}>
@@ -271,11 +296,14 @@ function HomepageSidebar({ setSidebar, mobileOpen = false, onClose = () => {}, i
                     </React.Fragment>
                 ))}
 
+                <Divider sx={{ my: 2 }} />
+
                 {/* 生産管理への切り替えボタン */}
                 <ListItem
                     button
                     onClick={() => setSidebar("productionManagement")}
                     sx={{
+                        mt: 1,  // マージントップを追加
                         borderRadius: '10px',
                         transition: '0.2s ease-in-out',
                         background: 'rgba(255, 255, 255, 0.8)',
@@ -287,12 +315,43 @@ function HomepageSidebar({ setSidebar, mobileOpen = false, onClose = () => {}, i
                     </ListItemIcon>
                     <ListItemText primary="生産管理" />
                 </ListItem>
+
+                {/* ログイン/ログアウトボタン */}
+                <ListItem
+                    button
+                    onClick={isLoggedIn ? handleLogout : handleLogin}
+                    sx={{
+                        borderRadius: '10px',
+                        transition: '0.2s ease-in-out',
+                        background: 'rgba(255, 255, 255, 0.8)',
+                        '&:hover': {
+                            background: isLoggedIn 
+                                ? 'rgba(255, 100, 100, 0.1)' 
+                                : 'rgba(100, 255, 100, 0.1)',
+                            transform: 'scale(1.02)'
+                        },
+                    }}
+                >
+                    <ListItemIcon sx={{
+                        color: isLoggedIn ? '#f44336' : '#4CAF50',
+                        opacity: 0.8
+                    }}>
+                        {isLoggedIn ? <LogoutIcon /> : <LoginIcon />}
+                    </ListItemIcon>
+                    <ListItemText
+                        primary={isLoggedIn ? "ログアウト" : "ログイン"}
+                        sx={{
+                            color: isLoggedIn ? '#f44336' : '#4CAF50'
+                        }}
+                    />
+                </ListItem>
             </List>
         </Drawer>
     );
 }
 
 HomepageSidebar.propTypes = {
+    setToken: PropTypes.func.isRequired,
     setSidebar: PropTypes.func.isRequired,
     mobileOpen: PropTypes.bool,
     onClose: PropTypes.func,

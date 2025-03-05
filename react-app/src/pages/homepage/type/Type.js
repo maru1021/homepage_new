@@ -9,7 +9,7 @@ import fetchData from '../../../utils/fetchData';
 
 
 const fetchTypes = async (searchQuery = '', currentPage = 1, itemsPerPage = 10) => {
-    return fetchData(`${API_BASE_URL}/homepage/type`, searchQuery, currentPage, itemsPerPage, 'types');
+    return fetchData(`${API_BASE_URL}/api/homepage/type`, searchQuery, currentPage, itemsPerPage, 'types');
 };
 
 const Type = () => (

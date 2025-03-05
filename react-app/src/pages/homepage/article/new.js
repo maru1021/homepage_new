@@ -38,7 +38,7 @@ const ArticleNew = () => {
     React.useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/homepage/side_bar`);
+                const response = await fetch(`${API_BASE_URL}/public/side_bar`);
                 if (response.ok) {
                     const data = await response.json();
                     setTypes(data.types || []);
@@ -56,7 +56,7 @@ const ArticleNew = () => {
 
     const handleSubmit = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/homepage/article/new`, {
+            const response = await fetch(`${API_BASE_URL}/public/article/new`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
