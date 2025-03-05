@@ -6,55 +6,61 @@ const useWebSocket = (url, updateFunc, searchQuery, currentPage, itemsPerPage) =
     const currentPageRef = useRef(currentPage);
     const itemsPerPageRef = useRef(itemsPerPage);
 
-    // WebSocket接続（初回のみ実行）
     useEffect(() => {
-        // ページ移動時に前のページでのWebSocketを閉じる
-        if (wsRef.current) {
-            wsRef.current.close();
-            wsRef.current = null;
-        }
-
-        const token = localStorage.getItem("token");
-        wsRef.current = new WebSocket(`${url}?searchQuery=${searchQuery}&currentPage=${currentPage}&itemsPerPage=${itemsPerPage}&token=${token}`);
-
-        wsRef.current.onopen = () => {
-            // 初回接続時にサーバーにデータ送信
-            const message = {
-                action: "subscribe",
-                searchQuery: searchQueryRef.current,
-                currentPage: currentPageRef.current,
-                itemsPerPage: itemsPerPageRef.current,
-            };
-
-            if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-                wsRef.current.send(JSON.stringify(message));
-            }
-        };
-
-        // WebSocketでデータが送られてきた時の処理
-        wsRef.current.onmessage = (event) => {
+        const connectWebSocket = () => {
             try {
-                if(wsRef.current != null){
-                    const updatedData = JSON.parse(event.data);
-                    updateFunc(updatedData);
-                }
+                const token = localStorage.getItem("token");
+                wsRef.current = new WebSocket(`${url}?searchQuery=${searchQuery}&currentPage=${currentPage}&itemsPerPage=${itemsPerPage}&token=${token}`);
+
+                wsRef.current.onopen = () => {
+                    console.log("WebSocket connected");
+                    // 初回接続時にサーバーにデータ送信
+                    const message = {
+                        action: "subscribe",
+                        searchQuery: searchQueryRef.current,
+                        currentPage: currentPageRef.current,
+                        itemsPerPage: itemsPerPageRef.current,
+                    };
+
+                    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                        wsRef.current.send(JSON.stringify(message));
+                    }
+                };
+
+                // WebSocketでデータが送られてきた時の処理
+                wsRef.current.onmessage = (event) => {
+                    try {
+                        if(wsRef.current != null){
+                            const updatedData = JSON.parse(event.data);
+                            updateFunc(updatedData);
+                        }
+                    } catch (error) {
+                        console.error("WebSocketメッセージのパースに失敗:", error);
+                    }
+                };
+
+                wsRef.current.onerror = (error) => {
+                    console.error("WebSocket error, falling back to HTTP:", error);
+                    // エラー時はHTTPフォールバック
+                };
+
+                wsRef.current.onclose = () => {
+                    wsRef.current = null;
+                };
+
             } catch (error) {
-                console.error("WebSocketメッセージのパースに失敗:", error);
+                console.error("WebSocket connection failed:", error);
             }
         };
 
-        wsRef.current.onerror = (error) => console.error("WebSocketエラー:", error);
-        wsRef.current.onclose = () => {
-            wsRef.current = null;
-        };
+        connectWebSocket();
 
         return () => {
             if (wsRef.current) {
                 wsRef.current.close();
-                wsRef.current = null;
             }
         };
-    }, [url]);  // 初回のWebSocket接続のみ実行
+    }, [url, searchQuery, currentPage, itemsPerPage]);
 
     // 検索などの変更を監視して最新の値を反映
     useEffect(() => {

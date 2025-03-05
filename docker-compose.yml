@@ -17,8 +17,8 @@ services:
     build:
       context: ./react-app
       dockerfile: Dockerfile
-      args:
-        - BUILD_PATH=./build
+    volumes:
+      - ./react-app/build:/usr/share/nginx/html
     environment:
       - NODE_OPTIONS=--max-old-space-size=8192
     ports:

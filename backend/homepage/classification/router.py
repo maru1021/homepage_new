@@ -8,7 +8,7 @@ from backend.database import get_db
 
 router = APIRouter()
 
-@router.get("/", response_model=schemas.PaginatedClassificationResponse)
+@router.get("", response_model=schemas.PaginatedClassificationResponse)
 async def read_classifications(
     db: Session = Depends(get_db),
     searchQuery: str = Query(""),
@@ -19,7 +19,7 @@ async def read_classifications(
     return schemas.PaginatedClassificationResponse(classifications=classifications, totalCount=total_count)
 
 
-@router.post("/", response_model=schemas.ClassificationResponse)
+@router.post("", response_model=schemas.ClassificationResponse)
 async def create_classification(classification: schemas.ClassificationCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     classification_data = classification.dict()
 

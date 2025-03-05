@@ -10,6 +10,9 @@ import ClassificationEditForm from './ClassificationEditForm';
 
 import {
     API_BASE_URL,
+    WS_BASE_URL,
+} from '../../../config/baseURL';
+import {
     ContextMenu,
     setTableData,
     TableHeader,
@@ -42,7 +45,7 @@ function ClassificationTable({ data, searchQuery, currentPage, itemsPerPage }) {
         ClassificationEditForm
     );
 
-    setTableData(data, setClassifications, `${API_BASE_URL.replace("http", "ws")}/ws/homepage/classification`, searchQuery, currentPage, itemsPerPage);
+    setTableData(data, setClassifications, `${WS_BASE_URL}/ws/homepage/classification`, searchQuery, currentPage, itemsPerPage);
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },

@@ -11,7 +11,7 @@ import {
 import Select from 'react-select';
 import 'react-datepicker/dist/react-datepicker.css';
 
-import { API_BASE_URL } from '../../../index/basicTableModules';
+import { API_BASE_URL } from '../../../config/baseURL';
 import validateFields from '../../../utils/validFields';
 import handleAPI from '../../../utils/handleAPI';
 
@@ -89,7 +89,7 @@ function ClassificationForm({ closeModal }) {
             type_id: setTypeError,
         }
 
-        const url = `${API_BASE_URL}/homepage/classification/`
+        const url = `${API_BASE_URL}/homepage/classification`
 
         const sendData = {
             name,

@@ -118,32 +118,3 @@ def delete_type(db: Session, type_id: int, background_tasks: BackgroundTasks):
     except SQLAlchemyError as e:
         db.rollback()
         raise ValueError(f"項目削除中にエラーが発生しました: {e}")
-
-def get_type_hierarchy(db: Session):
-    types = db.query(Type).order_by(Type.sort).all()
-    
-    result = []
-    for type_obj in types:
-        type_data = {
-            "id": type_obj.id,
-            "name": type_obj.name,
-            "classifications": []
-        }
-        
-        for classification in type_obj.classifications:
-            classification_data = {
-                "id": classification.id,
-                "name": classification.name,
-                "articles": [
-                    {
-                        "id": article.id,
-                        "title": article.title
-                    }
-                    for article in classification.articles
-                ] if hasattr(classification, 'articles') else []
-            }
-            type_data["classifications"].append(classification_data)
-        
-        result.append(type_data)
-    
-    return {"types": result}

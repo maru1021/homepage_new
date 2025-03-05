@@ -13,7 +13,7 @@ import {
     Select,
     MenuItem
 } from '@mui/material';
-import { API_BASE_URL } from '../../../index/basicTableModules';
+import { API_BASE_URL } from '../../../config/baseURL';
 
 const ArticleNew = () => {
     const navigate = useNavigate();

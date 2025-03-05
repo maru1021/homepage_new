@@ -4,7 +4,7 @@ import ClassificationTable from './ClassificationTable';
 import ClassificationForm from './ClassificationForm';
 import TableMaster from '../../../components/table/TableMaster';
 
-import API_BASE_URL from '../../../config/baseURL';
+import { API_BASE_URL } from '../../../config/baseURL';
 import fetchData from '../../../utils/fetchData';
 
 

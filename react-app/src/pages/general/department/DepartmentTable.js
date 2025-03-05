@@ -5,7 +5,8 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 
 import DepartmentEditForm from './DepartmentEditForm';
 
-import { API_BASE_URL, setTableData, TableHeader, useContextMenu } from '../../../index/basicTableModules';
+import { API_BASE_URL, WS_BASE_URL } from '../../../config/baseURL';
+import { setTableData, TableHeader, useContextMenu } from '../../../index/basicTableModules';
 import ContextMenu from '../../../components/ContextMenu';
 import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
 
@@ -34,7 +35,7 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
         DepartmentEditForm
     );
 
-    setTableData(data, setDepartments, `${API_BASE_URL.replace("http", "ws")}/ws/general/department`, searchQuery, currentPage, itemsPerPage);
+    setTableData(data, setDepartments, `${WS_BASE_URL}/ws/general/department`, searchQuery, currentPage, itemsPerPage);
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },

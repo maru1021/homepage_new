@@ -4,7 +4,7 @@ import EmployeeTable from './EmployeeTable';
 import EmployeeForm from './EmployeeForm';
 import TableMaster from '../../../components/table/TableMaster';
 
-import API_BASE_URL from '../../../config/baseURL';
+import { API_BASE_URL } from '../../../config/baseURL';
 import exportExcel from '../../../utils/Excel/export_excel';
 import fetchData from '../../../utils/fetchData';
 

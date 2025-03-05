@@ -4,7 +4,7 @@ import EmployeeAuthorityTable from './EmployeeAuthorityTable';
 import EmployeeAuthorityForm from './EmployeeAuthorityForm';
 import TableMaster from '../../../components/table/TableMaster';
 
-import API_BASE_URL from '../../../config/baseURL';
+import { API_BASE_URL } from '../../../config/baseURL';
 import exportExcel from '../../../utils/Excel/export_excel';
 import fetchData from '../../../utils/fetchData';
 import importExcel from '../../../utils/Excel/import_excel';

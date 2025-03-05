@@ -4,7 +4,7 @@ import TypeTable from './TypeTable';
 import TypeForm from './TypeForm';
 import TableMaster from '../../../components/table/TableMaster';
 
-import API_BASE_URL from '../../../config/baseURL';
+import { API_BASE_URL } from '../../../config/baseURL';
 import fetchData from '../../../utils/fetchData';
 
 

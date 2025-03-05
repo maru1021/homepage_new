@@ -10,6 +10,9 @@ import EmployeeEditForm from './EmployeeEditForm';
 
 import {
     API_BASE_URL,
+    WS_BASE_URL,
+} from '../../../config/baseURL';
+import {
     ContextMenu,
     setTableData,
     TableHeader,
@@ -42,7 +45,7 @@ function EmployeeTable({ data, searchQuery, currentPage, itemsPerPage }) {
         EmployeeEditForm
     );
 
-    setTableData(data, setEmployees, `${API_BASE_URL.replace("http", "ws")}/ws/general/employee`, searchQuery, currentPage, itemsPerPage);
+    setTableData(data, setEmployees, `${WS_BASE_URL}/ws/general/employee`, searchQuery, currentPage, itemsPerPage);
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },

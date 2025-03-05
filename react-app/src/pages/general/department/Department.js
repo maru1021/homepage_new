@@ -1,6 +1,6 @@
 import React from 'react';
 
-import API_BASE_URL from '../../../config/baseURL';
+import { API_BASE_URL } from '../../../config/baseURL';
 import DepartmentForm from './DepartmentForm';
 import DepartmentTable from './DepartmentTable'
 import TableMaster from '../../../components/table/TableMaster';

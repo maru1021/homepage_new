@@ -8,7 +8,7 @@ from backend.general.department import crud, schemas, excel_operation
 router = APIRouter()
 
 # 部署一覧取得
-@router.get("/", response_model=schemas.PaginatedDepartmentResponse)
+@router.get("", response_model=schemas.PaginatedDepartmentResponse)
 def read_departments(
     db: Session = Depends(get_db),
     searchQuery: str = Query("", description="SearchQuery"),
@@ -19,7 +19,7 @@ def read_departments(
     return schemas.PaginatedDepartmentResponse(departments=departments, totalCount=total_count)
 
 # 部署作成
-@router.post("/", response_model=schemas.DepartmentResponse)
+@router.post("", response_model=schemas.DepartmentResponse)
 def create_department(department: schemas.DepartmentBase, background_tasks: BackgroundTasks, db: Session = Depends(get_db) ):
     department_data = department.dict()
     return crud.create_department(db=db, department=schemas.DepartmentBase(**department_data), background_tasks=background_tasks )
