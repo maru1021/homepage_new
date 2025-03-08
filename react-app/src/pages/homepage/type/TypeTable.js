@@ -7,6 +7,7 @@ import {
 import { FaEdit, FaTrash } from 'react-icons/fa';
 
 import TypeEditForm from './TypeEditForm';
+import LoadingAnimation from '../../../components/LoadingAnimation';
 
 import { API_BASE_URL, WS_BASE_URL } from '../../../config/baseURL';
 import {
@@ -20,6 +21,7 @@ import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
 
 function TypeTable({ data, searchQuery, currentPage, itemsPerPage }) {
     const [types, setTypes] = useState(data);
+    const [isLoading, setIsLoading] = useState(true);
 
     const {
         menuPosition,
@@ -42,7 +44,16 @@ function TypeTable({ data, searchQuery, currentPage, itemsPerPage }) {
         TypeEditForm
     );
 
-    setTableData(data, setTypes, `${WS_BASE_URL}/ws/api/homepage/type`, searchQuery, currentPage, itemsPerPage);
+    setTableData(data,
+        (newData) => {
+            setTypes(newData);
+            setIsLoading(false);
+        },
+        `${WS_BASE_URL}/ws/api/homepage/type`,
+        searchQuery,
+        currentPage,
+        itemsPerPage
+    );
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
@@ -58,7 +69,13 @@ function TypeTable({ data, searchQuery, currentPage, itemsPerPage }) {
                     <TableHeader columns={columns} />
 
                     <TableBody>
-                        {data.length > 0 ?
+                        {isLoading ? (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} sx={{ border: 'none' }}>
+                                    <LoadingAnimation />
+                                </TableCell>
+                            </TableRow>
+                        ) : types.length > 0 ?
                             (types?.map((type) => (
                                 <TableRow
                                     key={type.id}

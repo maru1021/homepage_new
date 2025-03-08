@@ -7,6 +7,7 @@ import {
 import { FaEdit, FaTrash } from 'react-icons/fa';
 
 import ClassificationEditForm from './ClassificationEditForm';
+import LoadingAnimation from '../../../components/LoadingAnimation';
 
 import {
     API_BASE_URL,
@@ -23,6 +24,7 @@ import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
 
 function ClassificationTable({ data, searchQuery, currentPage, itemsPerPage }) {
     const [classifications, setClassifications] = useState(data);
+    const [isLoading, setIsLoading] = useState(true);
 
     const {
         menuPosition,
@@ -45,7 +47,16 @@ function ClassificationTable({ data, searchQuery, currentPage, itemsPerPage }) {
         ClassificationEditForm
     );
 
-    setTableData(data, setClassifications, `${WS_BASE_URL}/ws/api/homepage/classification`, searchQuery, currentPage, itemsPerPage);
+    setTableData(data,
+        (newData) => {
+            setClassifications(newData);
+            setIsLoading(false);
+        },
+        `${WS_BASE_URL}/ws/api/homepage/classification`,
+        searchQuery,
+        currentPage,
+        itemsPerPage
+    );
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
@@ -61,7 +72,13 @@ function ClassificationTable({ data, searchQuery, currentPage, itemsPerPage }) {
                     <TableHeader columns={columns} />
 
                     <TableBody>
-                        {data.length > 0 ?
+                        {isLoading ? (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} sx={{ border: 'none' }}>
+                                    <LoadingAnimation />
+                                </TableCell>
+                            </TableRow>
+                        ) : classifications.length > 0 ?
                             (classifications?.map((classification) => (
                                 <TableRow
                                     key={classification.id}

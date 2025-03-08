@@ -1,77 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
     Box, Typography, Grid, Card, CardContent, 
-    CardActionArea, CircularProgress 
+    CardActionArea
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../config/baseURL';
+import LoadingAnimation from '../../components/LoadingAnimation';
 
-// ローディングコンポーネント
-const LoadingAnimation = () => (
-    <Box sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '300px',
-        gap: 3,
-        width: '100%',
-        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-        borderRadius: '16px',
-        padding: 4,
-        boxShadow: '0 8px 16px rgba(0,0,0,0.03)'
-    }}>
-        <Box sx={{
-            position: 'relative',
-            width: 60,
-            height: 60
-        }}>
-            <CircularProgress
-                size={60}
-                thickness={4}
-                sx={{
-                    color: '#3498db',
-                    position: 'absolute',
-                    left: 0,
-                }}
-            />
-            <CircularProgress
-                size={60}
-                thickness={4}
-                sx={{
-                    color: 'rgba(52, 152, 219, 0.2)',
-                    position: 'absolute',
-                    left: 0,
-                    animation: 'pulse 1.5s ease-in-out infinite'
-                }}
-            />
-        </Box>
-        <Typography
-            variant="h6"
-            sx={{
-                color: '#2c3e50',
-                fontWeight: 500,
-                textAlign: 'center',
-                opacity: 0.9,
-                animation: 'fadeInOut 1.5s ease-in-out infinite'
-            }}
-        >
-            記事を読み込んでいます...
-        </Typography>
-        <Box sx={{
-            '@keyframes pulse': {
-                '0%': { transform: 'scale(1)', opacity: 0.7 },
-                '50%': { transform: 'scale(1.1)', opacity: 0.3 },
-                '100%': { transform: 'scale(1)', opacity: 0.7 }
-            },
-            '@keyframes fadeInOut': {
-                '0%': { opacity: 0.6 },
-                '50%': { opacity: 1 },
-                '100%': { opacity: 0.6 }
-            }
-        }} />
-    </Box>
-);
 
 const Index = () => {
     const [articles, setArticles] = useState([]);
@@ -131,7 +66,7 @@ const Index = () => {
             </Typography>
 
             {isLoading ? (
-                <LoadingAnimation />
+                <LoadingAnimation loadingText="記事を読み込んでいます..." />
             ) : articles.length === 0 ? (
                 <Box sx={{
                     textAlign: 'center',
@@ -190,22 +125,48 @@ const Index = () => {
                                             {article.title}
                                         </Typography>
 
-                                        {article.type_name && (
-                                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                                <Typography
-                                                    variant="caption"
-                                                    sx={{
-                                                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                                        color: '#3b82f6',
-                                                        padding: '6px 12px',
-                                                        borderRadius: '20px',
-                                                        fontSize: '0.8rem',
-                                                        fontWeight: 500,
-                                                        letterSpacing: '0.02em'
-                                                    }}
-                                                >
-                                                    {article.type_name}
-                                                </Typography>
+                                        {(article.type_name || article.classification_name) && (
+                                            <Box sx={{ 
+                                                display: 'flex', 
+                                                gap: 1,
+                                                flexWrap: 'wrap'  // タグが長い場合に折り返し
+                                            }}>
+                                                {article.type_name && (
+                                                    <Typography
+                                                        variant="caption"
+                                                        sx={{
+                                                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                                            color: '#3b82f6',
+                                                            padding: '6px 12px',
+                                                            borderRadius: '20px',
+                                                            fontSize: '0.8rem',
+                                                            fontWeight: 500,
+                                                            letterSpacing: '0.02em',
+                                                            display: 'flex',
+                                                            alignItems: 'center'
+                                                        }}
+                                                    >
+                                                        {article.type_name}
+                                                    </Typography>
+                                                )}
+                                                {article.classification_name && (
+                                                    <Typography
+                                                        variant="caption"
+                                                        sx={{
+                                                            backgroundColor: 'rgba(16, 185, 129, 0.1)',  // 異なる色を使用
+                                                            color: '#10b981',  // 異なる色を使用
+                                                            padding: '6px 12px',
+                                                            borderRadius: '20px',
+                                                            fontSize: '0.8rem',
+                                                            fontWeight: 500,
+                                                            letterSpacing: '0.02em',
+                                                            display: 'flex',
+                                                            alignItems: 'center'
+                                                        }}
+                                                    >
+                                                        {article.classification_name}
+                                                    </Typography>
+                                                )}
                                             </Box>
                                         )}
                                     </CardContent>

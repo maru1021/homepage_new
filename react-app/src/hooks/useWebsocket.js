@@ -13,7 +13,6 @@ const useWebSocket = (url, updateFunc, searchQuery, currentPage, itemsPerPage) =
                 wsRef.current = new WebSocket(`${url}?searchQuery=${searchQuery}&currentPage=${currentPage}&itemsPerPage=${itemsPerPage}&token=${token}`);
 
                 wsRef.current.onopen = () => {
-                    console.log("WebSocket connected");
                     // 初回接続時にサーバーにデータ送信
                     const message = {
                         action: "subscribe",

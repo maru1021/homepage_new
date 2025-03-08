@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Paper, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
+import {
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableRow,
+    Typography,
+} from '@mui/material';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 
 import DepartmentEditForm from './DepartmentEditForm';
+import LoadingAnimation from '../../../components/LoadingAnimation';
 
 import { API_BASE_URL, WS_BASE_URL } from '../../../config/baseURL';
 import { setTableData, TableHeader, useContextMenu } from '../../../index/basicTableModules';
@@ -13,6 +22,7 @@ import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
 
 function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
     const [departments, setDepartments] = useState(data);
+    const [isLoading, setIsLoading] = useState(true);
 
     const {
         menuPosition,
@@ -35,7 +45,17 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
         DepartmentEditForm
     );
 
-    setTableData(data, setDepartments, `${WS_BASE_URL}/ws/general/department`, searchQuery, currentPage, itemsPerPage);
+    setTableData(
+        data,
+        (newData) => {
+            setDepartments(newData);
+            setIsLoading(false);
+        },
+        `${WS_BASE_URL}/ws/general/department`,
+        searchQuery,
+        currentPage,
+        itemsPerPage
+    );
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
@@ -46,18 +66,39 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
 
     return (
         <>
-            <TableContainer component={Paper} elevation={3} sx={{ overflowX: "auto" }}>
+            <TableContainer
+                component={Paper}
+                elevation={3}
+                sx={{
+                    overflowX: "auto",
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.05)'
+                }}
+            >
                 <Table>
                     <TableHeader columns={columns} />
 
                     <TableBody>
-                        {data.length > 0 ? (
+                        {isLoading ? (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} sx={{ border: 'none' }}>
+                                    <LoadingAnimation />
+                                </TableCell>
+                            </TableRow>
+                        ) : departments.length > 0 ? (
                             departments.map((department) => (
                                 <TableRow
                                     key={department.id}
                                     onContextMenu={(event) => handleContextMenu(event, department.id)}
                                     id={`department-row-${department.id}`}
                                     hover
+                                    sx={{
+                                        transition: 'all 0.2s ease',
+                                        '&:hover': {
+                                            backgroundColor: 'rgba(59, 130, 246, 0.05)'
+                                        }
+                                    }}
                                 >
                                     <TableCell>
                                         {department.name}
@@ -67,14 +108,17 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} align="center">
-                                    <Typography sx={{ textAlign: 'center', color: '#888' }}>
+                                    <Typography sx={{ 
+                                        textAlign: 'center', 
+                                        color: '#94a3b8',
+                                        py: 4
+                                    }}>
                                         データがありません
                                     </Typography>
                                 </TableCell>
                             </TableRow>
                         )}
                     </TableBody>
-
                 </Table>
             </TableContainer>
 

@@ -19,10 +19,11 @@ import {
     useContextMenu,
 } from '../../../index/basicTableModules';
 import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
-
+import LoadingAnimation from '../../../components/LoadingAnimation';
 
 function EmployeeTable({ data, searchQuery, currentPage, itemsPerPage }) {
     const [employees, setEmployees] = useState(data);
+    const [isLoading, setIsLoading] = useState(true);
 
     const {
         menuPosition,
@@ -45,7 +46,16 @@ function EmployeeTable({ data, searchQuery, currentPage, itemsPerPage }) {
         EmployeeEditForm
     );
 
-    setTableData(data, setEmployees, `${WS_BASE_URL}/ws/general/employee`, searchQuery, currentPage, itemsPerPage);
+    setTableData(data,
+        (newData) => {
+            setEmployees(newData);
+            setIsLoading(false);
+        },
+        `${WS_BASE_URL}/ws/general/employee`,
+        searchQuery,
+        currentPage,
+        itemsPerPage
+    );
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
@@ -62,7 +72,13 @@ function EmployeeTable({ data, searchQuery, currentPage, itemsPerPage }) {
                     <TableHeader columns={columns} />
 
                     <TableBody>
-                        {data.length > 0 ?
+                        {isLoading ? (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} sx={{ border: 'none' }}>
+                                    <LoadingAnimation />
+                                </TableCell>
+                            </TableRow>
+                        ) : employees.length > 0 ?
                             (employees?.map((employee) => (
                                 <TableRow
                                     key={employee.id}
