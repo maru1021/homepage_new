@@ -199,23 +199,9 @@ const Article = () => {
             p: { xs: 2, sm: 3, md: 4 },
             maxWidth: '1200px',
             margin: '0 auto',
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(240,240,240,0.4) 100%)'
         }}>
-            <Paper
-                elevation={0}
-                sx={{
-                    p: { xs: 2, sm: 3 },
-                    mb: 3,
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
-                    borderRadius: '20px',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.06)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                        boxShadow: '0 12px 48px rgba(0,0,0,0.08)'
-                    }
-                }}
-                onContextMenu={(e) => handleContextMenu(e, 'title')}
-            >
+            {/* タイトルセクション */}
+            <Box component="header" sx={{ mb: 4 }}>
                 {editMode.title ? (
                     <EditField
                         value={editedContent.title}
@@ -223,64 +209,83 @@ const Article = () => {
                         onSave={() => handleSave('title')}
                     />
                 ) : (
-                    <Typography 
-                        variant="h4" 
-                        sx={{ 
+                    <Typography
+                        variant="h4"
+                        sx={{
                             fontWeight: 700,
-                            color: '#1a202c',
-                            mb: 3,
-                            lineHeight: 1.3,
-                            letterSpacing: '-0.02em'
+                            color: '#2c3e50',
+                            marginTop: -1,
+                            marginBottom: 1,
+                            textShadow: '2px 2px 4px rgba(0,0,0,0.05)',
+                            borderBottom: '2px solid #edf2f7',
+                            position: 'relative',
+                            '&::after': {
+                                content: '""',
+                                position: 'absolute',
+                                bottom: -2,
+                                left: 0,
+                                width: '100px',
+                                height: '2px',
+                                backgroundColor: '#3498db',
+                                transition: 'width 0.3s ease'
+                            }
                         }}
+                        onContextMenu={(e) => handleContextMenu(e, 'title')}
                     >
                         {article.title}
                     </Typography>
                 )}
 
-                <Box sx={{ display: 'flex', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
-                    {article.type_name && (
-                        <Chip
-                            label={article.type_name}
-                            sx={{
-                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                color: '#3b82f6',
-                                fontWeight: 600,
-                                borderRadius: '12px',
-                                padding: '4px 8px',
-                                '&:hover': {
-                                    backgroundColor: 'rgba(59, 130, 246, 0.15)'
-                                }
-                            }}
-                        />
-                    )}
-                    {article.classification_name && (
-                        <Chip
-                            label={article.classification_name}
-                            sx={{
-                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                color: '#10b981',
-                                fontWeight: 600,
-                                borderRadius: '12px',
-                                padding: '4px 8px',
-                                '&:hover': {
-                                    backgroundColor: 'rgba(16, 185, 129, 0.15)'
-                                }
-                            }}
-                        />
-                    )}
+                {/* タグと更新日 */}
+                <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mt: 2
+                }}>
+                    <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                        {article.type_name && (
+                            <Chip
+                                label={article.type_name}
+                                sx={{
+                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                    color: '#3b82f6',
+                                    fontWeight: 600,
+                                    borderRadius: '12px',
+                                    padding: '4px 8px',
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(59, 130, 246, 0.15)'
+                                    }
+                                }}
+                            />
+                        )}
+                        {article.classification_name && (
+                            <Chip
+                                label={article.classification_name}
+                                sx={{
+                                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                    color: '#10b981',
+                                    fontWeight: 600,
+                                    borderRadius: '12px',
+                                    padding: '4px 8px',
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(16, 185, 129, 0.15)'
+                                    }
+                                }}
+                            />
+                        )}
+                    </Box>
+                    <Typography
+                        variant="caption"
+                        sx={{
+                            color: '#64748b',
+                            fontSize: '0.875rem'
+                        }}
+                    >
+                        最終更新: {new Date(article.updated_at).toLocaleDateString('ja-JP')}
+                    </Typography>
                 </Box>
-
-                <Typography
-                    variant="caption"
-                    sx={{
-                        color: '#64748b',
-                        display: 'block',
-                        fontSize: '0.875rem'
-                    }}
-                >
-                    最終更新: {new Date(article.updated_at).toLocaleDateString('ja-JP')}
-                </Typography>
-            </Paper>
+            </Box>
 
             {/* タブを含むPaper */}
             {tabs.length > 0 && (
