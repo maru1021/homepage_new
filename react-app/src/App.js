@@ -21,7 +21,7 @@ function App() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [token, setToken] = useState(localStorage.getItem('token') || null);
-  const [sidebar, setSidebar] = useState('homepage');
+  const [sidebar, setSidebar] = useState(localStorage.getItem('currentSidebar') || 'homepage');
   const [mobileOpen, setMobileOpen] = useState(!isMobile);
   const navigate = useNavigate();
 
@@ -60,8 +60,10 @@ function App() {
   // ログアウト処理
   const handleLogout = () => {
     setToken(null);
+    setSidebar('homepage');  // サイドバーをホームページに戻す
     localStorage.removeItem('token');
     localStorage.removeItem('expiration_time');
+    localStorage.removeItem('currentSidebar');  // サイドバーの状態も削除
     navigate('/login');
   };
 
@@ -78,13 +80,13 @@ function App() {
     productionManagement: ProductionManagementSidebar,
   };
 
-  // サイドバー切り替え時の処理を先に定義
   const handleSidebarChange = (newSidebar) => {
     if (newSidebar === 'productionManagement' && !token) {
       navigate('/login');
       return;
     }
     setSidebar(newSidebar);
+    localStorage.setItem('currentSidebar', newSidebar);
   };
 
   // メモ化したサイドバーコンポーネントの生成
@@ -98,17 +100,17 @@ function App() {
       isMobile,
       key: sidebar
     });
-  }, [sidebar, setToken, mobileOpen, isMobile, handleSidebarChange]);  // handleSidebarChangeを依存配列に追加
+  }, [sidebar, setToken, mobileOpen, isMobile, handleSidebarChange]);
 
   // サイドバーの幅を動的に決定
-  const sidebarWidth = sidebar === 'homepage' ? 2.5 : 2;
-  const mainContentWidth = 12 - sidebarWidth;
+  const sidebarWidth = sidebar === 'homepage' ? 320 : 200;
+  const mainContentWidth = 10;
 
   // メニューボタンの表示条件を変更
   const showMenuButton = isMobile;
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', overflow: 'hidden' }}>
       {/* メニューボタン - モバイルのみ表示 */}
       {showMenuButton && (
         <IconButton
@@ -133,29 +135,24 @@ function App() {
         </IconButton>
       )}
 
-      <Grid container sx={{ flexGrow: 1, position: 'relative' }}>
+      <Grid container sx={{ 
+        flexGrow: 1, 
+        position: 'relative',
+        margin: 0,
+        width: '100%',
+        padding: 0
+      }}>
         {/* サイドバー */}
         {shouldShowSidebar() && (
           <Grid
             item
             xs={12}
-            sm={sidebarWidth}
+            sm={2}
             sx={{
               display: isMobile ? (mobileOpen ? 'block' : 'none') : 'block',
-              maxWidth: { xs: '100%', sm: '320px' },
-              width: '100%',
+              width: sidebar === 'homepage' ? '320px' : '200px',
               position: 'fixed',
-              left: 0,
-              top: 0,
-              height: '100vh',
-              zIndex: 1200,
-              backgroundColor: {
-                xs: '#fff',
-                sm: theme.palette.background.paper
-              },
-              boxShadow: { xs: 24, sm: 1 },
-              overflowY: 'auto',
-              transition: 'all 0.3s'
+              zIndex: 999,
             }}
           >
             {MemoizedSidebar}
@@ -172,17 +169,19 @@ function App() {
             minWidth: 0,
             marginLeft: {
               xs: 0,
-              sm: shouldShowSidebar() ? '320px' : 0
+              sm: shouldShowSidebar() ? `${sidebarWidth}px` : 0
             },
             position: 'relative',
             zIndex: 1,
             width: {
               xs: '100%',
-              sm: shouldShowSidebar() ? 'calc(100% - 320px)' : '100%'
+              sm: shouldShowSidebar() ? `calc(100% - ${sidebarWidth}px)` : '100%'
             },
             display: 'flex',
             justifyContent: 'center',
-            backgroundColor: '#fff'
+            backgroundColor: '#fff',
+            padding: 0,
+            borderLeft: 'none'
           }}
         >
           <Box
