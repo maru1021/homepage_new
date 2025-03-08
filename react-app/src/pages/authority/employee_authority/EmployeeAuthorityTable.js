@@ -18,12 +18,14 @@ import {
 } from '../../../index/basicTableModules';
 
 import EmployeeAuthorityEditForm from './EmployeeAuthorityEditForm';
+import LoadingAnimation from '../../../components/LoadingAnimation';
 
 import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
 
 
 function EmployeeAuthorityTable({ data, searchQuery, currentPage, itemsPerPage }) {
     const [employees, setEmployees] = useState(data);
+    const [isLoading, setIsLoading] = useState(true);
 
     const {
         menuPosition,
@@ -46,7 +48,16 @@ function EmployeeAuthorityTable({ data, searchQuery, currentPage, itemsPerPage }
         EmployeeAuthorityEditForm
     );
 
-    setTableData(data, setEmployees, `${WS_BASE_URL}/ws/authority/employee_authority`, searchQuery, currentPage, itemsPerPage);
+    setTableData(data,
+        (newData) => {
+            setEmployees(newData);
+            setIsLoading(false);
+        },
+        `${WS_BASE_URL}/ws/authority/employee_authority`,
+        searchQuery,
+        currentPage,
+        itemsPerPage
+    );
 
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
@@ -62,7 +73,13 @@ function EmployeeAuthorityTable({ data, searchQuery, currentPage, itemsPerPage }
                 <TableHeader columns={columns} />
 
                 <TableBody>
-                    {data.length > 0 ? (
+                    {isLoading ? (
+                        <TableRow>
+                            <TableCell colSpan={columns.length} sx={{ border: 'none' }}>
+                                <LoadingAnimation />
+                            </TableCell>
+                        </TableRow>
+                    ) : employees.length > 0 ? (
                         employees?.map((employee) => (
                             <TableRow
                                 key={employee.id}

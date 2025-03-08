@@ -9,6 +9,8 @@ import { ContextMenu } from '../../../index/basicTableModules';
 import PropTypes from 'prop-types';
 import ConfirmDeleteModal from '../../../components/modal/ConfirmDeleteModal';
 import handleAPI from '../../../utils/handleAPI';
+import LoadingAnimation from '../../../components/LoadingAnimation';
+
 
 const EditField = ({ value, onChange, onSave, multiline = false }) => (
     <Box>
@@ -19,7 +21,16 @@ const EditField = ({ value, onChange, onSave, multiline = false }) => (
             onChange={onChange}
             autoFocus
             minRows={multiline ? 4 : 1}
-            sx={{ mb: 2 }}
+            sx={{
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                    borderRadius: '12px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)'
+                    }
+                }
+            }}
         />
         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button
@@ -27,9 +38,15 @@ const EditField = ({ value, onChange, onSave, multiline = false }) => (
                 startIcon={<FaSave />}
                 onClick={onSave}
                 sx={{
-                    background: 'linear-gradient(to right, #4CAF50, #45a049)',
+                    borderRadius: '12px',
+                    padding: '8px 24px',
+                    background: 'linear-gradient(45deg, #3498db, #2980b9)',
+                    boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)',
+                    transition: 'all 0.3s ease',
                     '&:hover': {
-                        background: 'linear-gradient(to right, #45a049, #3d8b40)'
+                        background: 'linear-gradient(45deg, #2980b9, #2573a7)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 6px 16px rgba(52, 152, 219, 0.4)'
                     }
                 }}
             >
@@ -44,6 +61,22 @@ EditField.propTypes = {
     onChange: PropTypes.func.isRequired,
     onSave: PropTypes.func.isRequired,
     multiline: PropTypes.bool
+};
+
+// テキストの改行とタブを適切に変換する関数（コード用）
+const formatText = (text) => {
+    if (!text) return '';
+    return text
+        .replace(/\\n/g, '\n')  // バックスラッシュ付きの改行を実際の改行に変換
+        .replace(/\\t/g, '    ');  // タブをスペース4つに変換
+};
+
+// 表示用テキストの改行を処理する関数
+const formatDisplayText = (text) => {
+    if (!text) return '';
+    return text
+        .replace(/\\n/g, '<br />')  // バックスラッシュ付きの改行をHTMLの改行タグに変換
+        .replace(/\\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');  // タブをスペースに変換
 };
 
 const Article = () => {
@@ -75,7 +108,14 @@ const Article = () => {
                 if (response.ok) {
                     const data = await response.json();
                     setArticle(data.article);
-                    setEditedContent(data.article);
+                    setEditedContent({
+                        title: data.article.title,
+                        disp: data.article.disp,
+                        code: data.article.code,
+                        code2: data.article.code2,
+                        code3: data.article.code3,
+                        explanation: data.article.explanation
+                    });
                 }
             } catch (error) {
                 console.error('Error fetching article:', error);
@@ -140,30 +180,39 @@ const Article = () => {
     ];
 
     if (!article) {
-        return <Box sx={{ p: 3 }}>Loading...</Box>;
+        return <LoadingAnimation loadingText='記事を読み込んでいます...' />;
     }
 
-    // タブの内容を生成（explanationを除外）
+    // タブの内容を生成時にfieldプロパティを追加
     const tabs = [];
-    if (article.disp) tabs.push({ label: '表示', content: article.disp });
-    if (article.code) tabs.push({ label: article.language || 'コード1', content: article.code });
-    if (article.code2) tabs.push({ label: article.language2 || 'コード2', content: article.code2 });
-    if (article.code3) tabs.push({ label: article.language3 || 'コード3', content: article.code3 });
+    if (article.disp) tabs.push({ label: '表示', content: article.disp, field: 'disp' });
+    if (article.code) tabs.push({ label: article.language || 'コード1', content: article.code, field: 'code' });
+    if (article.code2) tabs.push({ label: article.language2 || 'コード2', content: article.code2, field: 'code2' });
+    if (article.code3) tabs.push({ label: article.language3 || 'コード3', content: article.code3, field: 'code3' });
 
     const handleTabChange = (event, newValue) => {
         setCurrentTab(newValue);
     };
 
     return (
-        <Box sx={{ p: 3, maxWidth: '1200px', margin: '0 auto' }}>
+        <Box sx={{
+            p: { xs: 2, sm: 3, md: 4 },
+            maxWidth: '1200px',
+            margin: '0 auto',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(240,240,240,0.4) 100%)'
+        }}>
             <Paper
                 elevation={0}
                 sx={{
-                    p: 3,
+                    p: { xs: 2, sm: 3 },
                     mb: 3,
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,240,240,0.95) 100%)',
-                    borderRadius: '15px',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.05)'
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+                    borderRadius: '20px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.06)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                        boxShadow: '0 12px 48px rgba(0,0,0,0.08)'
+                    }
                 }}
                 onContextMenu={(e) => handleContextMenu(e, 'title')}
             >
@@ -174,66 +223,114 @@ const Article = () => {
                         onSave={() => handleSave('title')}
                     />
                 ) : (
-                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333', mb: 2 }}>
+                    <Typography 
+                        variant="h4" 
+                        sx={{ 
+                            fontWeight: 700,
+                            color: '#1a202c',
+                            mb: 3,
+                            lineHeight: 1.3,
+                            letterSpacing: '-0.02em'
+                        }}
+                    >
                         {article.title}
                     </Typography>
                 )}
 
-                <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                    <Chip
-                        label={article.type_name}
-                        sx={{
-                            backgroundColor: 'rgba(33, 150, 243, 0.1)',
-                            color: '#2196F3',
-                            fontWeight: 'bold'
-                        }}
-                    />
-                    <Chip
-                        label={article.classification_name}
-                        sx={{
-                            backgroundColor: 'rgba(156, 39, 176, 0.1)',
-                            color: '#9C27B0',
-                            fontWeight: 'bold'
-                        }}
-                    />
+                <Box sx={{ display: 'flex', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
+                    {article.type_name && (
+                        <Chip
+                            label={article.type_name}
+                            sx={{
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                color: '#3b82f6',
+                                fontWeight: 600,
+                                borderRadius: '12px',
+                                padding: '4px 8px',
+                                '&:hover': {
+                                    backgroundColor: 'rgba(59, 130, 246, 0.15)'
+                                }
+                            }}
+                        />
+                    )}
+                    {article.classification_name && (
+                        <Chip
+                            label={article.classification_name}
+                            sx={{
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                color: '#10b981',
+                                fontWeight: 600,
+                                borderRadius: '12px',
+                                padding: '4px 8px',
+                                '&:hover': {
+                                    backgroundColor: 'rgba(16, 185, 129, 0.15)'
+                                }
+                            }}
+                        />
+                    )}
                 </Box>
 
-                <Typography variant="caption" sx={{ color: '#666' }}>
+                <Typography
+                    variant="caption"
+                    sx={{
+                        color: '#64748b',
+                        display: 'block',
+                        fontSize: '0.875rem'
+                    }}
+                >
                     最終更新: {new Date(article.updated_at).toLocaleDateString('ja-JP')}
                 </Typography>
             </Paper>
 
-            {/* タブを含むPaperを条件付きで表示 */}
+            {/* タブを含むPaper */}
             {tabs.length > 0 && (
                 <Paper
                     elevation={0}
                     sx={{
-                        p: 3,
+                        p: { xs: 2, sm: 3 },
                         mb: 3,
-                        background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,240,240,0.95) 100%)',
-                        borderRadius: '15px',
-                        boxShadow: '0 4px 8px rgba(0,0,0,0.05)'
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+                        borderRadius: '20px',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.06)',
+                        overflow: 'hidden'
                     }}
                 >
                     <Tabs
                         value={currentTab}
                         onChange={handleTabChange}
+                        variant="scrollable"
+                        scrollButtons="auto"
                         sx={{
                             mb: 3,
-                            borderBottom: 1,
-                            borderColor: 'divider',
+                            borderBottom: '2px solid #edf2f7',
                             '& .MuiTab-root': {
                                 textTransform: 'none',
-                                fontWeight: 'bold',
-                                color: '#666',
+                                fontWeight: 600,
+                                color: '#64748b',
+                                minWidth: 120,
                                 '&.Mui-selected': {
-                                    color: '#2196F3'
+                                    color: '#3b82f6'
                                 }
+                            },
+                            '& .MuiTabs-indicator': {
+                                backgroundColor: '#3b82f6',
+                                height: '3px',
+                                borderRadius: '3px 3px 0 0'
                             }
                         }}
                     >
                         {tabs.map((tab, index) => (
-                            <Tab key={index} label={tab.label} />
+                            <Tab 
+                                key={index} 
+                                label={tab.label}
+                                sx={{
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        color: '#3b82f6',
+                                        backgroundColor: 'rgba(59, 130, 246, 0.05)'
+                                    }
+                                }}
+                            />
                         ))}
                     </Tabs>
 
@@ -243,13 +340,13 @@ const Article = () => {
                             role="tabpanel"
                             hidden={currentTab !== index}
                             sx={{ mt: 2 }}
-                            onContextMenu={(e) => handleContextMenu(e, tab.label === '表示' ? 'disp' : `code${index || ''}`)}
+                            onContextMenu={(e) => handleContextMenu(e, tab.field)}
                         >
                             {currentTab === index && (
                                 tab.label === '表示' ? (
                                     editMode.disp ? (
                                         <EditField
-                                            value={editedContent.disp}
+                                            value={editedContent.disp || ''}
                                             onChange={(e) => setEditedContent(prev => ({ ...prev, disp: e.target.value }))}
                                             onSave={() => handleSave('disp')}
                                             multiline
@@ -258,18 +355,28 @@ const Article = () => {
                                         <Typography
                                             variant="body1"
                                             component="div"
-                                            dangerouslySetInnerHTML={{ __html: tab.content }}
+                                            sx={{
+                                                color: '#1a202c',
+                                                lineHeight: 1.8,
+                                                '& code': {
+                                                    backgroundColor: 'rgba(45, 55, 72, 0.1)',
+                                                    borderRadius: '4px',
+                                                    padding: '2px 6px',
+                                                    fontFamily: 'monospace'
+                                                }
+                                            }}
+                                            dangerouslySetInnerHTML={{ __html: formatDisplayText(tab.content) }}
                                         />
                                     )
                                 ) : (
-                                    editMode[`code${index || ''}`] ? (
+                                    editMode[tab.field] ? (
                                         <EditField
-                                            value={editedContent[`code${index || ''}`]}
+                                            value={editedContent[tab.field] || ''}
                                             onChange={(e) => setEditedContent(prev => ({
                                                 ...prev,
-                                                [`code${index || ''}`]: e.target.value
+                                                [tab.field]: e.target.value
                                             }))}
-                                            onSave={() => handleSave(`code${index || ''}`)}
+                                            onSave={() => handleSave(tab.field)}
                                             multiline
                                         />
                                     ) : (
@@ -281,10 +388,12 @@ const Article = () => {
                                                     borderRadius: '8px',
                                                     padding: '20px',
                                                     margin: '0',
-                                                    backgroundColor: 'transparent'
+                                                    backgroundColor: 'transparent',
+                                                    whiteSpace: 'pre-wrap',
+                                                    wordBreak: 'break-word'
                                                 }}
                                             >
-                                                {tab.content}
+                                                {formatText(tab.content)}
                                             </SyntaxHighlighter>
                                         </Box>
                                     )
@@ -295,19 +404,37 @@ const Article = () => {
                 </Paper>
             )}
 
-            {/* 説明 */}
+            {/* 説明セクション */}
             {article.explanation && (
                 <Paper
                     elevation={0}
                     sx={{
-                        p: 3,
-                        background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,240,240,0.95) 100%)',
-                        borderRadius: '15px',
-                        boxShadow: '0 4px 8px rgba(0,0,0,0.05)'
+                        p: { xs: 2, sm: 3 },
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+                        borderRadius: '20px',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.06)'
                     }}
                     onContextMenu={(e) => handleContextMenu(e, 'explanation')}
                 >
-                    <Typography variant="h6" sx={{ color: '#444', mb: 2 }}>
+                    <Typography
+                        variant="h6"
+                        sx={{
+                            color: '#1a202c',
+                            mb: 3,
+                            fontWeight: 600,
+                            position: 'relative',
+                            '&::after': {
+                                content: '""',
+                                position: 'absolute',
+                                bottom: -8,
+                                left: 0,
+                                width: 40,
+                                height: 3,
+                                backgroundColor: '#3b82f6',
+                                borderRadius: '3px'
+                            }
+                        }}
+                    >
                         説明
                     </Typography>
                     {editMode.explanation ? (

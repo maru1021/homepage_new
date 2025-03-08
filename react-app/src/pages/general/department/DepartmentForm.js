@@ -8,7 +8,6 @@ import handleAPI from '../../../utils/handleAPI';
 
 
 function DepartmentForm({ closeModal }) {
-    console.log(closeModal)
     const [name, setName] = useState('');
     const [nameError, setNameError] = useState('');
 
