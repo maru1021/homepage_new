@@ -33,7 +33,7 @@ function DepartmentForm({ closeModal }) {
             name: setNameError,
         }
 
-        const url = `${API_BASE_URL}/api/general/department/`
+        const url = `${API_BASE_URL}/api/general/department`
 
         handleAPI(url, 'POST', closeModal, sendData, errorFieldMap)
     };

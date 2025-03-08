@@ -271,7 +271,7 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
                                                         button
                                                         key={article.id}
                                                         component={Link}
-                                                        to={`article/${article.id}`}
+                                                        to={`/homepage/article/${article.id}`}
                                                         sx={{ pl: 6 }}
                                                     >
                                                         <ListItemIcon sx={{ minWidth: 36 }}>

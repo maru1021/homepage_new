@@ -54,7 +54,7 @@ function EmployeeForm({ closeModal }) {
             name: setNameError,
         }
 
-        const url = `${API_BASE_URL}/api/general/employee/`
+        const url = `${API_BASE_URL}/api/general/employee`
 
         const sendData = {
             employee_no,

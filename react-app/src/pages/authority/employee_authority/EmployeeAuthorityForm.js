@@ -113,7 +113,7 @@ function EmployeeAuthorityForm({ closeModal }) {
             forms: formattedForms
         }
 
-        const url = `${API_BASE_URL}/api/authority/employee_authority/`
+        const url = `${API_BASE_URL}/api/authority/employee_authority`
 
         handleRegister(url, "POST", closeModal, sendData, errorFieldMap)
     };
