@@ -48,14 +48,12 @@ function ClassificationTable({ data, searchQuery, currentPage, itemsPerPage }) {
     );
 
     setTableData(data,
-        (newData) => {
-            setClassifications(newData);
-            setIsLoading(false);
-        },
+        setClassifications,
         `${WS_BASE_URL}/ws/api/homepage/classification`,
         searchQuery,
         currentPage,
-        itemsPerPage
+        itemsPerPage,
+        setIsLoading
     );
 
     const contextMenuActions = [

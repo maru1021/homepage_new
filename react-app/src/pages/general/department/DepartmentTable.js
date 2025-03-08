@@ -47,14 +47,12 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
 
     setTableData(
         data,
-        (newData) => {
-            setDepartments(newData);
-            setIsLoading(false);
-        },
+        setDepartments,
         `${WS_BASE_URL}/ws/general/department`,
         searchQuery,
         currentPage,
-        itemsPerPage
+        itemsPerPage,
+        setIsLoading
     );
 
     const contextMenuActions = [

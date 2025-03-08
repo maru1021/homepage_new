@@ -49,14 +49,12 @@ function EmployeeAuthorityTable({ data, searchQuery, currentPage, itemsPerPage }
     );
 
     setTableData(data,
-        (newData) => {
-            setEmployees(newData);
-            setIsLoading(false);
-        },
+        setEmployees,
         `${WS_BASE_URL}/ws/authority/employee_authority`,
         searchQuery,
         currentPage,
-        itemsPerPage
+        itemsPerPage,
+        setIsLoading
     );
 
     const contextMenuActions = [

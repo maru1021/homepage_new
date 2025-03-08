@@ -47,14 +47,12 @@ function EmployeeTable({ data, searchQuery, currentPage, itemsPerPage }) {
     );
 
     setTableData(data,
-        (newData) => {
-            setEmployees(newData);
-            setIsLoading(false);
-        },
+        setEmployees,
         `${WS_BASE_URL}/ws/general/employee`,
         searchQuery,
         currentPage,
-        itemsPerPage
+        itemsPerPage,
+        setIsLoading
     );
 
     const contextMenuActions = [
