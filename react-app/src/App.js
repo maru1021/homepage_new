@@ -1,5 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ToastContainer } from 'react-toastify';
 import './CSS/index.css';
 import HomepageSidebar from './components/sidebar/HomepageSidebar';
@@ -78,11 +78,7 @@ function App() {
     productionManagement: ProductionManagementSidebar,
   };
 
-  // サイドバーの幅を動的に決定
-  const sidebarWidth = sidebar === 'homepage' ? 2.5 : 2;
-  const mainContentWidth = 12 - sidebarWidth;
-
-  // サイドバー切り替え時の処理
+  // サイドバー切り替え時の処理を先に定義
   const handleSidebarChange = (newSidebar) => {
     if (newSidebar === 'productionManagement' && !token) {
       navigate('/login');
@@ -90,6 +86,23 @@ function App() {
     }
     setSidebar(newSidebar);
   };
+
+  // メモ化したサイドバーコンポーネントの生成
+  const MemoizedSidebar = useMemo(() => {
+    const SidebarComponent = sidebarComponents[sidebar] || HomepageSidebar;
+    return React.createElement(SidebarComponent, {
+      setToken,
+      setSidebar: handleSidebarChange,
+      mobileOpen,
+      onClose: () => setMobileOpen(false),
+      isMobile,
+      key: sidebar
+    });
+  }, [sidebar, setToken, mobileOpen, isMobile, handleSidebarChange]);  // handleSidebarChangeを依存配列に追加
+
+  // サイドバーの幅を動的に決定
+  const sidebarWidth = sidebar === 'homepage' ? 2.5 : 2;
+  const mainContentWidth = 12 - sidebarWidth;
 
   // メニューボタンの表示条件を変更
   const showMenuButton = isMobile;
@@ -145,14 +158,7 @@ function App() {
               transition: 'all 0.3s'
             }}
           >
-            {React.createElement(sidebarComponents[sidebar] || HomepageSidebar, {
-              setToken,
-              setSidebar: handleSidebarChange,
-              mobileOpen,
-              onClose: () => setMobileOpen(false),
-              isMobile,
-              key: sidebar
-            })}
+            {MemoizedSidebar}
           </Grid>
         )}
 
