@@ -151,12 +151,6 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
         // ログイン状態でのみ表示する項目
         ...(isLoggedIn ? [
             {
-                text: '記事投稿',
-                icon: <PostAddIcon />,
-                path: '/homepage/article/new',
-                color: '#4CAF50'
-            },
-            {
                 text: '項目一覧',
                 icon: <FaLayerGroup style={{ fontSize: '1.1rem' }} />,
                 path: 'homepage/type',
@@ -168,6 +162,12 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
             },
         ] : []),
         // 常に表示する項目
+        {
+            text: '記事投稿',
+            icon: <PostAddIcon />,
+            path: '/homepage/article/new',
+            color: '#4CAF50'
+        },
         {
             text: '最新記事一覧',
             icon: <ArticleIcon />,
@@ -204,12 +204,12 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
             sx={{
                 display: { xs: 'block', sm: 'block' },
                 '& .MuiDrawer-paper': {
-                    // width: '280px',
                     background: 'rgba(250, 250, 250, 0.9)',
                     boxShadow: 'inset 4px 4px 10px rgba(209, 217, 230, 0.5), inset -4px -4px 10px rgba(255, 255, 255, 0.6)',
                     padding: '10px',
                     border: 'none',
-                    position: 'fixed'
+                    position: 'fixed',
+                    maxWidth: '320px'
                 }
             }}
         >

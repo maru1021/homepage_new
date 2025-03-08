@@ -40,6 +40,7 @@ class Employee(BaseModel):
     id: int
     employee_no: str = Field(..., pattern=r'^[a-zA-Z0-9]{7}$')
     name: str
+    email: str
     departments: List[Department]
 
     class Config:
