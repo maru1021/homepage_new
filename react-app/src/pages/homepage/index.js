@@ -1,127 +1,220 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Card, CardContent, CardActionArea } from '@mui/material';
+import { 
+    Box, Typography, Grid, Card, CardContent, 
+    CardActionArea, CircularProgress 
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../config/baseURL';
 
+// ローディングコンポーネント
+const LoadingAnimation = () => (
+    <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '300px',
+        gap: 3,
+        width: '100%',
+        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+        borderRadius: '16px',
+        padding: 4,
+        boxShadow: '0 8px 16px rgba(0,0,0,0.03)'
+    }}>
+        <Box sx={{
+            position: 'relative',
+            width: 60,
+            height: 60
+        }}>
+            <CircularProgress
+                size={60}
+                thickness={4}
+                sx={{
+                    color: '#3498db',
+                    position: 'absolute',
+                    left: 0,
+                }}
+            />
+            <CircularProgress
+                size={60}
+                thickness={4}
+                sx={{
+                    color: 'rgba(52, 152, 219, 0.2)',
+                    position: 'absolute',
+                    left: 0,
+                    animation: 'pulse 1.5s ease-in-out infinite'
+                }}
+            />
+        </Box>
+        <Typography
+            variant="h6"
+            sx={{
+                color: '#2c3e50',
+                fontWeight: 500,
+                textAlign: 'center',
+                opacity: 0.9,
+                animation: 'fadeInOut 1.5s ease-in-out infinite'
+            }}
+        >
+            記事を読み込んでいます...
+        </Typography>
+        <Box sx={{
+            '@keyframes pulse': {
+                '0%': { transform: 'scale(1)', opacity: 0.7 },
+                '50%': { transform: 'scale(1.1)', opacity: 0.3 },
+                '100%': { transform: 'scale(1)', opacity: 0.7 }
+            },
+            '@keyframes fadeInOut': {
+                '0%': { opacity: 0.6 },
+                '50%': { opacity: 1 },
+                '100%': { opacity: 0.6 }
+            }
+        }} />
+    </Box>
+);
+
 const Index = () => {
-    const [latestArticles, setLatestArticles] = useState([]);
+    const [articles, setArticles] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchLatestArticles = async () => {
+        const fetchArticles = async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/public/index`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                setLatestArticles(data.articles || []);
+                setArticles(data.articles || []);
             } catch (error) {
                 console.error('Error fetching latest articles:', error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
-        fetchLatestArticles();
+        fetchArticles();
     }, []);
-
-    if (!latestArticles || latestArticles.length === 0) {
-        return (
-            <Box sx={{ padding: 3 }}>
-                <Typography variant="h4">最新の記事</Typography>
-                <Typography>記事が見つかりませんでした。</Typography>
-            </Box>
-        );
-    }
 
     return (
         <Box sx={{
-            padding: 3,
-            width: '100%',  // 幅を100%に設定
-            maxWidth: '1200px',  // 最大幅を設定
-            margin: '0 auto',  // 中央寄せ
-            marginTop: '20px'  // 上部にマージンを追加
+            padding: { xs: 2, sm: 3 },
+            width: '100%',
+            maxWidth: '1200px',
+            margin: '0 auto',
+            marginTop: '20px'
         }}>
             <Typography
                 variant="h4"
                 sx={{
-                    fontWeight: 'bold',
-                    color: '#444',
+                    fontWeight: 700,
+                    color: '#2c3e50',
                     marginBottom: 4,
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.1)',
-                    borderBottom: '2px solid #eee',
-                    paddingBottom: 2
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.05)',
+                    borderBottom: '2px solid #edf2f7',
+                    paddingBottom: 2,
+                    position: 'relative',
+                    '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        bottom: -2,
+                        left: 0,
+                        width: '100px',
+                        height: '2px',
+                        backgroundColor: '#3498db',
+                        transition: 'width 0.3s ease'
+                    }
                 }}
             >
                 最新の記事
             </Typography>
 
-            <Grid container spacing={3} sx={{ marginTop: 0 }}>  {/* marginTopを0に設定 */}
-                {latestArticles.map((article) => (
-                    <Grid item xs={12} sm={6} md={4} key={article.id}>
-                        <Card
-                            sx={{
+            {isLoading ? (
+                <LoadingAnimation />
+            ) : articles.length === 0 ? (
+                <Box sx={{
+                    textAlign: 'center',
+                    padding: 4,
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '16px',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
+                }}>
+                    <Typography variant="h6" color="text.secondary">
+                        記事が見つかりませんでした
+                    </Typography>
+                </Box>
+            ) : (
+                <Grid container spacing={3} sx={{ marginTop: 0 }}>
+                    {articles.map((article) => (
+                        <Grid item xs={12} sm={6} md={4} key={article.id}>
+                            <Card sx={{
                                 height: '100%',
                                 display: 'flex',
                                 flexDirection: 'column',
-                                background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,240,240,0.9) 100%)',
-                                borderRadius: '15px',
-                                boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
-                                transition: 'transform 0.2s ease-in-out',
+                                background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                                borderRadius: '16px',
+                                boxShadow: '0 8px 16px rgba(0,0,0,0.03)',
+                                transition: 'all 0.3s ease',
                                 '&:hover': {
-                                    transform: 'translateY(-4px)',
-                                    boxShadow: '0 6px 12px rgba(0,0,0,0.1)'
+                                    transform: 'translateY(-4px) scale(1.02)',
+                                    boxShadow: '0 12px 24px rgba(0,0,0,0.06)'
                                 }
-                            }}
-                        >
-                            <CardActionArea
-                                onClick={() => navigate(`/homepage/article/${article.id}`)}
-                                sx={{ height: '100%' }}
-                            >
-                                <CardContent>
-                                    <Typography
-                                        variant="caption"
-                                        sx={{
-                                            color: '#666',
-                                            display: 'block',
-                                            marginBottom: 1
-                                        }}
-                                    >
-                                        {new Date(article.updated_at).toLocaleDateString('ja-JP')}
-                                    </Typography>
+                            }}>
+                                <CardActionArea
+                                    onClick={() => navigate(`/homepage/article/${article.id}`)}
+                                    sx={{ height: '100%', p: 0.5 }}
+                                >
+                                    <CardContent sx={{ p: 3 }}>
+                                        <Typography
+                                            variant="caption"
+                                            sx={{
+                                                color: '#94a3b8',
+                                                display: 'block',
+                                                marginBottom: 1.5,
+                                                fontSize: '0.85rem'
+                                            }}
+                                        >
+                                            {new Date(article.updated_at).toLocaleDateString('ja-JP')}
+                                        </Typography>
 
-                                    <Typography
-                                        variant="subtitle1"
-                                        sx={{
-                                            fontWeight: 'bold',
-                                            color: '#444',
-                                            marginBottom: 1
-                                        }}
-                                    >
-                                        {article.title}
-                                    </Typography>
+                                        <Typography
+                                            variant="h6"
+                                            sx={{
+                                                fontWeight: 600,
+                                                color: '#1e293b',
+                                                marginBottom: 2,
+                                                lineHeight: 1.4
+                                            }}
+                                        >
+                                            {article.title}
+                                        </Typography>
 
-                                    {article.type_name && (
-                                        <Box sx={{ display: 'flex', gap: 1, marginBottom: 1 }}>
-                                            <Typography
-                                                variant="caption"
-                                                sx={{
-                                                    backgroundColor: 'rgba(33, 150, 243, 0.1)',
-                                                    color: '#2196F3',
-                                                    padding: '2px 8px',
-                                                    borderRadius: '12px',
-                                                    fontSize: '0.75rem'
-                                                }}
-                                            >
-                                                {article.type_name}
-                                            </Typography>
-                                        </Box>
-                                    )}
-                                </CardContent>
-                            </CardActionArea>
-                        </Card>
-                    </Grid>
-                ))}
-            </Grid>
+                                        {article.type_name && (
+                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                                <Typography
+                                                    variant="caption"
+                                                    sx={{
+                                                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                                        color: '#3b82f6',
+                                                        padding: '6px 12px',
+                                                        borderRadius: '20px',
+                                                        fontSize: '0.8rem',
+                                                        fontWeight: 500,
+                                                        letterSpacing: '0.02em'
+                                                    }}
+                                                >
+                                                    {article.type_name}
+                                                </Typography>
+                                            </Box>
+                                        )}
+                                    </CardContent>
+                                </CardActionArea>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            )}
         </Box>
     );
 };
