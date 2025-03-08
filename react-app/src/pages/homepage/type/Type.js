@@ -1,4 +1,6 @@
 import React from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import TypeTable from './TypeTable';
 import TypeForm from './TypeForm';
@@ -13,13 +15,15 @@ const fetchTypes = async (searchQuery = '', currentPage = 1, itemsPerPage = 10) 
 };
 
 const Type = () => (
-    <TableMaster
-        title='項目一覧'
-        fetchData={fetchTypes}
-        TableComponent={TypeTable}
-        modalTitle='項目登録'
-        FormComponent={TypeForm}
-    />
+    <DndProvider backend={HTML5Backend}>
+        <TableMaster
+            title='項目一覧'
+            fetchData={fetchTypes}
+            TableComponent={TypeTable}
+            modalTitle='項目登録'
+            FormComponent={TypeForm}
+        />
+    </DndProvider>
 );
 
 export default Type;
