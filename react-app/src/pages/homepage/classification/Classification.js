@@ -1,4 +1,6 @@
 import React from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import ClassificationTable from './ClassificationTable';
 import ClassificationForm from './ClassificationForm';
@@ -13,13 +15,15 @@ const fetchClassifications = async (searchQuery = '', currentPage = 1, itemsPerP
 };
 
 const Classification = () => (
-    <TableMaster
-        title='分類一覧'
-        fetchData={fetchClassifications}
-        TableComponent={ClassificationTable}
-        modalTitle='分類登録'
-        FormComponent={ClassificationForm}
-    />
+    <DndProvider backend={HTML5Backend}>
+        <TableMaster
+            title='分類一覧'
+            fetchData={fetchClassifications}
+            TableComponent={ClassificationTable}
+            modalTitle='分類登録'
+            FormComponent={ClassificationForm}
+        />
+    </DndProvider>
 );
 
 export default Classification;

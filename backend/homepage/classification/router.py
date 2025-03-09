@@ -19,6 +19,22 @@ async def read_classifications(
     return schemas.PaginatedClassificationResponse(classifications=classifications, totalCount=total_count)
 
 
+@router.post("/sort", response_model=schemas.ClassificationResponse)
+async def sort_classifications(
+    classification_order: list[dict],
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+    try:
+        return crud.sort_classifications(db, classification_order, background_tasks)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except RequestValidationError as e:
+        raise JSONResponse(status_code=422, content={"detail": e.errors()})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
 @router.post("", response_model=schemas.ClassificationResponse)
 async def create_classification(classification: schemas.ClassificationCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     classification_data = classification.dict()

@@ -19,7 +19,6 @@ def export_excel_departments(db: Session, search: str):
         {"操作": "", "ID": department.id, "部署名": department.name}
         for department in departments
     ])
-    print('test')
     return export_excel(df, "departments.xlsx")
 
 def import_excel_departments(db: Session, file, background_tasks=BackgroundTasks):

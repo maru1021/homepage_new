@@ -129,7 +129,8 @@ ALTER TABLE public.departments_id_seq OWNER TO "user";
 
 CREATE TABLE public.departments (
     id integer DEFAULT nextval('public.departments_id_seq'::regclass) NOT NULL,
-    name character varying(50)
+    name character varying(50),
+    sort integer DEFAULT 0
 );
 
 
@@ -533,17 +534,17 @@ COPY public.classifications (id, name, type_id, sort) FROM stdin;
 -- Data for Name: departments; Type: TABLE DATA; Schema: public; Owner: user
 --
 
-COPY public.departments (id, name) FROM stdin;
-1	未設定
-6	あああ
-7	cさ
-8	csas
-9	cascas
-10	csaas
-11	cass
-12	cassca
-4	ああq
-5	ああq１
+COPY public.departments (id, name, sort) FROM stdin;
+1	未設定	0
+6	あああ	1
+7	cさ	2
+8	csas	3
+9	cascas	4
+10	csaas	5
+11	cass	6
+12	cassca	7
+4	ああq	8
+5	ああq１	9
 \.
 
 

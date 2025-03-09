@@ -38,7 +38,6 @@ def get_types(db: Session, search_query: str = "", current_page: int = 1, items_
             "sort": type_obj.sort
         }
         type_list.append(type_dict)
-    print(type_list)
 
     return type_list, total_count
 
@@ -121,28 +120,21 @@ def delete_type(db: Session, type_id: int, background_tasks: BackgroundTasks):
         raise ValueError(f"項目削除中にエラーが発生しました: {e}")
 
 # 項目並べ替え
-def sort_types(db: Session, type_order: list[dict], background_tasks) -> dict:
+def sort_types(db: Session, type_order: list[dict], background_tasks: BackgroundTasks) -> dict:
     try:
-        for item in type_order:
-            db.query(Type).filter(Type.id == item['id']).update(
-                {"sort": item['order']}
+        for type in type_order:
+            db.query(Type).filter(Type.id == type['id']).update(
+                {"sort": type['sort']}
             )
 
         db.commit()
 
         background_tasks.add_task(run_websocket, db)
-        print('comp')
 
         return {
             "message": "項目の並び替えが完了しました。",
         }
-        
+
     except Exception as e:
-        print(f"Error in sort_types: {str(e)}")  # デバッグ用
         db.rollback()
         raise ValueError(f"Failed to reorder types: {str(e)}")
-
-# WebSocket通知用の関数
-async def notify_type_update():
-    # WebSocketを通じて更新を通知する処理
-    pass

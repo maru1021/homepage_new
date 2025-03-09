@@ -15,6 +15,7 @@ class Department(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(50), unique=True, index=True)
+    sort = Column(Integer, nullable=False)
 
     department_authorities = relationship(
         "EmployeeAuthority",
@@ -73,7 +74,7 @@ class EmployeeInfo(Base):
 
     employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), primary_key=True)
     phone_number = Column(String, nullable=True)
-    gender = Column(String(2), nullable=True)
+    gender = Column(String(3), nullable=True)
     emergency_contact = Column(String(20), nullable=True)  #緊急連絡先
     address = Column(String, nullable=True)
     birth_date = Column(Date, nullable=True)

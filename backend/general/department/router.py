@@ -18,6 +18,17 @@ def read_departments(
     departments, total_count = crud.get_departments(db, searchQuery, currentPage, itemsPerPage)
     return schemas.PaginatedDepartmentResponse(departments=departments, totalCount=total_count)
 
+
+# 部署ソート
+@router.post("/sort")
+def sort_departments(department_order: list[dict], background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    try:
+        return crud.sort_departments(db, department_order, background_tasks=background_tasks)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 # 部署作成
 @router.post("", response_model=schemas.DepartmentResponse)
 def create_department(department: schemas.DepartmentBase, background_tasks: BackgroundTasks, db: Session = Depends(get_db) ):

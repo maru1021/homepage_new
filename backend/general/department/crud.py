@@ -2,7 +2,7 @@ import asyncio
 from fastapi import BackgroundTasks
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
-
+from sqlalchemy import func
 from backend.authority.models import EmployeeAuthority
 from backend.general.models import Department
 from backend.general.department import schemas
@@ -46,6 +46,8 @@ def create_department(db: Session, department: schemas.DepartmentBase, backgroun
 
         db_department = Department(name=department.name)
         db.add(db_department)
+        max_sort = db.query(func.max(Department.sort)).scalar() or 0
+        db_department.sort = max_sort + 1
         db.commit()
         db.refresh(db_department)
 
@@ -92,7 +94,6 @@ def delete_department(db: Session, department_id: int, background_tasks: Backgro
             raise ValueError("部署が見つかりません。")
 
         employee_count = db.query(EmployeeAuthority).filter(EmployeeAuthority.department_id == department_id).count()
-        print(employee_count)
         if employee_count > 0:
             return {"success": False, "message": "所属している従業員がいるため削除できません", "field": ""}
 
@@ -109,3 +110,22 @@ def delete_department(db: Session, department_id: int, background_tasks: Backgro
     except SQLAlchemyError as e:
         db.rollback()
         raise ValueError(f"部署削除中にエラーが発生しました: {e}")
+
+
+# 部署ソート
+def sort_departments(db: Session, department_order: list[dict], background_tasks: BackgroundTasks):
+    try:
+        for department in department_order:
+            db.query(Department).filter(Department.id == department['id']).update(
+                {"sort": department['sort']}
+            )
+        db.commit()
+
+        background_tasks.add_task(run_websocket, db)
+
+        return {
+            "message": "部署の並び替えが完了しました。",
+        }
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise ValueError(f"Failed to reorder departments: {str(e)}")

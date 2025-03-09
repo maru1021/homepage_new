@@ -8,6 +8,7 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 
 import ClassificationEditForm from './ClassificationEditForm';
 import LoadingAnimation from '../../../components/LoadingAnimation';
+import DraggableRow from '../../../components/table/DraggableRow';
 
 import {
     API_BASE_URL,
@@ -77,16 +78,15 @@ function ClassificationTable({ data, searchQuery, currentPage, itemsPerPage }) {
                                 </TableCell>
                             </TableRow>
                         ) : classifications.length > 0 ?
-                            (classifications?.map((classification) => (
-                                <TableRow
+                            (classifications?.map((classification, index) => (
+                                <DraggableRow
                                     key={classification.id}
-                                    onContextMenu={(event) => handleContextMenu(event, classification.id)}
-                                    hover
-                                    sx={{ transition: '0.3s', '&:hover': { backgroundColor: '#f5f5f5' } }}
-                                >
-                                    <TableCell>{classification.type_name}</TableCell>
-                                    <TableCell>{classification.name}</TableCell>
-                                </TableRow>
+                                    url={`${url}/sort`}
+                                    data={classification}
+                                    index={index}
+                                    handleContextMenu={handleContextMenu}
+                                    allData={classifications}
+                                />
                             ))
                         ) : (
                             <TableRow>
