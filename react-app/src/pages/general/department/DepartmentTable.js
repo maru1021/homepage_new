@@ -13,6 +13,7 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 
 import DepartmentEditForm from './DepartmentEditForm';
 import LoadingAnimation from '../../../components/LoadingAnimation';
+import DraggableRow from '../../../components/table/DraggableRow';
 
 import { API_BASE_URL, WS_BASE_URL } from '../../../config/baseURL';
 import { setTableData, TableHeader, useContextMenu } from '../../../index/basicTableModules';
@@ -85,23 +86,15 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
                                 </TableCell>
                             </TableRow>
                         ) : departments.length > 0 ? (
-                            departments.map((department) => (
-                                <TableRow
+                            departments.map((department, index) => (
+                                <DraggableRow
                                     key={department.id}
-                                    onContextMenu={(event) => handleContextMenu(event, department.id)}
-                                    id={`department-row-${department.id}`}
-                                    hover
-                                    sx={{
-                                        transition: 'all 0.2s ease',
-                                        '&:hover': {
-                                            backgroundColor: 'rgba(59, 130, 246, 0.05)'
-                                        }
-                                    }}
-                                >
-                                    <TableCell>
-                                        {department.name}
-                                    </TableCell>
-                                </TableRow>
+                                    url={`${url}/sort`}
+                                    data={department}
+                                    index={index}
+                                    handleContextMenu={handleContextMenu}
+                                    allData={departments}
+                                />
                             ))
                         ) : (
                             <TableRow>

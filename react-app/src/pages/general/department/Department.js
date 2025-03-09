@@ -1,4 +1,6 @@
 import React from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { API_BASE_URL } from '../../../config/baseURL';
 import DepartmentForm from './DepartmentForm';
@@ -23,15 +25,17 @@ const ExcelInput = async () => {
 };
 
 const Department = () => (
-    <TableMaster
-        title='部署一覧'
-        fetchData={fetchDepartments}
-        TableComponent={DepartmentTable}
-        modalTitle='部署登録'
-        FormComponent={DepartmentForm}
-        ExcelOutput={ExcelOutput}
-        ExcelInput={ExcelInput}
-    />
+    <DndProvider backend={HTML5Backend}>
+        <TableMaster
+            title='部署一覧'
+            fetchData={fetchDepartments}
+            TableComponent={DepartmentTable}
+            modalTitle='部署登録'
+            FormComponent={DepartmentForm}
+            ExcelOutput={ExcelOutput}
+            ExcelInput={ExcelInput}
+        />
+    </DndProvider>
 );
 
 export default Department;

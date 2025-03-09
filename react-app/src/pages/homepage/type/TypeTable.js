@@ -18,7 +18,6 @@ import {
     useContextMenu,
 } from '../../../index/basicTableModules';
 import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
-import { successNoti } from '../../../utils/noti';
 
 
 function TypeTable({ data, searchQuery, currentPage, itemsPerPage }) {
@@ -57,53 +56,12 @@ function TypeTable({ data, searchQuery, currentPage, itemsPerPage }) {
         setIsLoading
     );
 
-
     const contextMenuActions = [
         { label: '編集', icon: <FaEdit color='#82B1FF' />, onClick: handleEdit },
         { label: '削除', icon:<FaTrash color='#E57373' />, onClick: handleDelete }
     ];
 
     const columns = ['項目']
-
-    // 行の並び替え処理を修正
-    const moveRow = async (dragIndex, hoverIndex) => {
-        const draggedRow = types[dragIndex];
-        const newTypes = [...types];
-        newTypes.splice(dragIndex, 1);
-        newTypes.splice(hoverIndex, 0, draggedRow);
-        const updatedTypes = newTypes.map((type, index) => ({
-            ...type,
-            sort: index + 1
-        }));
-
-        try {
-            // 並び替え後の順序でsortを更新
-            const updatedOrder = updatedTypes.map((type, index) => ({
-                id: type.id,
-                order: index + 1  // type.sortではなく、新しい順序（index + 1）を使用
-            }));
-
-            const response = await fetch(`${API_BASE_URL}/api/homepage/type/sort`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(updatedOrder)
-            });
-
-            if (response.ok) {
-                successNoti('並び替えが完了しました');
-            } else {
-                throw new Error('Failed to update order');
-            }
-
-
-
-        } catch (error) {
-            console.error('Error updating order:', error);
-        }
-    };
 
     return (
         <>
@@ -121,10 +79,11 @@ function TypeTable({ data, searchQuery, currentPage, itemsPerPage }) {
                             (types?.map((type, index) => (
                                 <DraggableRow
                                     key={type.id}
-                                    type={type}
+                                    url={`${url}/sort`}
+                                    data={type}
                                     index={index}
-                                    moveRow={moveRow}
                                     handleContextMenu={handleContextMenu}
+                                    allData={types}
                                 />
                             ))
                         ) : (

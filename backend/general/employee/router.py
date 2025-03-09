@@ -22,7 +22,6 @@ async def read_employees(
 @router.post("", response_model=schemas.EmployeeResponse)
 async def create_employee(employee: schemas.EmployeeCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     employee_data = employee.dict()
-    print(employee_data)
 
     try:
         return crud.create_employee(db=db, employee=schemas.EmployeeCreate(**employee_data), background_tasks=background_tasks)

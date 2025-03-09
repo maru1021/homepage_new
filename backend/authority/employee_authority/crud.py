@@ -104,7 +104,6 @@ def create_employee(db: Session, employee: schemas.EmployeeCreate, background_ta
         if existing_employee(db, employee.employee_no):
             return {"success": False, "message": "従業員番号が重複しています", "field": "employee_no"}
 
-        # 新しい従業員を作成
         db_employee = Employee(
             name=employee.name,
             employee_no=employee.employee_no,
@@ -115,17 +114,18 @@ def create_employee(db: Session, employee: schemas.EmployeeCreate, background_ta
         db.flush()
         db.refresh(db_employee)
 
+        # 初期化処理
         init_employee(db, db_employee.id, employee.forms)
+
         db.commit()
 
         background_tasks.add_task(run_websocket, db)
+        return {"success": True, "message": "従業員登録に成功しました"}
 
-        return {"message": "従業員登録に成功しました"}
-
-    except SQLAlchemyError as e:
+    except Exception as e:
         db.rollback()
-        print(f"Error occurred: {e}")
-        return {"success": False, "message": "データベースエラーが発生しました", "field": ""}
+        print(f"エラー発生: {str(e)}")
+        return {"success": False, "message": f"従業員登録処理中にエラーが発生しました: {str(e)}", "field": ""}
 
 
 def update_employee(db: Session, employee_id: int, employee_data: schemas.EmployeeUpdate, background_tasks: BackgroundTasks):

@@ -23,16 +23,10 @@ services:
     build:
       context: .
       dockerfile: ./backend/Dockerfile
-    user: "${UID}:${GID}"  # ホストのユーザーIDとグループIDを使用
     environment:
       - PYTHONPATH=/app/backend
       - PYTHONUNBUFFERED=1
-      - PYTHONDONTWRITEBYTECODE=1  # .pycファイルを生成しない
-    command: >
-      uvicorn backend.main:app
-      --host 0.0.0.0
-      --port 8000
-      --reload
+    command: python -u -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload --no-access-log
     volumes:
       - ./backend:/app/backend
       - ./backend/alembic.ini:/app/alembic.ini
@@ -43,6 +37,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    stdin_open: true
+    tty: true
 
   # PostgreSQL
   db:

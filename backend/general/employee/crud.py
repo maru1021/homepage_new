@@ -116,22 +116,7 @@ def create_employee(db: Session, employee: schemas.EmployeeCreate, background_ta
         db.flush()
         db.refresh(db_employee)
 
-        init_employee(db, db_employee.id)
-
-        db_employee_info = EmployeeInfo(
-            employee_id = db_employee.id,
-            phone_number = employee.phone_number,
-            gender = employee.gender,
-            emergency_contact = employee.emergency_contact,
-            address = employee.address,
-            birth_date = employee.birth_date,
-            employment_type = employee.employment_type,
-            hire_date = employee.hire_date,
-            leave_date = employee.leave_date,
-            contract_expiration = employee.contract_expiration
-        )
-
-        db.add(db_employee_info)
+        init_employee(db, db_employee.id, info=employee)
 
         db.commit()
 

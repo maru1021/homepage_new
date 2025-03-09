@@ -52,7 +52,7 @@ def create_classification(db: Session, classification: schemas.ClassificationCre
         if db.query(Classification).filter(Classification.name == classification.name).first():
             return {"success": False, "message": "その分類は既に存在しています", "field": "name"}
 
-        max_sort = db.query(func.max(Type.sort)).scalar() or 0
+        max_sort = db.query(func.max(Classification.sort)).scalar() or 0
         next_sort = max_sort + 1
 
         db_classification = Classification(
@@ -125,3 +125,21 @@ def delete_classification(db: Session, classification_id: int, background_tasks:
     except SQLAlchemyError as e:
         db.rollback()
         raise ValueError(f"項目削除中にエラーが発生しました: {e}")
+
+# 項目並び替え
+def sort_classifications(db: Session, classification_order: list[dict], background_tasks: BackgroundTasks) -> dict:
+    try:
+        for classification in classification_order:
+            db.query(Classification).filter(Classification.id == classification['id']).update(
+                {"sort": classification['sort']}
+            )
+        db.commit()
+
+        background_tasks.add_task(run_websocket, db)
+
+        return {
+            "message": "項目並び替えが完了しました。",
+        }
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise ValueError(f"Failed to reorder types: {str(e)}")
