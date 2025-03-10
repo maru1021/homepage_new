@@ -298,6 +298,32 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
 
                 <Divider sx={{ my: 2 }} />
 
+                {/* 3Dメニュー */}
+                <ListItem button onClick={() => handleTypeClick('3d')}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                        <FaDesktop style={{ fontSize: '1.2rem', color: '#4DD0E1' }} />
+                    </ListItemIcon>
+                    <ListItemText primary="3D" />
+                    {openTypes['3d'] ? <ExpandLess /> : <ExpandMore />}
+                </ListItem>
+                <Collapse in={openTypes['3d']} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding>
+                        <ListItem
+                            button
+                            component={Link}
+                            to="/homepage/3D/sky"
+                            sx={{ pl: 4 }}
+                        >
+                            <ListItemIcon sx={{ minWidth: 36 }}>
+                                <FaBook style={{ fontSize: '0.9rem', color: '#81C784' }} />
+                            </ListItemIcon>
+                            <ListItemText primary="空" />
+                        </ListItem>
+                    </List>
+                </Collapse>
+
+                <Divider sx={{ my: 2 }} />
+
                 {/* 生産管理への切り替えボタン */}
                 <ListItem
                     button

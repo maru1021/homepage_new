@@ -118,7 +118,7 @@ function ProductionManagementSidebar({ setToken, setSidebar }) {
 
         <ListItem
           button
-          onClick={() => setSidebar("homepage")} // sidebar を変更
+          onClick={() => setSidebar("homepage")}
           sx={{
             borderRadius: '10px',
             transition: '0.2s ease-in-out',

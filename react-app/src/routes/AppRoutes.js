@@ -11,6 +11,8 @@ import EmployeeAuthority from '../pages/authority/employee_authority/EmployeeAut
 import NotFound from '../pages/error/404';
 import Article from '../pages/homepage/article/article';
 import ArticleNew from '../pages/homepage/article/new';
+import Sky from '../pages/homepage/3D/Sky/Sky';
+
 
 const AppRoutes = ({ isAuthenticated = false }) => {
   return (
@@ -21,6 +23,7 @@ const AppRoutes = ({ isAuthenticated = false }) => {
       <Route path='/homepage/type' element={<Type />} />
       <Route path='/homepage/classification' element={<Classification />} />
       <Route path='/homepage/article/new' element={<ArticleNew />} />
+      <Route path='/homepage/3D/sky' element={<Sky />} />
 
       {/* プライベートルート（ログイン必要） */}
       <Route
