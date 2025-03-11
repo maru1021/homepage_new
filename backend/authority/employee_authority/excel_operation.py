@@ -41,6 +41,7 @@ def import_excel_employees(db: Session, file, background_tasks=BackgroundTasks):
 
     def after_add_func(employee_data, db: Session):
         from backend.scripts.init_employee import init_employee
+        print("after_add_func")
         init_employee(db, employee_data.id)
         return
 

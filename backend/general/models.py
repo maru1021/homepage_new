@@ -15,7 +15,7 @@ class Department(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(50), unique=True, index=True)
-    sort = Column(Integer, nullable=False)
+    sort = Column(Integer)
 
     department_authorities = relationship(
         "EmployeeAuthority",
@@ -29,6 +29,7 @@ class Department(Base):
         back_populates="departments",
         overlaps="employee_authorities, department_authorities",
     )
+
 
 # 従業員モデル
 class Employee(Base):
