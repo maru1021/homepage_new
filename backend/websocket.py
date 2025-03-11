@@ -1,13 +1,13 @@
 import asyncio
 import json
 
-from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect 
+from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from starlette.websockets import WebSocketState
 
 from backend.auth import SECRET_KEY, ALGORITHM
-from backend.database import get_db
+from backend.models import get_db
 
 
 router = APIRouter()

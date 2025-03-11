@@ -2,7 +2,7 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date
 from sqlalchemy.orm import relationship
 from typing import TYPE_CHECKING
 
-from backend.database import Base
+from backend.models.base_model import BaseModel
 from backend.scripts.get_time import today
 
 if TYPE_CHECKING:
@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 # 従業員と部署の権限を多対多で紐付ける中間テーブル
-class EmployeeAuthority(Base):
+class EmployeeAuthority(BaseModel):
     __tablename__ = "employee_authority"
 
     employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), primary_key=True)
@@ -33,7 +33,7 @@ class EmployeeAuthority(Base):
 
 
 # 従業員の認証情報モデル
-class EmployeeCredential(Base):
+class EmployeeCredential(BaseModel):
     __tablename__ = "employee_credential"
 
     employee_id = Column(Integer, ForeignKey("employees.id", ondelete="CASCADE"), primary_key=True)

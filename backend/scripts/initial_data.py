@@ -4,7 +4,7 @@ from backend.general.models import Department, Employee, EmployeeInfo
 from backend.authority.models import EmployeeAuthority, EmployeeCredential
 
 from backend.auth import hashed_password
-from backend.database import SessionLocal
+from backend.models import SessionLocal
 
 
 def create_initial_data():

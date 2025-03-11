@@ -1,9 +1,9 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, BigInteger, Text, Sequence
 from sqlalchemy.orm import relationship
-from backend.database import Base
+from backend.models.base_model import BaseModel
 
 # 項目
-class Type(Base):
+class Type(BaseModel):
     __tablename__ = "types"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -15,7 +15,7 @@ class Type(Base):
 
 
 # 分類
-class Classification(Base):
+class Classification(BaseModel):
     __tablename__ = "classifications"
 
     id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
@@ -28,7 +28,7 @@ class Classification(Base):
 
 
 # 記事
-class Article(Base):
+class Article(BaseModel):
     __tablename__ = "articles"
 
     id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
