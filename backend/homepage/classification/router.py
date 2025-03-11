@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from backend.homepage.classification import crud, schemas
-from backend.database import get_db
+from backend.models import get_db
 
 router = APIRouter()
 

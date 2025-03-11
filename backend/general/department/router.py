@@ -1,7 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, File,  HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 
-from backend.database import get_db
+from backend.models import get_db
 from backend.general.department import crud, schemas, excel_operation
 
 

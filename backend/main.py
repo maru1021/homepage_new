@@ -3,15 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.auth import router as auth_router
 from backend.auth import verify_token
-from backend.database import Base, engine
+from backend import models # 中で関数を実行してテーブル作成してるので消さない！
 from backend.router import router as main_router
 from backend.websocket import router as ws_router
 from backend.public_router import router as public_router
 
 app = FastAPI()
-
-# テーブル作成
-Base.metadata.create_all(bind=engine)
 
 # CORS設定
 app.add_middleware(

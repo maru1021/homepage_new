@@ -2,14 +2,14 @@ from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from typing import TYPE_CHECKING
 
-from backend.database import Base
+from backend.models.base_model import BaseModel
 from backend.scripts.get_time import today
 
 if TYPE_CHECKING:
     from backend.authority.models import EmployeeCredential, EmployeeAuthority
 
 # 部署モデル
-class Department(Base):
+class Department(BaseModel):
     __tablename__ = "departments"
     __table_args__ = {"extend_existing": True}
 
@@ -32,7 +32,7 @@ class Department(Base):
 
 
 # 従業員モデル
-class Employee(Base):
+class Employee(BaseModel):
     __tablename__ = "employees"
     __table_args__ = {"extend_existing": True}
 
@@ -69,7 +69,7 @@ class Employee(Base):
         cascade="all, delete-orphan"
     )
 
-class EmployeeInfo(Base):
+class EmployeeInfo(BaseModel):
     __tablename__ = "employeeinfos"
     __table_args__ = {"extend_existing": True}
 

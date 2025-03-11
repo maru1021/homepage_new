@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session, join
 
 from backend.authority.models import EmployeeCredential
 from backend.general.models import Employee
-from backend.database import get_db
+from backend.models import get_db
 from scripts.get_time import now
 from scripts.hash_password import verify_password, hashed_password
 
