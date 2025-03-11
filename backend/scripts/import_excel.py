@@ -14,7 +14,7 @@ def import_excel(db, file, model_name, model, required_columns, websocket_func, 
 
         # 必須カラムの確認
       if not required_columns.issubset(df.columns):
-          raise ValueError("Excelのフォーマットが正しくありません。'操作', 'ID', '部署名'の列が必要です。")
+          raise ValueError(f"Excelのフォーマットが正しくありません。{','.join(required_columns)}の列が必要です。")
 
       # 列名を英語に変換
       column_name = COLUMN_NAME.get(model_name)
@@ -25,7 +25,6 @@ def import_excel(db, file, model_name, model, required_columns, websocket_func, 
 
       # 辞書形式に変換
       data_list = df.to_dict(orient="records")
-      print(data_list)
 
       for row in data_list:
         import math
