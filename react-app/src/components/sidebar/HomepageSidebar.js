@@ -297,6 +297,12 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
                 ))}
 
                 <Divider sx={{ my: 2 }} />
+                <ListItem button onClick={() => handleNavigate('/homepage/html_training')}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                        <FaHtml5 style={{ fontSize: '1.2rem', color: '#FF7043' }} />
+                    </ListItemIcon>
+                    <ListItemText primary="HTML/CSSトレーニング" />
+                </ListItem>
 
                 {/* 3Dメニュー */}
                 <ListItem button onClick={() => handleTypeClick('3d')}>
@@ -329,7 +335,7 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
                     button
                     onClick={() => setSidebar("productionManagement")}
                     sx={{
-                        mt: 1,  // マージントップを追加
+                        mt: 1,
                         borderRadius: '10px',
                         transition: '0.2s ease-in-out',
                         background: 'rgba(255, 255, 255, 0.8)',
@@ -351,8 +357,8 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
                         transition: '0.2s ease-in-out',
                         background: 'rgba(255, 255, 255, 0.8)',
                         '&:hover': {
-                            background: isLoggedIn 
-                                ? 'rgba(255, 100, 100, 0.1)' 
+                            background: isLoggedIn
+                                ? 'rgba(255, 100, 100, 0.1)'
                                 : 'rgba(100, 255, 100, 0.1)',
                             transform: 'scale(1.02)'
                         },
