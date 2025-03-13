@@ -5,10 +5,9 @@ import { OrbitControls, Environment } from '@react-three/drei';
 
 import Rain from './Rain';
 import Birds from './Bird';
-import Clouds from './Cloud';
 import { MatrixLoad } from '../../MatrixLoad';
 
-// 実際のSkyコンポーネント
+
 function Sky() {
   const [isLoading, setIsLoading] = useState(true);
   const [fadeIn, setFadeIn] = useState(false);
@@ -32,10 +31,9 @@ function Sky() {
 
   return (
     <div style={{ width: '100%', height: '100vh', background: '#000', position: 'relative', overflow: 'hidden' }}>
-      {/* コンテナの重なり順を明確にするために、絶対位置指定された2つのレイヤーを使用 */}
-      
-      {/* レイヤー1: マトリックスローディング画面 */}
-      <div 
+
+      {/* マトリックスローディング画面 */}
+      <div
         style={{
           position: 'absolute',
           top: 0,
@@ -43,14 +41,12 @@ function Sky() {
           width: '100%',
           height: '100%',
           zIndex: isLoading ? 20 : 1, // ローディング中は最前面、それ以外は最背面
-          pointerEvents: isLoading ? 'auto' : 'none', // ローディング中のみポインターイベントを受け付ける
-          // 透明度はMatrixLoadコンポーネント内で管理
         }}
       >
         <MatrixLoad key="matrix-rain" isLoading={isLoading} />
       </div>
-      
-      {/* レイヤー2: メインのCanvasコンテンツ */}
+
+      {/* メインのCanvasコンテンツ */}
       <div
         style={{
           position: 'absolute',
@@ -74,9 +70,6 @@ function Sky() {
 
           {/* 鳥 */}
           <Birds count={15} />
-
-          {/* 雲 */}
-          <Clouds count={5} />
 
           {/* 遠くの物体をぼかす */}
           <fog attach="fog" args={['#aabbcc', 30, 150]} />

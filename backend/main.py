@@ -10,6 +10,10 @@ from backend.public_router import router as public_router
 
 app = FastAPI()
 
+# テーブル作成
+models.init_db()
+models.setup_commit_hooks()
+
 # CORS設定
 app.add_middleware(
     CORSMiddleware,

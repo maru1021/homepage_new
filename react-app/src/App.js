@@ -135,8 +135,8 @@ function App() {
         </IconButton>
       )}
 
-      <Grid container sx={{ 
-        flexGrow: 1, 
+      <Grid container sx={{
+        flexGrow: 1,
         position: 'relative',
         margin: 0,
         width: '100%',
