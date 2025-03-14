@@ -13,7 +13,7 @@ import {
 import {
     FaCogs, FaCode, FaLayerGroup, FaTools, FaBook,
     FaDatabase, FaServer, FaDesktop, FaCloud, FaHtml5,
-    FaCss3Alt, FaBootstrap, FaLinux
+    FaCss3Alt, FaBootstrap, FaLinux, FaMoneyBill
 } from 'react-icons/fa';
 import {
     DiReact, DiPython, DiJavascript1, DiPhp, DiRuby,
@@ -302,6 +302,13 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
                         <FaHtml5 style={{ fontSize: '1.2rem', color: '#FF7043' }} />
                     </ListItemIcon>
                     <ListItemText primary="HTML/CSSトレーニング" />
+                </ListItem>
+
+                <ListItem button onClick={() => handleNavigate('/homepage/stock_chart')}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                        <FaMoneyBill style={{ fontSize: '1.2rem', color: '#FF7043' }} />
+                    </ListItemIcon>
+                    <ListItemText primary="株価チャート" />
                 </ListItem>
 
                 {/* 3Dメニュー */}
