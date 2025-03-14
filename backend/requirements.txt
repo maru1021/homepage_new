@@ -11,3 +11,4 @@ python-multipart==0.0.20
 SQLAlchemy==2.0.38
 uvicorn[standard]==0.34.0
 websockets==15.0
+yfinance==0.2.37
