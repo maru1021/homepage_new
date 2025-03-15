@@ -314,7 +314,7 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
                     <ListItemIcon sx={{ minWidth: 36 }}>
                         <LocationOnIcon style={{ fontSize: '1.2rem', color: '#FF7043' }} />
                     </ListItemIcon>
-                    <ListItemText primary="現在地の情報取得" />
+                    <ListItemText primary="天気、ネットワーク情報など" />
                 </ListItem>
 
                 {/* 3Dメニュー */}

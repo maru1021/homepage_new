@@ -1,48 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  CircularProgress,
-  Divider,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  Stack,
-  Alert
+  Typography, Box,
+  Alert, Grid, Paper
 } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import WifiIcon from '@mui/icons-material/Wifi';
-import PublicIcon from '@mui/icons-material/Public';
+import MyLocationIcon from '@mui/icons-material/MyLocation';
+import SpeedIcon from '@mui/icons-material/Speed';
+import CloudIcon from '@mui/icons-material/Cloud';
 
 import { API_BASE_URL } from '../../../config/baseURL';
+import NetworkTab from './NetworkTab';
+import SpeedTestTab from './SpeedTestTab';
+import WeatherTab from './WeatherTab';
+import GeolocationTab from './GeolocationTab';
+import Loading from './Loading';
+import { fetchLocationInfo, fetchWeatherData } from './api';
 
 const LocationDisplay = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [locationData, setLocationData] = useState({
     ip: '',
-    country: '',
-    region: '',
-    city: '',
-    timezone: '',
+    country: '日本',
+    region: '東京都',
+    city: '東京',
+    timezone: 'Asia/Tokyo',
     isp: ''
   });
+  const [weatherData, setWeatherData] = useState(null);
+  const [browserLocation, setBrowserLocation] = useState(null);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [geoError, setGeoError] = useState(null);
+  const [selectedCity, setSelectedCity] = useState(null);
 
+  // プロバイダの情報を取得
   useEffect(() => {
-    const fetchLocationData = async () => {
+    const getLocationData = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/public/current_location/location`);
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.detail || 'ロケーション情報の取得に失敗しました');
-        }
-
-        const data = await response.json();
+        const data = await fetchLocationInfo(API_BASE_URL);
 
         setLocationData({
           ip: data.ip,
@@ -53,30 +49,75 @@ const LocationDisplay = () => {
           isp: data.isp || '不明'
         });
 
-        setLoading(false);
+        // 位置情報が取得できた場合のみ選択都市を更新し、それ以外は東京を使用
+        if (data.city && data.city !== '不明') {
+          setSelectedCity(data.city);
+          updateWeatherData(data.city, data.country);
+        } else {
+          // 位置情報が取得できない場合は東京を使用
+          updateWeatherData('東京', '日本');
+        }
+
+        // ローディング完了までの時間を少し長めに設定して、かわいいローディング画面を楽しめるようにする
+        setTimeout(() => {
+          setLoading(false);
+        }, 2000);
       } catch (err) {
+        console.error('位置情報の取得に失敗:', err);
         setError(err.message);
         setLoading(false);
+
+        // エラー時も東京の天気情報を取得
+        updateWeatherData('東京', '日本');
       }
     };
 
-    fetchLocationData();
+    getLocationData();
   }, []);
 
+  // 天気情報を更新
+  const updateWeatherData = async (city, country) => {
+    try {
+      // まず天気情報をnullにしてローディング表示を有効化
+      setWeatherData(null);
+
+      const data = await fetchWeatherData(API_BASE_URL, city || '東京', country || '日本');
+      setWeatherData(data);
+    } catch (error) {
+      console.error('天気情報の取得中にエラーが発生しました:', error);
+      // エラー時のデータ
+      setWeatherData({
+        temperature: '-',
+        condition: '-',
+        humidity: '-',
+        windSpeed: '-',
+        icon: '01d'
+      });
+    }
+  };
+
+  // 選択した都市が変更されたときに天気情報を更新
+  useEffect(() => {
+    if (selectedCity) {
+      updateWeatherData(selectedCity, locationData.country);
+    } else {
+      // 選択された都市がない場合は東京を使用
+      updateWeatherData('東京', '日本');
+    }
+  }, [selectedCity, locationData.country]);
+
+  // 都市が変更されたときに選択都市の状態を更新
+  const handleCityChange = (event) => {
+    const newCity = event.target.value;
+
+    // まず天気情報をnullにしてローディング表示を有効化
+    setWeatherData(null);
+
+    setSelectedCity(newCity);
+  };
+
   if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="200px"
-      >
-        <CircularProgress />
-        <Typography variant="body1" sx={{ ml: 2 }}>
-          位置情報を取得中...
-        </Typography>
-      </Box>
-    );
+    return <Loading />;
   }
 
   if (error) {
@@ -87,81 +128,110 @@ const LocationDisplay = () => {
     );
   }
 
+  const cardStyle = {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden'
+  };
+
+  const cardHeaderStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+    padding: '16px',
+    backgroundColor: 'rgba(25, 118, 210, 0.05)'
+  };
+
+  const cardContentStyle = {
+    padding: '16px',
+    flexGrow: 1,
+    overflow: 'auto',
+    maxHeight: 'calc(100% - 60px)'
+  };
+
   return (
-    <Card elevation={3} sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
-      <CardContent>
-        <Typography variant="h5" component="div" gutterBottom>
-          <PublicIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-          現在の位置情報
-        </Typography>
+    <Box sx={{ maxWidth: 1200, mx: 'auto', mt: 4, mb: 4, px: 2 }}>
+      <Typography variant="h5" component="div" gutterBottom sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+        <MyLocationIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+        天気、ネットワーク情報など
+      </Typography>
 
-        <Divider sx={{ my: 2 }} />
+      <Grid container spacing={3}>
 
-        <Stack spacing={3}>
-          <Box>
-            <Typography variant="h6" color="primary" sx={{ display: 'flex', alignItems: 'center' }}>
-              <WifiIcon sx={{ mr: 1 }} /> ネットワーク情報
-            </Typography>
 
-            <TableContainer component={Paper} variant="outlined" sx={{ mt: 1 }}>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell component="th" scope="row" sx={{ fontWeight: 'bold', width: '40%' }}>
-                      IPアドレス
-                    </TableCell>
-                    <TableCell>{locationData.ip}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>
-                      ISP / 組織
-                    </TableCell>
-                    <TableCell>{locationData.isp}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
+        {/* 通信速度 */}
+        <Grid item xs={12} md={6}>
+          <Paper elevation={3} sx={cardStyle}>
+            <Box sx={cardHeaderStyle}>
+              <SpeedIcon sx={{ mr: 1, color: 'primary.main' }} />
+              <Typography variant="h6">通信速度</Typography>
+            </Box>
+            <Box sx={cardContentStyle}>
+              <SpeedTestTab active={true} hidden={false} />
+            </Box>
+          </Paper>
+        </Grid>
 
-          <Box>
-            <Typography variant="h6" color="primary" sx={{ display: 'flex', alignItems: 'center' }}>
-              <LocationOnIcon sx={{ mr: 1 }} /> 現在地
-            </Typography>
+        {/* 気象情報 */}
+        <Grid item xs={12} md={6}>
+          <Paper elevation={3} sx={cardStyle}>
+            <Box sx={cardHeaderStyle}>
+              <CloudIcon sx={{ mr: 1, color: 'primary.main' }} />
+              <Typography variant="h6">気象情報</Typography>
+            </Box>
+            <Box sx={cardContentStyle}>
+              <WeatherTab
+                active={true}
+                hidden={false}
+                selectedCity={selectedCity}
+                handleCityChange={handleCityChange}
+                weatherData={weatherData}
+              />
+            </Box>
+          </Paper>
+        </Grid>
 
-            <TableContainer component={Paper} variant="outlined" sx={{ mt: 1 }}>
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell component="th" scope="row" sx={{ fontWeight: 'bold', width: '40%' }}>
-                      国
-                    </TableCell>
-                    <TableCell>{locationData.country}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>
-                      地域 / 州
-                    </TableCell>
-                    <TableCell>{locationData.region}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>
-                      都市
-                    </TableCell>
-                    <TableCell>{locationData.city}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>
-                      タイムゾーン
-                    </TableCell>
-                    <TableCell>{locationData.timezone}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-        </Stack>
-      </CardContent>
-    </Card>
+        {/* 実際の位置情報 */}
+        <Grid item xs={12} md={6}>
+          <Paper elevation={3} sx={cardStyle}>
+            <Box sx={cardHeaderStyle}>
+              <LocationOnIcon sx={{ mr: 1, color: 'primary.main' }} />
+              <Typography variant="h6">実際の位置情報</Typography>
+            </Box>
+            <Box sx={cardContentStyle}>
+              <GeolocationTab
+                active={true}
+                hidden={false}
+                browserLocation={browserLocation}
+                geoLoading={geoLoading}
+                geoError={geoError}
+                setGeoLoading={setGeoLoading}
+                setGeoError={setGeoError}
+                setBrowserLocation={setBrowserLocation}
+                setSelectedCity={setSelectedCity}
+                updateWeatherData={updateWeatherData}
+                locationData={locationData}
+                API_BASE_URL={API_BASE_URL}
+              />
+            </Box>
+          </Paper>
+        </Grid>
+
+        {/* ネットワーク情報 */}
+        <Grid item xs={12} md={6}>
+          <Paper elevation={3} sx={cardStyle}>
+            <Box sx={cardHeaderStyle}>
+              <WifiIcon sx={{ mr: 1, color: 'primary.main' }} />
+              <Typography variant="h6">ネットワーク情報</Typography>
+            </Box>
+            <Box sx={cardContentStyle}>
+              <NetworkTab active={true} hidden={false} locationData={locationData} />
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 
