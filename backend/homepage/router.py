@@ -4,7 +4,6 @@ from backend.homepage.type.router import router as type_router
 from backend.homepage.classification.router import router as classification_router
 from backend.homepage.stock_chart.router import router as stock_chart_router
 
-
 # APIRouterのインスタンスを作成
 router = APIRouter()
 

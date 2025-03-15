@@ -19,6 +19,7 @@ import {
     DiReact, DiPython, DiJavascript1, DiPhp, DiRuby,
     DiDjango, DiLaravel, DiDocker, DiAws, DiGit,
 } from 'react-icons/di';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import {
     SiFastapi,SiRubyonrails
 } from 'react-icons/si';
@@ -160,6 +161,11 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
                 icon: <FaBook style={{ fontSize: '1.1rem' }} />,
                 path: 'homepage/classification',
             },
+            {
+                text: '株価チャート',
+                icon: <FaMoneyBill style={{ fontSize: '1.1rem' }} />,
+                path: 'homepage/stock_chart',
+            }
         ] : []),
         // 常に表示する項目
         {
@@ -304,11 +310,11 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
                     <ListItemText primary="HTML/CSSトレーニング" />
                 </ListItem>
 
-                <ListItem button onClick={() => handleNavigate('/homepage/stock_chart')}>
+                <ListItem button onClick={() => handleNavigate('/homepage/current_location')}>
                     <ListItemIcon sx={{ minWidth: 36 }}>
-                        <FaMoneyBill style={{ fontSize: '1.2rem', color: '#FF7043' }} />
+                        <LocationOnIcon style={{ fontSize: '1.2rem', color: '#FF7043' }} />
                     </ListItemIcon>
-                    <ListItemText primary="株価チャート" />
+                    <ListItemText primary="現在地の情報取得" />
                 </ListItem>
 
                 {/* 3Dメニュー */}
