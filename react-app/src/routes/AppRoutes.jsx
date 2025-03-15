@@ -14,6 +14,7 @@ import ArticleNew from '../pages/homepage/article/new';
 import Sky from '../pages/homepage/3D/Sky/Sky';
 import HtmlTraining from '../pages/homepage/html_training/HtmlTraining';
 import StockChart from '../pages/homepage/stock_chart/SrockChart';
+import LocationDisplay from '../pages/homepage/LocationDisplay/LocationDisplay';
 
 const AppRoutes = ({ isAuthenticated = false }) => {
   return (
@@ -27,7 +28,7 @@ const AppRoutes = ({ isAuthenticated = false }) => {
       <Route path='/homepage/html_training' element={<HtmlTraining />} />
       <Route path='/homepage/3D/sky' element={<Sky />} />
       <Route path='/homepage/stock_chart' element={<StockChart />} />
-
+      <Route path='/homepage/current_location' element={<LocationDisplay />} />
       {/* プライベートルート（ログイン必要） */}
       <Route
         path='/general/department'
