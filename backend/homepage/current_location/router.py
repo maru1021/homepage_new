@@ -2,22 +2,31 @@ from fastapi import APIRouter, Request, HTTPException
 import httpx
 from backend.homepage.current_location.schemas import LocationInfo
 
-
 router = APIRouter()
-
 
 @router.get("/location", response_model=LocationInfo)
 async def get_location_info(request: Request):
     try:
-        # クライアントのIPアドレスを取得
-        client_ip = request.client.host
+        # ヘッダーからクライアントの実際のIPを取得
+        forwarded_for = request.headers.get("X-Forwarded-For")
+        if forwarded_for:
+            client_ip = forwarded_for.split(",")[0].strip()
+        else:
+            real_ip = request.headers.get("X-Real-IP")
+            if real_ip:
+                client_ip = real_ip
+            else:
+                client_ip = request.client.host
 
+        print(f"取得したクライアントIP: {client_ip}")
+
+        # プライベートIPの判定
         if (client_ip == "127.0.0.1" or
             client_ip == "::1" or
             client_ip.startswith("172.") or  # Dockerネットワーク
             client_ip.startswith("192.168.") or  # プライベートネットワーク
-            client_ip.startswith("10.")):
-            # 開発時はダミーデータ
+            client_ip.startswith("10.")):  # プライベートネットワーク
+            # 開発環境用のダミーデータ
             return LocationInfo(
                 ip="開発環境",
                 country="開発国",
@@ -27,6 +36,7 @@ async def get_location_info(request: Request):
                 isp="開発ISP"
             )
 
+        # 外部APIでIPの位置情報を取得
         async with httpx.AsyncClient() as client:
             response = await client.get(f"https://ipapi.co/{client_ip}/json/")
 
