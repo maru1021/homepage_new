@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date, DateTime
 from sqlalchemy.orm import relationship
 from typing import TYPE_CHECKING
 
@@ -41,3 +41,17 @@ class EmployeeCredential(BaseModel):
     password_updated_at = Column(Date, nullable=False, default=today)  # パスワード変更日
 
     employee = relationship("Employee", back_populates="credential")
+
+# セッション管理モデル
+class UserSession(BaseModel):
+    __tablename__ = "user_sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("employees.id"), nullable=False)
+    jti = Column(String(36), nullable=False, unique=True, index=True)  # トークンの一意識別子
+    created_at = Column(DateTime, nullable=False, default=today)
+    expires_at = Column(DateTime, nullable=False)
+    is_active = Column(Boolean, default=True)
+
+    # リレーションシップ
+    employee = relationship("Employee", back_populates="sessions")

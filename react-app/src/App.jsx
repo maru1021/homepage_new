@@ -1,3 +1,5 @@
+// App.jsx - 更新版
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState, useEffect, useMemo } from 'react';
 import { ToastContainer } from 'react-toastify';
@@ -8,7 +10,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './CSS/table.css';
 import './CSS/modal.css';
 import './CSS/contextmenu.css';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import AppRoutes from './routes/AppRoutes';
 import Login from './pages/login';
 import Modal from "./components/modal/Modal"
@@ -16,61 +18,86 @@ import ConfirmDeleteModal from "./components/modal/ConfirmDeleteModal"
 import { Box, IconButton, useMediaQuery, useTheme, Grid } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
+import AuthService from './services/auth'; // 認証サービスのインポート
 
 function App() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [isAuthenticated, setIsAuthenticated] = useState(AuthService.isAuthenticated());
   const [sidebar, setSidebar] = useState(localStorage.getItem('currentSidebar') || 'homepage');
   const [mobileOpen, setMobileOpen] = useState(!isMobile);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     setMobileOpen(!isMobile);
   }, [isMobile]);
 
-  // トークンの管理（有効期限チェック & 自動ログアウト）
+  // 認証状態の監視
   useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    if (savedToken && savedToken !== token) {
-      setToken(savedToken);
-    }
+    // 定期的に認証状態をチェック
+    const checkAuth = () => {
+      const authenticated = AuthService.isAuthenticated();
+      setIsAuthenticated(authenticated);
 
-    const expirationTime = localStorage.getItem('expiration_time');
-    if (expirationTime) {
-      const expirationDate = new Date(expirationTime);
-      const now = new Date();
-
-      if (now >= expirationDate) {
-        handleLogout();
-      } else {
-        const timeout = expirationDate - now;
-        setTimeout(handleLogout, timeout);
+      // 認証切れの場合は自動リフレッシュを試みる
+      if (!authenticated && AuthService.getCurrentUser()) {
+        refreshToken();
       }
-    }
+    };
+
+    checkAuth(); // 初回チェック
+
+    // 5分ごとにチェック
+    const interval = setInterval(checkAuth, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  // 新しいトークンをセットする関数
-  const handleSetToken = (newToken, newExpirationTime) => {
-    setToken(newToken);
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('expiration_time', newExpirationTime);
+  // URLの変更を監視して認証を確認
+  useEffect(() => {
+    const isProtectedRoute = !location.pathname.startsWith('/login');
+
+    if (isProtectedRoute && !isAuthenticated) {
+      // 保護されたルートに未認証でアクセスした場合
+      const currentUser = AuthService.getCurrentUser();
+
+      if (currentUser) {
+        // ユーザー情報があれば自動リフレッシュを試みる
+        refreshToken();
+      }
+    }
+  }, [location.pathname, isAuthenticated]);
+
+  // トークンのリフレッシュを試みる
+  const refreshToken = async () => {
+    try {
+      await AuthService.refreshToken();
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('トークンリフレッシュエラー:', error);
+      handleLogout();
+    }
+  };
+
+  // 新しいトークンをセットする関数 (Login.jsxから呼び出される)
+  const handleSetAuth = (authenticated) => {
+    setIsAuthenticated(authenticated);
   };
 
   // ログアウト処理
-  const handleLogout = () => {
-    setToken(null);
+  const handleLogout = async () => {
+    await AuthService.logout();
+    setIsAuthenticated(false);
     setSidebar('homepage');  // サイドバーをホームページに戻す
-    localStorage.removeItem('token');
-    localStorage.removeItem('expiration_time');
     localStorage.removeItem('currentSidebar');  // サイドバーの状態も削除
     navigate('/login');
   };
 
   // サイドバーを表示するかどうかの判定
   const shouldShowSidebar = () => {
-    if (window.location.pathname === '/login') return false;
-    if (sidebar === 'productionManagement' && !token) return false;
+    if (location.pathname === '/login') return false;
+    if (sidebar === 'productionManagement' && !isAuthenticated) return false;
     return true;
   };
 
@@ -81,7 +108,7 @@ function App() {
   };
 
   const handleSidebarChange = (newSidebar) => {
-    if (newSidebar === 'productionManagement' && !token) {
+    if (newSidebar === 'productionManagement' && !isAuthenticated) {
       navigate('/login');
       return;
     }
@@ -93,14 +120,16 @@ function App() {
   const MemoizedSidebar = useMemo(() => {
     const SidebarComponent = sidebarComponents[sidebar] || HomepageSidebar;
     return React.createElement(SidebarComponent, {
-      setToken,
+      logout: handleLogout,
       setSidebar: handleSidebarChange,
       mobileOpen,
       onClose: () => setMobileOpen(false),
       isMobile,
+      isAuthenticated,
+      setToken: handleSetAuth,
       key: sidebar
     });
-  }, [sidebar, setToken, mobileOpen, isMobile, handleSidebarChange]);
+  }, [sidebar, isAuthenticated, mobileOpen, isMobile]);
 
   // サイドバーの幅を動的に決定
   const sidebarWidth = sidebar === 'homepage' ? 320 : 200;
@@ -192,16 +221,16 @@ function App() {
               minHeight: '100vh',
               boxSizing: 'border-box',
               paddingTop: {
-                xs: token ? '64px' : 0,
-                sm: token ? '40px' : 0
+                xs: isAuthenticated ? '64px' : 0,
+                sm: isAuthenticated ? '40px' : 0
               },
               paddingX: 3,
               margin: '0 auto'
             }}
           >
             <Routes>
-              <Route path="/login" element={token ? <Navigate to="/" replace /> : <Login setToken={handleSetToken} />} />
-              <Route path="/*" element={<AppRoutes isAuthenticated={!!token} />} />
+              <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login setAuth={handleSetAuth} />} />
+              <Route path="/*" element={<AppRoutes isAuthenticated={isAuthenticated} />} />
             </Routes>
           </Box>
         </Grid>

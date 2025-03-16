@@ -1,14 +1,15 @@
 import asyncio
 import json
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect, Cookie
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from starlette.websockets import WebSocketState
 
 from backend.auth import SECRET_KEY, ALGORITHM
 from backend.models import get_db
-
+from backend.general.models import Employee
 
 router = APIRouter()
 
@@ -16,15 +17,9 @@ class WebSocketManager:
     def __init__(self):
         self.active_connections = {}
 
-    async def connect(self, websocket: WebSocket, token: str):
-        # トークンの検証
-        try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            websocket.scope["user"] = payload.get("sub")  # ユーザー情報を保存
-        except JWTError:
-            await websocket.close(code=403)
-            raise HTTPException(status_code=403, detail="Invalid token")
-
+    async def connect(self, websocket: WebSocket, user: Employee):
+        """ユーザー認証済みの接続を受け入れる"""
+        websocket.scope["user"] = user.employee_no  # ユーザー情報を保存
         await websocket.accept()
         self.active_connections[websocket] = {
             "searchQuery": "",
@@ -57,8 +52,27 @@ websocket_manager = WebSocketManager()
 
 # フロントからWebSocketでデータが来たときに実行
 @router.websocket("/{path:path}")
-async def websocket_handler(websocket: WebSocket, token: str = Query(...), db: Session = Depends(get_db)):
-    await websocket_manager.connect(websocket, token)
+async def websocket_handler(
+    websocket: WebSocket,
+    path: str,
+    userId: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    # WebSocketのための特別な認証ロジック
+    # URLパラメータのuserIdを使用して認証する
+    if not userId:
+        await websocket.close(code=1008)  # 認証失敗
+        return
+
+    # userIdを使用してユーザーを検索
+    employee = db.query(Employee).filter(Employee.id == userId).first()
+
+    if not employee:
+        await websocket.close(code=1008)  # 認証失敗
+        return
+
+    # 接続を受け入れる
+    await websocket_manager.connect(websocket, employee)
 
     # 30分操作がなければ切断する
     async def timeout_disconnect():
@@ -87,7 +101,5 @@ async def websocket_handler(websocket: WebSocket, token: str = Query(...), db: S
             # 新しいメッセージを受信したらタイムをリセット
             timeout_task.cancel()
             timeout_task = asyncio.create_task(timeout_disconnect())
-
     except WebSocketDisconnect:
         websocket_manager.disconnect(websocket)
-

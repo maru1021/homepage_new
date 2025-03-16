@@ -15,6 +15,9 @@ import Sky from '../pages/homepage/3D/Sky/Sky';
 import HtmlTraining from '../pages/homepage/html_training/HtmlTraining';
 import StockChart from '../pages/homepage/stock_chart/SrockChart';
 import LocationDisplay from '../pages/homepage/LocationDisplay/LocationDisplay';
+import BulletinBoardRegister from '../pages/all/BulletinBoardRegister';
+import BulletinBoardDetail from '../pages/all/BulletinBoardDetail';
+// import BulletinBoardList from '../pages/all/BulletinBoardList';
 
 const AppRoutes = ({ isAuthenticated = false }) => {
   return (
@@ -29,6 +32,7 @@ const AppRoutes = ({ isAuthenticated = false }) => {
       <Route path='/homepage/3D/sky' element={<Sky />} />
       <Route path='/homepage/stock_chart' element={<StockChart />} />
       <Route path='/homepage/current_location' element={<LocationDisplay />} />
+
       {/* プライベートルート（ログイン必要） */}
       <Route
         path='/general/department'
@@ -41,6 +45,20 @@ const AppRoutes = ({ isAuthenticated = false }) => {
       <Route
         path='/authority/employee_authority'
         element={isAuthenticated ? <EmployeeAuthority /> : <Navigate to="/login" replace />}
+      />
+
+      {/* 掲示板関連のルート */}
+      <Route
+        path='/all/bulletin_board'
+        element={isAuthenticated ? <BulletinBoardRegister /> : <Navigate to="/login" replace />}
+      />
+      <Route
+        path='/all/bulletin_board/list'
+        // element={isAuthenticated ? <BulletinBoardList /> : <Navigate to="/login" replace />}
+      />
+      <Route
+        path='/all/bulletin_board/:id'
+        element={isAuthenticated ? <BulletinBoardDetail /> : <Navigate to="/login" replace />}
       />
 
       {/* 404ページ */}

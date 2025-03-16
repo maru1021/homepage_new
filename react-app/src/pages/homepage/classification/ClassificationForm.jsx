@@ -17,9 +17,8 @@ import handleAPI from '../../../utils/handleAPI';
 
 // 部署データを取得する関数
 const fetchTypes = async () => {
-    const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/api/homepage/type`, {
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
     });
     if (response.ok) {
         const data = await response.json();

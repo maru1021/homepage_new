@@ -2,13 +2,12 @@ import { successNoti, errorNoti } from './noti';
 
 
 const handleAPI = async (url, method, onSuccess = () => {}, sendData = null, errorFieldMap = {}) => {
-    const token = localStorage.getItem('token');
     const options = {
         method: method,
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
     };
 
     if (sendData !== null) {

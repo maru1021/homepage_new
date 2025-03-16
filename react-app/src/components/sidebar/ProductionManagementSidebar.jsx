@@ -2,31 +2,63 @@ import React, { useState } from 'react';
 import { Collapse, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { FaIndustry, FaUsers, FaToolbox, FaChevronDown, FaChevronRight, FaCogs } from 'react-icons/fa';
+import {
+  FaIndustry,
+  FaUsers,
+  FaToolbox,
+  FaChevronDown,
+  FaChevronRight,
+  FaMapMarkedAlt,
+  FaWarehouse,
+  FaClipboardList,
+  FaWrench,
+  FaExchangeAlt,
+  FaBuilding,
+  FaIdCard,
+  FaUserShield,
+  FaHome,
+  FaPencilAlt,
+  FaBullhorn
+} from 'react-icons/fa';
+import { MdDashboard } from 'react-icons/md';
 import { Logout as LogoutIcon } from '@mui/icons-material';
+import AuthService from '../../services/auth';
 import '../..//CSS/sidebar.css';
 
-function ProductionManagementSidebar({ setToken, setSidebar }) {
+function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false, onClose = () => {}, isMobile = false }) {
   const navigate = useNavigate();
 
+  const [openAll, setOpenAll] = useState(false);
   const [openManufacturing, setOpenManufacturing] = useState(false);
   const [openTools, setOpenTools] = useState(false);
   const [openGeneral, setOpenGeneral] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    setToken(null);
+  const handleLogout = async () => {
+    await AuthService.logout();
+    // App.jsxのhandleSetAuthを呼び出して認証状態を更新
+    setToken(false);
     navigate('/login');
   };
 
   return (
     <Drawer
-      variant="permanent"
+      variant={isMobile ? "temporary" : "permanent"}
+      open={isMobile ? mobileOpen : true}
+      onClose={onClose}
+      anchor="left"
+      ModalProps={{
+        keepMounted: true
+      }}
       sx={{
-        background: 'rgba(250, 250, 250, 0.9)',
-        boxShadow: 'inset 4px 4px 10px rgba(209, 217, 230, 0.5), inset -4px -4px 10px rgba(255, 255, 255, 0.6)',
-        padding: '10px',
-        flexShrink: 0,
+        display: { xs: 'block', sm: 'block' },
+        '& .MuiDrawer-paper': {
+          background: 'rgba(250, 250, 250, 0.9)',
+          boxShadow: 'inset 4px 4px 10px rgba(209, 217, 230, 0.5), inset -4px -4px 10px rgba(255, 255, 255, 0.6)',
+          padding: '10px',
+          border: 'none',
+          position: 'fixed',
+          maxWidth: '250px'
+        }
       }}
     >
       <List sx={{ p: 2 }}>
@@ -34,6 +66,40 @@ function ProductionManagementSidebar({ setToken, setSidebar }) {
           メニュー
         </Typography>
         <Divider sx={{ mb: 2 }} />
+
+        {/* 全体 */}
+        <ListItem
+          button
+          onClick={() => setOpenAll(!openAll)}
+          sx={{
+            borderRadius: '10px',
+            transition: '0.2s ease-in-out',
+            background: openAll ? 'rgba(180, 230, 255, 0.4)' : 'transparent',
+            '&:hover': { background: 'rgba(255, 255, 255, 0.8)', transform: 'scale(1.02)' },
+          }}
+        >
+          <ListItemIcon sx={{ color: '#666', opacity: 0.8 }}>
+            <MdDashboard size={20} />
+          </ListItemIcon>
+          <ListItemText primary="全体" />
+          {openAll ? <FaChevronDown /> : <FaChevronRight />}
+        </ListItem>
+        <Collapse in={openAll} timeout="auto" unmountOnExit>
+          <List sx={{ pl: 4 }}>
+            <ListItem button onClick={() => navigate('/all/bulletin_board')}>
+              <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                <FaPencilAlt size={16} />
+              </ListItemIcon>
+              <ListItemText primary="掲示板投稿" />
+            </ListItem>
+            <ListItem button onClick={() => navigate('/all/bulletin_board/list')}>
+              <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                <FaBullhorn size={16} />
+              </ListItemIcon>
+              <ListItemText primary="掲示板一覧" />
+            </ListItem>
+          </List>
+        </Collapse>
 
         {/* 製造部 */}
         <ListItem
@@ -54,10 +120,16 @@ function ProductionManagementSidebar({ setToken, setSidebar }) {
         </ListItem>
         <Collapse in={openManufacturing} timeout="auto" unmountOnExit>
           <List sx={{ pl: 4 }}>
-            <ListItem button onClick={() => navigate('/progress')}>
-              <ListItemText primary="進捗" />
+            <ListItem button onClick={() => navigate('/all/bulletin_board')}>
+              <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                <FaMapMarkedAlt size={16} />
+              </ListItemIcon>
+              <ListItemText primary="設備マップ" />
             </ListItem>
             <ListItem button onClick={() => navigate('/materials')}>
+              <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                <FaWarehouse size={16} />
+              </ListItemIcon>
               <ListItemText primary="素材一覧" />
             </ListItem>
             <ListItem button onClick={() => setOpenTools(!openTools)}>
@@ -70,12 +142,21 @@ function ProductionManagementSidebar({ setToken, setSidebar }) {
             <Collapse in={openTools} timeout="auto" unmountOnExit>
               <List sx={{ pl: 4 }}>
                 <ListItem button onClick={() => navigate('/tools/shuken')}>
+                  <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                    <FaClipboardList size={16} />
+                  </ListItemIcon>
                   <ListItemText primary="集研" />
                 </ListItem>
                 <ListItem button onClick={() => navigate('/tools/preset')}>
+                  <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                    <FaWrench size={16} />
+                  </ListItemIcon>
                   <ListItemText primary="プリセット" />
                 </ListItem>
                 <ListItem button onClick={() => navigate('/tools/change')}>
+                  <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                    <FaExchangeAlt size={16} />
+                  </ListItemIcon>
                   <ListItemText primary="工具交換" />
                 </ListItem>
               </List>
@@ -103,12 +184,21 @@ function ProductionManagementSidebar({ setToken, setSidebar }) {
         <Collapse in={openGeneral} timeout="auto" unmountOnExit>
           <List sx={{ pl: 4 }}>
             <ListItem button onClick={() => navigate('/general/department')}>
+              <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                <FaBuilding size={16} />
+              </ListItemIcon>
               <ListItemText primary="部署一覧" />
             </ListItem>
             <ListItem button onClick={() => navigate('/general/employee')}>
+              <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                <FaIdCard size={16} />
+              </ListItemIcon>
               <ListItemText primary="従業員一覧" />
             </ListItem>
             <ListItem button onClick={() => navigate('/authority/employee_authority')}>
+              <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                <FaUserShield size={16} />
+              </ListItemIcon>
               <ListItemText primary="従業員権限一覧" />
             </ListItem>
           </List>
@@ -127,7 +217,7 @@ function ProductionManagementSidebar({ setToken, setSidebar }) {
           }}
         >
           <ListItemIcon sx={{ color: '#666', opacity: 0.8 }}>
-            <FaCogs />
+            <FaHome />
           </ListItemIcon>
           <ListItemText primary="ホームページ" />
         </ListItem>
@@ -146,13 +236,13 @@ function ProductionManagementSidebar({ setToken, setSidebar }) {
             },
           }}
         >
-          <ListItemIcon sx={{ 
+          <ListItemIcon sx={{
             color: '#f44336',
-            opacity: 0.8 
+            opacity: 0.8
           }}>
             <LogoutIcon />
           </ListItemIcon>
-          <ListItemText 
+          <ListItemText
             primary="ログアウト"
             sx={{
               color: '#f44336'
@@ -167,6 +257,9 @@ function ProductionManagementSidebar({ setToken, setSidebar }) {
 ProductionManagementSidebar.propTypes = {
   setToken: PropTypes.func.isRequired,
   setSidebar: PropTypes.func.isRequired,
+  mobileOpen: PropTypes.bool,
+  onClose: PropTypes.func,
+  isMobile: PropTypes.bool
 };
 
 export default ProductionManagementSidebar;

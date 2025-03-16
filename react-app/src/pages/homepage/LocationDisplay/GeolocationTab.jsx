@@ -5,7 +5,7 @@ import {
   TableBody, TableCell, TableContainer, TableRow, Typography
 } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { DEFAULT_CITY, DEFAULT_COUNTRY } from './constants';
+import { DEFAULT_CITY } from './constants';
 import { sendGeolocationToServer } from './api';
 
 const GeolocationTab = ({
@@ -19,27 +19,31 @@ const GeolocationTab = ({
   setGeoError,
   setBrowserLocation,
   setSelectedCity,
-  updateWeatherData,
 }) => {
   if (hidden || !active) return null;
+
+  // 都道府県名を抽出する関数
+  const extractPrefecture = (address) => {
+    if (!address) return null;
+    const prefecturePattern = /(北海道|東京都|(?:京都|大阪)府|.{2,3}県)/;
+    const match = address.match(prefecturePattern);
+    return match ? match[1] : null;
+  };
 
   // ブラウザからの位置情報を取得
   const getGeolocation = () => {
     setGeoLoading(true);
     setGeoError(null);
 
-    // ブラウザがGeolocation APIをサポートしていない場合
     if (!navigator.geolocation) {
       setGeoError('お使いのブラウザは位置情報の取得をサポートしていません。');
       setGeoLoading(false);
       return;
     }
 
-    // 位置情報を取得
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
-          // 位置情報をサーバーに送信して地名に変換
           const data = await sendGeolocationToServer(
             API_BASE_URL,
             position.coords.latitude,
@@ -49,32 +53,20 @@ const GeolocationTab = ({
           setBrowserLocation(data);
           setGeoLoading(false);
 
-          // 位置情報から都市情報を取得して天気情報を更新
-          // まず region (県) を優先し、なければ city を使用
-          let locationName = null;
+          // 住所から都道府県名を抽出
+          const prefecture = extractPrefecture(data.address);
 
-          if (data.region && data.region !== '不明') {
-            locationName = data.region;
-            console.log(`地域情報を取得: ${locationName}`);
-          } else if (data.city && data.city !== '不明') {
-            locationName = data.city;
-            console.log(`都市情報を取得: ${locationName}`);
-          }
-
-          // 位置情報から地名が取得できた場合
-          if (locationName) {
-            // 選択した都市を更新
-            setSelectedCity(locationName);
-
-            // 天気情報を更新（更新は親コンポーネントのuseEffectで自動的に行われる）
-            // 明示的に呼び出しておく
-            updateWeatherData(locationName, data.country || DEFAULT_COUNTRY);
+          if (prefecture) {
+            // 都道府県名が取得できた場合、それを使用
+            setSelectedCity(prefecture);  // これだけで十分、updateWeatherDataは不要
+          } else if (data.region && data.region !== '不明') {
+            // 都道府県名が取得できない場合は region を使用
+            setSelectedCity(data.region);  // これだけで十分、updateWeatherDataは不要
           } else {
+            // どちらも取得できない場合はデフォルト値を使用
             setSelectedCity(DEFAULT_CITY);
-            updateWeatherData(DEFAULT_CITY, DEFAULT_COUNTRY);
           }
         } catch (error) {
-          // バックエンドへの送信に失敗した場合でも、座標は表示する
           setBrowserLocation({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
@@ -86,15 +78,12 @@ const GeolocationTab = ({
           setGeoError('位置情報の詳細取得に失敗しました：' + error.message);
           setGeoLoading(false);
 
-          // エラー時はデフォルトの都市情報を使用
           setSelectedCity(DEFAULT_CITY);
-          updateWeatherData(DEFAULT_CITY, DEFAULT_COUNTRY);
         }
       },
       (error) => {
         let errorMessage = '位置情報の取得に失敗しました';
 
-        // エラーコードに基づいたメッセージ
         switch(error.code) {
           case error.PERMISSION_DENIED:
             errorMessage = '位置情報の利用が許可されていません。ブラウザの設定から位置情報の利用を許可してください。';
@@ -112,14 +101,12 @@ const GeolocationTab = ({
         setGeoError(errorMessage);
         setGeoLoading(false);
 
-        // エラー時はデフォルトの都市情報を使用
         setSelectedCity(DEFAULT_CITY);
-        updateWeatherData(DEFAULT_CITY, DEFAULT_COUNTRY);
       },
       {
-        enableHighAccuracy: true,  // より高精度な位置情報
-        timeout: 10000,            // 10秒でタイムアウト
-        maximumAge: 0              // キャッシュした位置情報は使用しない
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
       }
     );
   };
