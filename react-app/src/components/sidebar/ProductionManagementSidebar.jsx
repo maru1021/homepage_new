@@ -86,7 +86,7 @@ function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false,
         </ListItem>
         <Collapse in={openAll} timeout="auto" unmountOnExit>
           <List sx={{ pl: 4 }}>
-            <ListItem button onClick={() => navigate('/all/bulletin_board')}>
+            <ListItem button onClick={() => navigate('/all/bulletin_board/register')}>
               <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
                 <FaPencilAlt size={16} />
               </ListItemIcon>

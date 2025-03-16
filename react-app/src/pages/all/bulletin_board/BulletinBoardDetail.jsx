@@ -1,6 +1,6 @@
 // pages/all/BulletinBoardDetail.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -11,18 +11,26 @@ import {
   Button,
   Grid,
   Chip,
-  Divider
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  TextField
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   Download as DownloadIcon,
   CalendarMonth as CalendarIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  Edit as EditIcon,
+  Upload as UploadIcon
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import ja from 'date-fns/locale/ja';
-import { API_BASE_URL } from '../../config/baseURL';
+import { API_BASE_URL } from '../../../config/baseURL';
+import { successNoti, errorNoti } from '../../../utils/noti';
 
 const BulletinBoardDetail = () => {
   const { id } = useParams();
@@ -32,9 +40,25 @@ const BulletinBoardDetail = () => {
   const [error, setError] = useState(null);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'info' });
 
+  // 更新関連の状態
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [updateTitle, setUpdateTitle] = useState('');
+  const [updateContent, setUpdateContent] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
   useEffect(() => {
     fetchBulletinDetail();
   }, [id]);
+
+  // 更新ダイアログを開く時、現在の情報を設定
+  useEffect(() => {
+    if (bulletinData && updateDialogOpen) {
+      setUpdateTitle(bulletinData.title);
+      setUpdateContent(bulletinData.content || '');
+    }
+  }, [updateDialogOpen, bulletinData]);
 
   const fetchBulletinDetail = async () => {
     try {
@@ -70,10 +94,9 @@ const BulletinBoardDetail = () => {
     try {
       setLoading(true);
 
-      // fetch APIを使用して認証情報を含めたリクエストを送信
       fetch(`${API_BASE_URL}/api/all/bulletin_board/download/${id}`, {
         method: 'GET',
-        credentials: 'include', // 認証クッキーを含める
+        credentials: 'include',
       })
       .then(response => {
         if (!response.ok) {
@@ -100,31 +123,95 @@ const BulletinBoardDetail = () => {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url); // メモリリーク防止のためにURLを解放
 
-        setNotification({
-          open: true,
-          message: 'ダウンロードを開始しました',
-          severity: 'success'
-        });
         setLoading(false);
       })
       .catch(err => {
         console.error('ダウンロードエラー:', err);
-        setNotification({
-          open: true,
-          message: err.message,
-          severity: 'error'
-        });
+        errorNoti(err.message);
         setLoading(false);
       });
 
     } catch (err) {
       console.error('ダウンロード処理エラー:', err);
-      setNotification({
-        open: true,
-        message: `ダウンロード処理中にエラーが発生しました: ${err.message}`,
-        severity: 'error'
-      });
+      errorNoti(err.message);
       setLoading(false);
+    }
+  };
+
+  // 更新ダイアログを開く
+  const handleOpenUpdateDialog = () => {
+    setUpdateDialogOpen(true);
+  };
+
+  // 更新ダイアログを閉じる
+  const handleCloseUpdateDialog = () => {
+    setUpdateDialogOpen(false);
+    setSelectedFile(null);
+  };
+
+  // ファイル選択ダイアログを開く
+  const handleFileInputClick = () => {
+    fileInputRef.current.click();
+  };
+
+  // ファイル選択時の処理
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // ファイル拡張子の確認
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      errorNoti('アップロードできるのはExcel形式のファイル(.xlsx, .xls)のみです');
+      return;
+    }
+
+    setSelectedFile(file);
+  };
+
+  // 更新処理を実行
+  const handleUpdate = async () => {
+    try {
+      setUploading(true);
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('title', updateTitle);
+      formData.append('content', updateContent);
+
+      const response = await fetch(`${API_BASE_URL}/api/all/bulletin_board/${id}/update`, {
+        method: 'PUT',
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        // 認証エラーの場合はログインページにリダイレクト
+        if (response.status === 401) {
+          errorNoti('認証期限が切れました。再ログインしてください。');
+          setTimeout(() => {
+            navigate('/login');
+          }, 2000);
+          return;
+        }
+
+        const errorText = await response.text();
+        throw new Error(`更新に失敗しました: ${errorText}`);
+      }
+
+      // 更新成功後の処理
+      successNoti('掲示板が正常に更新されました');
+
+      setUpdateDialogOpen(false);
+      setSelectedFile(null);
+
+      // データを再取得
+      fetchBulletinDetail();
+
+    } catch (err) {
+      console.error('更新エラー:', err);
+      errorNoti(err.message);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -250,10 +337,6 @@ const BulletinBoardDetail = () => {
 
     const value = typeof cell.value === 'string' ? cell.value : String(cell.value);
 
-    if (value.length > 20) {
-      console.log(`セル(${cell.row},${cell.col})に長い文字列:`, value);
-    }
-
     return value;
   };
 
@@ -341,7 +424,7 @@ const BulletinBoardDetail = () => {
 
   return (
     <Box className="BulletinBoardDetail">
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between' }}>
         <Button
           variant="outlined"
           startIcon={<ArrowBackIcon />}
@@ -350,6 +433,27 @@ const BulletinBoardDetail = () => {
         >
           一覧に戻る
         </Button>
+
+        {bulletinData && (
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<EditIcon />}
+            onClick={handleOpenUpdateDialog}
+            sx={{
+              mb: 2,
+              borderRadius: '8px',
+              background: 'linear-gradient(to right, #9b59b6, #8e44ad)',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              '&:hover': {
+                background: 'linear-gradient(to right, #8e44ad, #7d3c98)',
+                boxShadow: '0 6px 8px rgba(0, 0, 0, 0.15)',
+              }
+            }}
+          >
+            更新する
+          </Button>
+        )}
       </Box>
 
       {loading && (
@@ -393,7 +497,7 @@ const BulletinBoardDetail = () => {
               <Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'center' }}>
                 <PersonIcon sx={{ mr: 1, color: 'text.secondary' }} />
                 <Typography variant="body1">
-                  投稿者: {bulletinData.author_name || `ユーザーID: ${bulletinData.author_id}`}
+                  投稿者: {bulletinData.employee_name || `ユーザーID: ${bulletinData.employee_id}`}
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'center' }}>
@@ -434,14 +538,98 @@ const BulletinBoardDetail = () => {
           </Paper>
 
           <Paper sx={{ p: 3, borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-              シート内容
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
+            <Typography variant="h6" sx={{ mb: 2 }}>エクセルシート内容</Typography>
             {renderTable()}
           </Paper>
         </>
       )}
+
+      {/* 更新ダイアログ */}
+      <Dialog
+        open={updateDialogOpen}
+        onClose={handleCloseUpdateDialog}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>掲示板の更新</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            更新したい内容とExcelファイルをアップロードしてください。
+          </DialogContentText>
+
+          <TextField
+            autoFocus
+            margin="dense"
+            id="title"
+            label="タイトル"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={updateTitle}
+            onChange={(e) => setUpdateTitle(e.target.value)}
+            sx={{ mb: 2 }}
+            required
+          />
+
+          <TextField
+            margin="dense"
+            id="content"
+            label="説明（任意）"
+            multiline
+            rows={4}
+            fullWidth
+            variant="outlined"
+            value={updateContent}
+            onChange={(e) => setUpdateContent(e.target.value)}
+            sx={{ mb: 3 }}
+          />
+
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            p: 3,
+            border: '2px dashed #e0e0e0',
+            borderRadius: '8px'
+          }}>
+            <Button
+              variant="contained"
+              startIcon={<UploadIcon />}
+              onClick={handleFileInputClick}
+              sx={{ mb: 2 }}
+            >
+              Excelファイルを選択
+            </Button>
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".xlsx, .xls"
+              onChange={handleFileUpload}
+              style={{ display: 'none' }}
+            />
+
+            {selectedFile && (
+              <Typography variant="body2" color="text.secondary">
+                選択されたファイル: {selectedFile.name}
+              </Typography>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseUpdateDialog} disabled={uploading}>
+            キャンセル
+          </Button>
+          <Button
+            onClick={handleUpdate}
+            variant="contained"
+            color="primary"
+            disabled={!selectedFile || uploading}
+          >
+            {uploading ? <CircularProgress size={24} /> : '更新する'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={notification.open}
