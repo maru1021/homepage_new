@@ -3,7 +3,6 @@ import { successNoti, errorNoti } from '../noti';
 
 const importExcel = async (url) => {
     return new Promise((resolve, reject) => {
-        const token = localStorage.getItem('token');
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.xlsx, .xls';
@@ -22,9 +21,7 @@ const importExcel = async (url) => {
 
                 const response = await fetch(url, {
                     method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                    credentials: 'include',
                     body: formData,
                 });
 

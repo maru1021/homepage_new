@@ -3,7 +3,7 @@ import API_BASE_URL from '../../../../src/config/baseURL';
 // 利用可能な銘柄を取得する関数
 export const fetchSymbols = async (token) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/homepage/stock_chart/symbols`, {
+    const response = await fetch(`${API_BASE_URL}/public/stock_chart/symbols`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -32,7 +32,7 @@ export const fetchStockData = async (token, params) => {
       showBollingerBands3
     } = params;
 
-    const response = await fetch(`${API_BASE_URL}/api/homepage/stock_chart/stock-data`, {
+    const response = await fetch(`${API_BASE_URL}/public/stock_chart/stock-data`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

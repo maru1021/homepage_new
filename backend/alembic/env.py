@@ -9,6 +9,7 @@ from backend.models import Base
 from backend.general.models import *
 from backend.authority.models import *
 from backend.homepage.models import *
+from backend.all.models import *
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

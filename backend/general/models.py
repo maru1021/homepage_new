@@ -6,7 +6,8 @@ from backend.models.base_model import BaseModel
 from backend.scripts.get_time import today
 
 if TYPE_CHECKING:
-    from backend.authority.models import EmployeeCredential, EmployeeAuthority
+    from backend.authority.models import EmployeeCredential, EmployeeAuthority, UserSession
+    from backend.all.models import BulletinPost
 
 # 部署モデル
 class Department(BaseModel):
@@ -68,6 +69,12 @@ class Employee(BaseModel):
         back_populates="employee",
         cascade="all, delete-orphan"
     )
+
+    # セッション管理
+    sessions = relationship("UserSession", back_populates="employee")
+
+    # 掲示板投稿
+    bulletin_posts = relationship("BulletinPost", back_populates="employee")
 
 class EmployeeInfo(BaseModel):
     __tablename__ = "employeeinfos"

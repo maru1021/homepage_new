@@ -26,11 +26,12 @@ services:
     environment:
       - PYTHONPATH=/app/backend
       - PYTHONUNBUFFERED=1
-    command: python -u -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload --no-access-log
+    command: python -u -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       - ./backend:/app/backend
       - ./backend/alembic.ini:/app/alembic.ini
       - ./backend/alembic:/app/alembic
+      - ./backend/manufacturing/equipment_map/map:/app/manufacturing/equipment_map/map
     ports:
       - "8000:8000"
     restart: always

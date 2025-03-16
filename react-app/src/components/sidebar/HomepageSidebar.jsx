@@ -21,7 +21,7 @@ import {
 } from 'react-icons/di';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import {
-    SiFastapi,SiRubyonrails
+    SiFastapi, SiRubyonrails
 } from 'react-icons/si';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -34,14 +34,13 @@ import {
 import PropTypes from 'prop-types';
 import { API_BASE_URL } from '../../config/baseURL';
 import '../../CSS/sidebar.css';
+import AuthService from '../../services/auth';
 
-
-function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = () => {}, isMobile = false, onLinkClick }) {
+function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = () => {}, isMobile = false, onLinkClick, isAuthenticated }) {
     const navigate = useNavigate();
     const [types, setTypes] = useState([]);
     const [openTypes, setOpenTypes] = useState({});
     const [openClassifications, setOpenClassifications] = useState({});
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     // 項目と分類データを取得
     useEffect(() => {
@@ -58,12 +57,6 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
             }
         };
         fetchData();
-    }, []);
-
-    // トークンの存在をチェック
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        setIsLoggedIn(!!token);
     }, []);
 
     // 項目の開閉状態を切り替え
@@ -150,7 +143,7 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
 
     const menuItems = [
         // ログイン状態でのみ表示する項目
-        ...(isLoggedIn ? [
+        ...(isAuthenticated ? [
             {
                 text: '項目一覧',
                 icon: <FaLayerGroup style={{ fontSize: '1.1rem' }} />,
@@ -161,11 +154,6 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
                 icon: <FaBook style={{ fontSize: '1.1rem' }} />,
                 path: 'homepage/classification',
             },
-            {
-                text: '株価チャート',
-                icon: <FaMoneyBill style={{ fontSize: '1.1rem' }} />,
-                path: 'homepage/stock_chart',
-            }
         ] : []),
         // 常に表示する項目
         {
@@ -183,14 +171,17 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
 
     const handleNavigate = (path) => {
         navigate(path);
-        onLinkClick?.();
+        if (onLinkClick) {
+            onLinkClick();
+        }
     };
 
     // ログアウト処理
-    const handleLogout = () => {
-        localStorage.clear();
-        setToken(null);
-        setIsLoggedIn(false);
+    const handleLogout = async () => {
+        await AuthService.logout();
+        // App.jsxのhandleSetAuthを呼び出して認証状態を更新
+        setToken(false);
+        navigate('/');
     };
 
     // ログインページへの遷移処理
@@ -227,7 +218,7 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
 
                 {menuItems.map((item, index) => (
                     <React.Fragment key={item.text}>
-                        {index === (isLoggedIn ? 3 : 0) && <Divider sx={{ my: 1 }} />}
+                        {index === (isAuthenticated ? 3 : 0) && <Divider sx={{ my: 1 }} />}
                         <ListItem
                             button
                             onClick={() => handleNavigate(item.path)}
@@ -317,6 +308,13 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
                     <ListItemText primary="天気、ネットワーク情報など" />
                 </ListItem>
 
+                <ListItem button onClick={() => handleNavigate('/homepage/stock_chart')}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>
+                        <FaMoneyBill style={{ fontSize: '1.2rem', color: '#FF7043' }} />
+                    </ListItemIcon>
+                    <ListItemText primary="株価チャート" />
+                </ListItem>
+
                 {/* 3Dメニュー */}
                 <ListItem button onClick={() => handleTypeClick('3d')}>
                     <ListItemIcon sx={{ minWidth: 36 }}>
@@ -364,13 +362,13 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
                 {/* ログイン/ログアウトボタン */}
                 <ListItem
                     button
-                    onClick={isLoggedIn ? handleLogout : handleLogin}
+                    onClick={isAuthenticated ? handleLogout : handleLogin}
                     sx={{
                         borderRadius: '10px',
                         transition: '0.2s ease-in-out',
                         background: 'rgba(255, 255, 255, 0.8)',
                         '&:hover': {
-                            background: isLoggedIn
+                            background: isAuthenticated
                                 ? 'rgba(255, 100, 100, 0.1)'
                                 : 'rgba(100, 255, 100, 0.1)',
                             transform: 'scale(1.02)'
@@ -378,15 +376,15 @@ function HomepageSidebar({ setToken, setSidebar, mobileOpen = false, onClose = (
                     }}
                 >
                     <ListItemIcon sx={{
-                        color: isLoggedIn ? '#f44336' : '#4CAF50',
+                        color: isAuthenticated ? '#f44336' : '#4CAF50',
                         opacity: 0.8
                     }}>
-                        {isLoggedIn ? <LogoutIcon /> : <LoginIcon />}
+                        {isAuthenticated ? <LogoutIcon /> : <LoginIcon />}
                     </ListItemIcon>
                     <ListItemText
-                        primary={isLoggedIn ? "ログアウト" : "ログイン"}
+                        primary={isAuthenticated ? "ログアウト" : "ログイン"}
                         sx={{
-                            color: isLoggedIn ? '#f44336' : '#4CAF50'
+                            color: isAuthenticated ? '#f44336' : '#4CAF50'
                         }}
                     />
                 </ListItem>
@@ -401,7 +399,8 @@ HomepageSidebar.propTypes = {
     mobileOpen: PropTypes.bool,
     onClose: PropTypes.func,
     isMobile: PropTypes.bool,
-    onLinkClick: PropTypes.func
+    onLinkClick: PropTypes.func,
+    isAuthenticated: PropTypes.bool
 };
 
 export default HomepageSidebar;

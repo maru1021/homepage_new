@@ -9,8 +9,13 @@ const useWebSocket = (url, updateFunc, searchQuery, currentPage, itemsPerPage) =
     useEffect(() => {
         const connectWebSocket = () => {
             try {
-                const token = localStorage.getItem("token");
-                wsRef.current = new WebSocket(`${url}?searchQuery=${searchQuery}&currentPage=${currentPage}&itemsPerPage=${itemsPerPage}&token=${token}`);
+                const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+                const userId = currentUser.userId || "";
+
+                // アクセストークンの代わりにuserIdを渡す（セキュリティ強化）
+                wsRef.current = new WebSocket(
+                    `${url}?searchQuery=${searchQuery}&currentPage=${currentPage}&itemsPerPage=${itemsPerPage}&userId=${userId}`
+                );
 
                 wsRef.current.onopen = () => {
                     // 初回接続時にサーバーにデータ送信
@@ -43,10 +48,14 @@ const useWebSocket = (url, updateFunc, searchQuery, currentPage, itemsPerPage) =
                     // エラー時はHTTPフォールバック
                 };
 
-                wsRef.current.onclose = () => {
+                wsRef.current.onclose = (event) => {
+                    console.log("WebSocket closed with code:", event.code);
                     wsRef.current = null;
+                    // 認証エラーでクローズされた場合、ログインページへリダイレクト
+                    if (event.code === 1008) {
+                        window.location.href = '/login';
+                    }
                 };
-
             } catch (error) {
                 console.error("WebSocket connection failed:", error);
             }

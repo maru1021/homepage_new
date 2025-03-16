@@ -1,10 +1,7 @@
 const fetchData = async (url, searchQuery = '', currentPage = 1, itemsPerPage = 10, model='') => {
-    const token = localStorage.getItem('token');
     try {
         const response = await fetch(`${url}?searchQuery=${searchQuery}&currentPage=${currentPage}&itemsPerPage=${itemsPerPage}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+            credentials: 'include',
         });
 
         if (response.ok) {
@@ -14,6 +11,10 @@ const fetchData = async (url, searchQuery = '', currentPage = 1, itemsPerPage = 
                 totalCount: data.totalCount || 0,
             };
         } else {
+            // 認証エラー (401) の場合はログインページにリダイレクト
+            if (response.status === 401) {
+                window.location.href = '/login';
+            }
             return { tableDatas: [], totalCount: 0 };
         }
     } catch (error) {

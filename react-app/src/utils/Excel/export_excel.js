@@ -2,12 +2,9 @@ import { errorNoti } from '../noti';
 
 
 const exportExcel = async (url) => {
-    const token = localStorage.getItem('token');
     const response = await fetch(`${url}`, {
         method: 'GET',
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
     });
     if (response.ok) {
         const blob = await response.blob();
