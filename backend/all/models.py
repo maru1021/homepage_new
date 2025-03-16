@@ -2,9 +2,9 @@ from sqlalchemy import Column, Integer, String, Float, Boolean, ForeignKey, Date
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from backend.models.base_model import BaseModel
-
 from backend.general.models import Employee
 
+from backend.scripts.get_time import now
 
 # 掲示板投稿テーブル
 class BulletinPost(BaseModel):
@@ -14,8 +14,8 @@ class BulletinPost(BaseModel):
     title = Column(String(255), nullable=False)
     content = Column(Text, nullable=True)
     employee_id = Column(Integer, ForeignKey("employees.id"), nullable=False)  # author_id から employee_id に変更
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=now)
+    updated_at = Column(DateTime, default=now, onupdate=now)
     file_path = Column(String(255), nullable=True)  # 元のExcelファイルパス
     filename = Column(String(255), nullable=True)   # 元のExcelファイル名
 

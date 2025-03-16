@@ -15,9 +15,9 @@ import Sky from '../pages/homepage/3D/Sky/Sky';
 import HtmlTraining from '../pages/homepage/html_training/HtmlTraining';
 import StockChart from '../pages/homepage/stock_chart/SrockChart';
 import LocationDisplay from '../pages/homepage/LocationDisplay/LocationDisplay';
-import BulletinBoardRegister from '../pages/all/BulletinBoardRegister';
-import BulletinBoardDetail from '../pages/all/BulletinBoardDetail';
-// import BulletinBoardList from '../pages/all/BulletinBoardList';
+import BulletinBoardRegister from '../pages/all/bulletin_board/BulletinBoardRegister';
+import BulletinBoardDetail from '../pages/all/bulletin_board/BulletinBoardDetail';
+import BulletinBoardList from '../pages/all/bulletin_board/BulletinBoardList';
 
 const AppRoutes = ({ isAuthenticated = false }) => {
   return (
@@ -49,12 +49,12 @@ const AppRoutes = ({ isAuthenticated = false }) => {
 
       {/* 掲示板関連のルート */}
       <Route
-        path='/all/bulletin_board'
+        path='/all/bulletin_board/register'
         element={isAuthenticated ? <BulletinBoardRegister /> : <Navigate to="/login" replace />}
       />
       <Route
         path='/all/bulletin_board/list'
-        // element={isAuthenticated ? <BulletinBoardList /> : <Navigate to="/login" replace />}
+        element={isAuthenticated ? <BulletinBoardList /> : <Navigate to="/login" replace />}
       />
       <Route
         path='/all/bulletin_board/:id'

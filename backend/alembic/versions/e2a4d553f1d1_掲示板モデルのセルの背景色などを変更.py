@@ -1,8 +1,8 @@
 """掲示板モデルのセルの背景色などを変更
 
-Revision ID: cb7ccf5d59c0
+Revision ID: e2a4d553f1d1
 Revises: 039430cfc45a
-Create Date: 2025-03-16 07:30:43.156781
+Create Date: 2025-03-16 08:10:44.361785
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'cb7ccf5d59c0'
+revision: str = 'e2a4d553f1d1'
 down_revision: Union[str, None] = '039430cfc45a'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

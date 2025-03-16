@@ -1,5 +1,3 @@
-// pages/all/BulletinBoardRegister.jsx
-
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
@@ -18,9 +16,11 @@ import {
   DialogTitle
 } from '@mui/material';
 import { UploadFile as UploadFileIcon, Send as SendIcon } from '@mui/icons-material';
-import { API_BASE_URL } from '../../config/baseURL';
+import { API_BASE_URL } from '../../../config/baseURL';
 import { useNavigate } from 'react-router-dom';
-import AuthService from '../../services/auth';
+import AuthService from '../../../services/auth';
+
+import { successNoti, errorNoti } from '../../../utils/noti';
 
 const BulletinBoardRegister = () => {
   const navigate = useNavigate();
@@ -86,11 +86,7 @@ const BulletinBoardRegister = () => {
     }
 
     if (!selectedFile) {
-      setNotification({
-        open: true,
-        message: 'Excelファイルをアップロードしてください',
-        severity: 'error'
-      });
+      errorNoti('Excelファイルをアップロードしてください');
       return;
     }
 
@@ -120,11 +116,7 @@ const BulletinBoardRegister = () => {
       if (!response.ok) {
         // 認証エラーの場合はログインページにリダイレクト
         if (response.status === 401) {
-          setNotification({
-            open: true,
-            message: '認証期限が切れました。再ログインしてください。',
-            severity: 'error'
-          });
+          errorNoti('認証期限が切れました。再ログインしてください。');
           setTimeout(() => {
             navigate('/login');
           }, 2000);
@@ -138,11 +130,7 @@ const BulletinBoardRegister = () => {
 
       const data = await response.json();
 
-      setNotification({
-        open: true,
-        message: `掲示板への投稿が完了しました`,
-        severity: 'success'
-      });
+      successNoti(`掲示板への投稿が完了しました`);
 
       setSubmitDialogOpen(false);
 

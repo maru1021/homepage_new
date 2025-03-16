@@ -249,6 +249,19 @@ async def refresh_token(request: Request, response: Response, db: Session = Depe
             detail="無効なリフレッシュトークンです",
         )
 
+# 認証エラーハンドラ
+async def get_current_user_or_none(request: Request, db: Session = Depends(get_db)):
+    try:
+        # CookieからJWTトークンを取得
+        access_token = request.cookies.get("access_token")
+        if not access_token:
+            return None
+
+        user = await verify_token(access_token, db)
+        return user
+    except:
+        return None
+
 # トークン発行エンドポイント
 @router.post("/token")
 async def login_for_access_token(
