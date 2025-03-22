@@ -168,3 +168,31 @@ async def update_bulletin_post(
         logger.error(f"更新エラー: {str(e)}")
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"更新中にエラーが発生しました: {str(e)}")
+
+
+# 掲示板投稿を削除する
+@router.delete("/{bulletin_id}", response_model=dict)
+async def delete_bulletin_post(
+    bulletin_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    # 掲示板投稿を取得
+    post = db.query(BulletinPost).filter(BulletinPost.id == bulletin_id).first()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"ID {bulletin_id} の掲示板投稿が見つかりません")
+
+    # 認証と投稿所有者の確認
+    await authenticate_and_authorize_post_owner(request, db, post, admin_override=True)
+
+    try:
+        # 投稿を削除
+        db.delete(post)
+        db.commit()
+        return {"message": "掲示板投稿が正常に削除されました"}
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"削除エラー: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"削除中にエラーが発生しました: {str(e)}")

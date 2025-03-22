@@ -25,7 +25,8 @@ import {
   Person as PersonIcon,
   Edit as EditIcon,
   Upload as UploadIcon,
-  ErrorOutline as ErrorIcon
+  ErrorOutline as ErrorIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -54,6 +55,10 @@ const BulletinBoardDetail = () => {
   // 画像ダイアログ関連の状態
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
+
+  // 削除関連の状態
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchBulletinDetail();
@@ -269,6 +274,51 @@ const BulletinBoardDetail = () => {
       errorNoti(err.message);
     } finally {
       setUploading(false);
+    }
+  };
+
+  // 削除ダイアログを開く
+  const handleOpenDeleteDialog = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  // 削除ダイアログを閉じる
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+  };
+
+  // 削除処理を実行
+  const handleDelete = async () => {
+    try {
+      setDeleting(true);
+
+      const response = await fetch(`${API_BASE_URL}/api/all/bulletin_board/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          errorNoti('認証期限が切れました。再ログインしてください。');
+          setTimeout(() => {
+            navigate('/login');
+          }, 2000);
+          return;
+        }
+
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `削除に失敗しました (${response.status})`);
+      }
+
+      successNoti('掲示板が正常に削除されました');
+      navigate('/all/bulletin_board/list');
+
+    } catch (err) {
+      console.error('削除エラー:', err);
+      errorNoti(err.message);
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -785,24 +835,44 @@ const BulletinBoardDetail = () => {
         </Button>
 
         {bulletinData && (
-          <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<EditIcon />}
-            onClick={handleOpenUpdateDialog}
-            sx={{
-              mb: 2,
-              borderRadius: '8px',
-              background: 'linear-gradient(to right, #9b59b6, #8e44ad)',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-              '&:hover': {
-                background: 'linear-gradient(to right, #8e44ad, #7d3c98)',
-                boxShadow: '0 6px 8px rgba(0, 0, 0, 0.15)',
-              }
-            }}
-          >
-            更新する
-          </Button>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<EditIcon />}
+              onClick={handleOpenUpdateDialog}
+              sx={{
+                mb: 2,
+                borderRadius: '8px',
+                background: 'linear-gradient(to right, #9b59b6, #8e44ad)',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                '&:hover': {
+                  background: 'linear-gradient(to right, #8e44ad, #7d3c98)',
+                  boxShadow: '0 6px 8px rgba(0, 0, 0, 0.15)',
+                }
+              }}
+            >
+              更新する
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              startIcon={<DeleteIcon />}
+              onClick={handleOpenDeleteDialog}
+              sx={{
+                mb: 2,
+                borderRadius: '8px',
+                background: 'linear-gradient(to right, #e74c3c, #c0392b)',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                '&:hover': {
+                  background: 'linear-gradient(to right, #c0392b, #a93226)',
+                  boxShadow: '0 6px 8px rgba(0, 0, 0, 0.15)',
+                }
+              }}
+            >
+              削除する
+            </Button>
+          </Box>
         )}
       </Box>
 
@@ -926,6 +996,34 @@ const BulletinBoardDetail = () => {
             disabled={!selectedFile || uploading}
           >
             {uploading ? <CircularProgress size={24} /> : '更新する'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* 削除確認ダイアログ */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+      >
+        <DialogTitle>投稿の削除</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            <Box>
+              この投稿を削除してもよろしいですか？
+            </Box>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} disabled={deleting}>
+            キャンセル
+          </Button>
+          <Button
+            onClick={handleDelete}
+            variant="contained"
+            color="error"
+            disabled={deleting}
+          >
+            {deleting ? <CircularProgress size={24} /> : '削除する'}
           </Button>
         </DialogActions>
       </Dialog>
