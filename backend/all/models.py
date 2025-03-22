@@ -25,6 +25,7 @@ class BulletinPost(BaseModel):
     merges = relationship("BulletinMerge", back_populates="bulletin_post", cascade="all, delete-orphan")
     column_dimensions = relationship("BulletinColumnDimension", back_populates="bulletin_post", cascade="all, delete-orphan")
     row_dimensions = relationship("BulletinRowDimension", back_populates="bulletin_post", cascade="all, delete-orphan")
+    images = relationship("BulletinImage", back_populates="bulletin_post", cascade="all, delete-orphan")
 
 
 # 掲示板のセルデータテーブル
@@ -128,3 +129,25 @@ class BulletinRowDimension(BaseModel):
     __table_args__ = (
         UniqueConstraint('bulletin_id', 'row', name='uix_row_dimension'),
     )
+
+
+# 掲示板の画像データテーブル
+class BulletinImage(BaseModel):
+    __tablename__ = "bulletin_images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    bulletin_id = Column(Integer, ForeignKey("bulletin_posts.id"), nullable=False)
+    image_data = Column(Text, nullable=True)  # Base64エンコードされた画像データ
+    image_type = Column(String(64), nullable=True)  # 画像の種類（例：png, jpeg）
+
+    # 画像の位置情報
+    from_row = Column(Integer, nullable=False)
+    from_col = Column(Integer, nullable=False)
+    to_row = Column(Integer, nullable=False)
+    to_col = Column(Integer, nullable=False)
+
+    # サイズと表示情報
+    width = Column(Float, nullable=True)
+    height = Column(Float, nullable=True)
+
+    bulletin_post = relationship("BulletinPost", back_populates="images")

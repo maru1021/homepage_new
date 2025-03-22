@@ -64,8 +64,17 @@ const BulletinBoardList = () => {
 
   // 選択した月と検索ワードに応じてデータをフィルタリング
   useEffect(() => {
+    if (selectedMonth === 'current' && searchTerm === '') {
+      setFilteredPosts(bulletinPosts);
+      return;
+    }
     filterPosts();
   }, [selectedMonth, bulletinPosts, searchTerm]);
+
+  // 月と検索ワードが変更されたらページを1に戻す
+  useEffect(() => {
+    setPage(1);
+  }, [selectedMonth, searchTerm]);
 
   // 掲示板投稿を取得
   const fetchBulletinPosts = async () => {
@@ -73,7 +82,7 @@ const BulletinBoardList = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${API_BASE_URL}/api/all/bulletin_board/list?skip=${(page - 1) * 10}&limit=100`, {
+      const response = await fetch(`${API_BASE_URL}/api/all/bulletin_board/list?skip=${(page - 1) * 9}&limit=9`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -91,7 +100,8 @@ const BulletinBoardList = () => {
 
       const data = await response.json();
       setBulletinPosts(data.posts);
-      setTotalPages(Math.ceil(data.total / 10));
+      setFilteredPosts(data.posts);
+      setTotalPages(Math.ceil(data.total / 9));
     } catch (err) {
       console.error('掲示板リスト取得エラー:', err);
       setError(err.message);
@@ -378,11 +388,34 @@ const BulletinBoardList = () => {
                 '&:hover': {
                   transform: 'translateY(-5px)',
                   boxShadow: '0 10px 20px rgba(0, 0, 0, 0.15)',
-                  cursor: 'pointer', // カードにホバーした時にカーソルをポインターに変更
+                  cursor: 'pointer',
                 },
               }}
-              onClick={() => handleViewDetail(post.id)} // カード全体をクリックで詳細ページへ遷移
+              onClick={() => handleViewDetail(post.id)}
             >
+              {post.images && post.images.length > 0 && (
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: 200,
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'rgba(0, 0, 0, 0.03)',
+                  }}
+                >
+                  <img
+                    src={`data:image/${post.images[0].image_type || 'png'};base64,${post.images[0].image_data}`}
+                    alt={`${post.title}の1枚目の画像`}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                    }}
+                  />
+                </Box>
+              )}
               <CardContent sx={{ flexGrow: 1 }}>
                 <Typography
                   variant="h6"

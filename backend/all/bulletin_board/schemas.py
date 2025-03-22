@@ -8,6 +8,17 @@ class BulletinPostCreate(BaseModel):
     content: Optional[str] = Field(None, description="掲示板投稿の内容（任意）")
     employee_id: int = Field(..., description="投稿者の従業員ID")
 
+# 画像情報のスキーマ
+class ImageData(BaseModel):
+    image_data: str
+    image_type: str
+    from_row: int
+    from_col: int
+    to_row: int
+    to_col: int
+    width: Optional[float]
+    height: Optional[float]
+
 # 基本的な投稿情報のスキーマ
 class BulletinPostBase(BaseModel):
     id: int
@@ -18,6 +29,7 @@ class BulletinPostBase(BaseModel):
     created_at: datetime
     updated_at: datetime
     filename: Optional[str]
+    images: Optional[List[ImageData]] = []
 
     class Config:
         orm_mode = True
@@ -58,3 +70,4 @@ class BulletinDetailResponse(BulletinPostBase):
     row_dimensions: Dict[str, float]
     exists: bool
     parsed_at: str
+    images: List[ImageData]
