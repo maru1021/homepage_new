@@ -1,4 +1,4 @@
-// pages/all/BulletinBoardDetail.jsx
+// pages/all/bulletin_board/BulletinBoardDetail.jsx
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
@@ -24,7 +24,8 @@ import {
   CalendarMonth as CalendarIcon,
   Person as PersonIcon,
   Edit as EditIcon,
-  Upload as UploadIcon
+  Upload as UploadIcon,
+  ErrorOutline as ErrorIcon
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -38,6 +39,7 @@ const BulletinBoardDetail = () => {
   const [bulletinData, setBulletinData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [errorDetail, setErrorDetail] = useState(null);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'info' });
 
   // 更新関連の状態
@@ -47,6 +49,11 @@ const BulletinBoardDetail = () => {
   const [updateContent, setUpdateContent] = useState('');
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const tableContainerRef = useRef(null);
+
+  // 画像ダイアログ関連の状態
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchBulletinDetail();
@@ -64,22 +71,45 @@ const BulletinBoardDetail = () => {
     try {
       setLoading(true);
       setError(null);
+      setErrorDetail(null);
 
       const response = await fetch(`${API_BASE_URL}/api/all/bulletin_board/${id}`, {
         method: 'GET',
         credentials: 'include',
       });
 
+      // レスポンスの内容をテキストとして読み込み
+      const responseText = await response.text();
+
+      // ステータスコードに応じた処理
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorText}`);
+        try {
+          // JSONとしてパースを試みる
+          const errorData = JSON.parse(responseText);
+          setError(errorData.detail || `エラーが発生しました (${response.status})`);
+          setErrorDetail(errorData);
+        } catch (parseError) {
+          // JSONパースに失敗した場合はテキストとして扱う
+          setError(`エラーが発生しました: ${responseText} (${response.status})`);
+        }
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const data = await response.json();
-      setBulletinData(data);
+      // 成功した場合はJSONとしてパース
+      try {
+        const data = JSON.parse(responseText);
+        setBulletinData(data);
+        console.log("取得したデータ:", data);
+      } catch (parseError) {
+        setError(`データの解析に失敗しました: ${parseError.message}`);
+        throw parseError;
+      }
     } catch (err) {
       console.error('掲示板詳細取得エラー:', err);
-      setError(err.message);
+      if (!error) {
+        // errorがまだ設定されていない場合（JSONパースエラーなど）
+        setError(err.message);
+      }
       setNotification({
         open: true,
         message: `掲示板詳細の取得に失敗しました: ${err.message}`,
@@ -101,7 +131,12 @@ const BulletinBoardDetail = () => {
       .then(response => {
         if (!response.ok) {
           return response.text().then(text => {
-            throw new Error(`ダウンロードに失敗しました: ${text}`);
+            try {
+              const errorData = JSON.parse(text);
+              throw new Error(errorData.detail || `ダウンロードに失敗しました (${response.status})`);
+            } catch (parseError) {
+              throw new Error(`ダウンロードに失敗しました: ${text} (${response.status})`);
+            }
           });
         }
         return response.blob(); // レスポンスをBlobとして取得
@@ -168,6 +203,17 @@ const BulletinBoardDetail = () => {
     setSelectedFile(file);
   };
 
+  // 画像クリック時のハンドラー
+  const handleImageClick = (imageUri, index) => {
+    setSelectedImage({ uri: imageUri, index });
+    setImageDialogOpen(true);
+  };
+
+  // 画像ダイアログを閉じるハンドラー
+  const handleCloseImageDialog = () => {
+    setImageDialogOpen(false);
+  };
+
   // 更新処理を実行
   const handleUpdate = async () => {
     try {
@@ -184,6 +230,8 @@ const BulletinBoardDetail = () => {
         body: formData,
       });
 
+      const responseText = await response.text();
+
       if (!response.ok) {
         // 認証エラーの場合はログインページにリダイレクト
         if (response.status === 401) {
@@ -194,8 +242,17 @@ const BulletinBoardDetail = () => {
           return;
         }
 
-        const errorText = await response.text();
-        throw new Error(`更新に失敗しました: ${errorText}`);
+        if (response.status === 404) {
+          errorNoti('更新用のエンドポイントが見つかりません。システム管理者に問い合わせてください。');
+          return;
+        }
+
+        try {
+          const errorData = JSON.parse(responseText);
+          throw new Error(errorData.detail || `更新に失敗しました (${response.status})`);
+        } catch (parseError) {
+          throw new Error(`更新に失敗しました: ${responseText} (${response.status})`);
+        }
       }
 
       // 更新成功後の処理
@@ -340,6 +397,115 @@ const BulletinBoardDetail = () => {
     return value;
   };
 
+  // 画像の位置を計算するための関数
+  const calculateImagePosition = (image, column_dimensions, row_dimensions) => {
+    if (!column_dimensions || !row_dimensions) {
+      return { top: 0, left: 0, width: image.width || 100, height: image.height || 100 };
+    }
+
+    // 行の高さを累積して垂直位置を計算
+    let yPos = 0;
+    for (let r = 1; r < image.from_row; r++) {
+      const rowHeight = row_dimensions[r] || 20; // デフォルト行高さを調整
+      yPos += rowHeight;
+    }
+
+    // 列の幅を累積して水平位置を計算
+    let xPos = 0;
+    for (let c = 1; c < image.from_col; c++) {
+      // Excelの列幅をピクセルに変換する係数を調整
+      const colWidth = column_dimensions[c] || 8.43; // デフォルト列幅
+      xPos += colWidth * 9; // 変換係数を調整
+    }
+
+    // 画像サイズの計算
+    let width = image.width;
+    let height = image.height;
+
+    // 幅と高さが指定されていない場合は、セルのサイズから計算
+    if (!width || !height) {
+      // 画像が占めるセル範囲の幅を計算
+      let cellWidth = 0;
+      for (let c = image.from_col; c <= image.to_col; c++) {
+        cellWidth += (column_dimensions[c] || 8.43) * 9; // 同じ変換係数を使用
+      }
+
+      // 画像が占めるセル範囲の高さを計算
+      let cellHeight = 0;
+      for (let r = image.from_row; r <= image.to_row; r++) {
+        cellHeight += (row_dimensions[r] || 20); // デフォルト値を調整
+      }
+
+      width = cellWidth;
+      height = cellHeight;
+    }
+
+    // NaNチェック
+    width = isNaN(width) ? 100 : width;
+    height = isNaN(height) ? 100 : height;
+
+    return { top: yPos, left: xPos, width, height };
+  };
+
+  // 画像を表示する関数
+  const renderImages = () => {
+    if (!bulletinData || !bulletinData.images || bulletinData.images.length === 0) {
+      return null;
+    }
+
+    return bulletinData.images.map((image, index) => {
+      const position = calculateImagePosition(
+        image,
+        bulletinData.column_dimensions,
+        bulletinData.row_dimensions
+      );
+
+      // デバッグ情報をコンソールに出力
+      console.log(`画像 ${index} の位置計算:`, {
+        image: {
+          from_row: image.from_row,
+          from_col: image.from_col,
+          to_row: image.to_row,
+          to_col: image.to_col,
+          width: image.width,
+          height: image.height
+        },
+        calculated: position
+      });
+
+      // データURIを構築
+      let imageDataUri = '';
+      try {
+        if (image.image_data) {
+          imageDataUri = `data:image/${image.image_type || 'png'};base64,${image.image_data}`;
+        }
+      } catch (e) {
+        console.error('画像データURIの構築に失敗:', e);
+      }
+
+      return (
+        <div
+          key={`image-${index}`}
+          style={{
+            position: 'absolute',
+            top: `${position.top}px`,
+            left: `${position.left}px`,
+            width: `${position.width}px`,
+            height: `${position.height}px`,
+            backgroundImage: `url(${imageDataUri})`,
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            pointerEvents: 'auto',
+            zIndex: 10,
+            cursor: 'pointer'
+          }}
+          onClick={() => handleImageClick(imageDataUri, index)}
+        />
+      );
+    });
+  };
+
   // 表を生成
   const renderTable = () => {
     if (!bulletinData) return null;
@@ -377,7 +543,7 @@ const BulletinBoardDetail = () => {
                 key={`${r}-${c}`}
                 rowSpan={mergeInfo.rowSpan}
                 colSpan={mergeInfo.colSpan}
-                style={getCellStyle(cell, rowHeight, colWidth * 7)}
+                style={getCellStyle(cell, rowHeight, colWidth * 9)} // 変換係数を調整
                 title={cell?.value || ''}
               >
                 {renderCellContent(cell)}
@@ -391,7 +557,7 @@ const BulletinBoardDetail = () => {
             rowCells.push(
               <td
                 key={`${r}-${c}`}
-                style={getCellStyle(cell, rowHeight, colWidth * 7)}
+                style={getCellStyle(cell, rowHeight, colWidth * 9)} // 変換係数を調整
                 title={cell?.value || ''}
               >
                 {renderCellContent(cell)}
@@ -401,15 +567,72 @@ const BulletinBoardDetail = () => {
         }
 
         if (rowCells.length > 0) {
-          rows.push(<tr key={r} style={{ height: `${row_dimensions[r]}px` }}>{rowCells}</tr>);
+          rows.push(<tr key={r} style={{ height: `${row_dimensions[r] || 20}px` }}>{rowCells}</tr>); // デフォルト値を調整
         }
       }
 
+      // 画像の高さを計算（テーブルコンテナの高さを決めるため）
+      let maxImageBottom = 0;
+      if (bulletinData.images && bulletinData.images.length > 0) {
+        bulletinData.images.forEach(image => {
+          const position = calculateImagePosition(
+            image,
+            bulletinData.column_dimensions,
+            bulletinData.row_dimensions
+          );
+          const imageBottom = position.top + position.height;
+          maxImageBottom = Math.max(maxImageBottom, imageBottom);
+        });
+      }
+
+      // テーブルの高さを計算
+      let tableHeight = 0;
+      for (let r = 1; r <= maxRow; r++) {
+        tableHeight += (row_dimensions[r] || 20); // デフォルト値を調整
+      }
+
+      // テーブルと画像のどちらか高い方をコンテナの高さとする
+      const containerHeight = Math.max(tableHeight, maxImageBottom);
+
       return (
-        <Box sx={{ overflow: 'auto', mt: 2 }}>
-          <table style={{ borderCollapse: 'collapse', borderSpacing: 0 }}>
+        <Box
+          ref={tableContainerRef}
+          sx={{
+            position: 'relative',
+            width: '100%',
+            minHeight: containerHeight,
+            overflow: 'hidden',
+            mb: 3
+          }}
+        >
+          {/* 画像レイヤー */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              zIndex: 2,
+              pointerEvents: 'none'
+            }}
+          >
+            {renderImages()}
+          </Box>
+          {/* テーブルレイヤー */}
+          <Box
+            component="table"
+            sx={{
+              position: 'relative',
+              borderCollapse: 'collapse',
+              borderSpacing: 0,
+              width: '100%',
+              zIndex: 1,
+              tableLayout: 'fixed'
+            }}
+          >
             <tbody>{rows}</tbody>
-          </table>
+          </Box>
         </Box>
       );
     } catch (err) {
@@ -420,6 +643,133 @@ const BulletinBoardDetail = () => {
         </Alert>
       );
     }
+  };
+
+  const renderError = () => {
+    if (!error) return null;
+
+    // errorDetailがある場合は詳細情報を表示
+    if (errorDetail) {
+      return (
+        <Paper sx={{ p: 3, mb: 3, borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <ErrorIcon color="error" sx={{ mr: 1, fontSize: 28 }} />
+            <Typography variant="h5" color="error">
+              エラーが発生しました
+            </Typography>
+          </Box>
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            この掲示板投稿は見つからないか、アクセス権限がありません。
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/all/bulletin_board/list')}
+            sx={{ mt: 1 }}
+          >
+            一覧に戻る
+          </Button>
+        </Paper>
+      );
+    }
+
+    // 一般的なエラー表示
+    return (
+      <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+        {error}
+      </Alert>
+    );
+  };
+
+  // bulletinDataのレンダリングを整理する関数
+  const renderContent = () => {
+    if (!bulletinData) return null;
+
+    return (
+      <>
+        {/* 掲示板の基本情報 */}
+        <Paper sx={{ p: 3, mb: 3, borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              color: '#2c3e50',
+              position: 'relative',
+              paddingBottom: 2,
+              marginBottom: 2,
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                width: '80px',
+                height: '3px',
+                backgroundColor: '#3498db',
+              }
+            }}
+          >
+            {bulletinData.title}
+          </Typography>
+
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'center' }}>
+              <PersonIcon sx={{ mr: 1, color: 'text.secondary' }} />
+              <Typography variant="body1">
+                投稿者: {bulletinData.employee_name || `ユーザーID: ${bulletinData.employee_id}`}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'center' }}>
+              <CalendarIcon sx={{ mr: 1, color: 'text.secondary' }} />
+              <Typography variant="body1">
+                投稿日時: {formatDate(bulletinData.created_at)}
+              </Typography>
+            </Grid>
+          </Grid>
+
+          {bulletinData.content && (
+            <Box sx={{ mb: 3, mt: 2 }}>
+              <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                {bulletinData.content}
+              </Typography>
+            </Box>
+          )}
+
+          {bulletinData.filename && (
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+              <Chip
+                label={bulletinData.filename}
+                variant="outlined"
+                sx={{ mr: 2, borderColor: 'rgba(46, 204, 113, 0.3)', color: 'rgba(46, 204, 113, 0.8)' }}
+              />
+              <Button
+                variant="contained"
+                size="small"
+                color="primary"
+                startIcon={<DownloadIcon />}
+                onClick={handleDownloadExcel}
+                sx={{ borderRadius: '8px' }}
+              >
+                Excelダウンロード
+              </Button>
+            </Box>
+          )}
+        </Paper>
+
+        {/* Excelシートの内容 */}
+        <Paper sx={{
+          p: 3,
+          borderRadius: '12px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          overflow: 'hidden'
+        }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>エクセルシート内容</Typography>
+          {renderTable()}
+        </Paper>
+      </>
+    );
   };
 
   return (
@@ -462,87 +812,36 @@ const BulletinBoardDetail = () => {
         </Box>
       )}
 
-      {error && !loading && (
-        <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
-          {error}
-        </Alert>
-      )}
+      {!loading && renderError()}
 
-      {!loading && bulletinData && (
-        <>
-          <Paper sx={{ p: 3, mb: 3, borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: 700,
-                color: '#2c3e50',
-                position: 'relative',
-                paddingBottom: 2,
-                marginBottom: 2,
-                '&::after': {
-                  content: '""',
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  width: '80px',
-                  height: '3px',
-                  backgroundColor: '#3498db',
-                }
+      {!loading && bulletinData && renderContent()}
+
+      {/* 画像拡大表示ダイアログ */}
+      <Dialog
+        open={imageDialogOpen}
+        onClose={handleCloseImageDialog}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogContent sx={{ p: 1, textAlign: 'center', bgcolor: 'rgba(0,0,0,0.03)', height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {selectedImage && (
+            <img
+              src={selectedImage.uri}
+              alt={`画像 ${selectedImage.index + 1}`}
+              style={{
+                maxWidth: '100%',
+                maxHeight: '100%',
+                objectFit: 'contain'
               }}
-            >
-              {bulletinData.title}
-            </Typography>
-
-            <Grid container spacing={2} sx={{ mb: 2 }}>
-              <Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'center' }}>
-                <PersonIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                <Typography variant="body1">
-                  投稿者: {bulletinData.employee_name || `ユーザーID: ${bulletinData.employee_id}`}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'center' }}>
-                <CalendarIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                <Typography variant="body1">
-                  投稿日時: {formatDate(bulletinData.created_at)}
-                </Typography>
-              </Grid>
-            </Grid>
-
-            {bulletinData.content && (
-              <Box sx={{ mb: 3, mt: 2 }}>
-                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                  {bulletinData.content}
-                </Typography>
-              </Box>
-            )}
-
-            {bulletinData.filename && (
-              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                <Chip
-                  label={bulletinData.filename}
-                  variant="outlined"
-                  sx={{ mr: 2, borderColor: 'rgba(46, 204, 113, 0.3)', color: 'rgba(46, 204, 113, 0.8)' }}
-                />
-                <Button
-                  variant="contained"
-                  size="small"
-                  color="primary"
-                  startIcon={<DownloadIcon />}
-                  onClick={handleDownloadExcel}
-                  sx={{ borderRadius: '8px' }}
-                >
-                  Excelダウンロード
-                </Button>
-              </Box>
-            )}
-          </Paper>
-
-          <Paper sx={{ p: 3, borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>エクセルシート内容</Typography>
-            {renderTable()}
-          </Paper>
-        </>
-      )}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseImageDialog} variant="contained" color="primary">
+            閉じる
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* 更新ダイアログ */}
       <Dialog

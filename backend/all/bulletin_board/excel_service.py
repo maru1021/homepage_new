@@ -4,9 +4,12 @@ import unicodedata
 import pandas as pd
 import urllib.parse
 import asyncio
+import base64
+import hashlib
 from typing import Optional, Tuple, Dict, Any, List
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
+import re
 
 import openpyxl
 from openpyxl.styles import Border, Side, Alignment, Font, PatternFill
@@ -16,7 +19,7 @@ from fastapi.responses import StreamingResponse
 from fastapi import HTTPException, status
 
 from backend.all.models import BulletinPost, BulletinCell, CellStyle, BulletinMerge
-from backend.all.models import BulletinColumnDimension, BulletinRowDimension
+from backend.all.models import BulletinColumnDimension, BulletinRowDimension, BulletinImage
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +29,259 @@ thread_executor = ThreadPoolExecutor(max_workers=4)
 
 # ============= Excel解析関連関数 =============
 
-# エクセルファイルを解析してデータベースに保存する
+import zipfile
+import io
+import base64
+import os
+import logging
+import traceback
+
+
+# 画像抽出関連関数
+async def _extract_images_from_zip(file_data: io.BytesIO, bulletin_id: int, db: Session):
+    try:
+        images = []
+        processed_hashes = set()  # 重複画像チェック用ハッシュセット
+        logger.info(f"ZIPアプローチで画像と実際の位置・サイズ情報を抽出: bulletin_id={bulletin_id}")
+
+        # ファイルポインタを先頭に戻す
+        file_data.seek(0)
+
+        # 列の幅と行の高さの情報を先に取得
+        original_file_for_dims = io.BytesIO(file_data.read())
+        file_data.seek(0)  # ポインタを戻す
+
+        column_widths = {}
+        row_heights = {}
+
+        try:
+            import openpyxl
+            workbook = openpyxl.load_workbook(original_file_for_dims)
+            sheet = workbook.active  # 最初のシートを対象とする
+
+            # 列の幅を取得
+            for col_letter, col_dim in sheet.column_dimensions.items():
+                if col_dim.width is not None:
+                    col_index = openpyxl.utils.column_index_from_string(col_letter)
+                    column_widths[col_index] = col_dim.width
+                    logger.info(f"列 {col_letter} (インデックス {col_index}) の幅: {col_dim.width}")
+
+            # 行の高さを取得
+            for row_index, row_dim in sheet.row_dimensions.items():
+                if row_dim.height is not None:
+                    row_heights[row_index] = row_dim.height
+                    logger.info(f"行 {row_index} の高さ: {row_dim.height}")
+
+            logger.info(f"シートから {len(column_widths)} 列と {len(row_heights)} 行の情報を取得しました")
+        except Exception as e:
+            logger.error(f"列・行情報の取得中にエラー: {str(e)}")
+
+        # 画像情報取得用のインスタンスを作成
+        try:
+            # 新しいインスタンスで再度開く
+            file_data.seek(0)
+            workbook_for_images = openpyxl.load_workbook(file_data)
+
+            # 実際の画像位置情報を格納するリスト
+            actual_image_positions = []
+
+            for sheet_name in workbook_for_images.sheetnames:
+                sheet = workbook_for_images[sheet_name]
+                if not hasattr(sheet, '_images'):
+                    continue
+
+                logger.info(f"シート '{sheet_name}' には {len(sheet._images)} 個の画像があります")
+
+                for img_idx, img in enumerate(sheet._images):
+                    try:
+                        anchor = getattr(img, 'anchor', None)
+                        if not anchor:
+                            continue
+
+                        # アンカーから位置情報を取得
+                        from_row = getattr(anchor, 'anchorMin', None)
+                        to_row = getattr(anchor, 'anchorMax', None)
+
+                        # 異なるアンカー形式も対応
+                        if not from_row and hasattr(anchor, '_from'):
+                            from_row = getattr(anchor._from, 'row', 0) + 1  # 0-indexedから1-indexedへ
+                            from_col = getattr(anchor._from, 'col', 0) + 1
+
+                            if hasattr(anchor, '_to'):
+                                to_row = getattr(anchor._to, 'row', from_row + 5) + 1
+                                to_col = getattr(anchor._to, 'col', from_col + 5) + 1
+                            else:
+                                # _toがない場合は、画像サイズから推定
+                                to_row = from_row + 3  # 仮の値
+                                to_col = from_col + 7  # 仮の値
+                        else:
+                            # デフォルト値（取得できない場合）
+                            from_row = 5
+                            from_col = 1 + (img_idx * 9)  # 画像ごとに列をずらす
+                            to_row = 8
+                            to_col = from_col + 7
+
+                        # 画像ファイル名またはpath属性
+                        img_path = getattr(img, 'path', f"image{img_idx+1}.jpeg")
+
+                        # 画像サイズ
+                        width = getattr(img, 'width', 0) or 300
+                        height = getattr(img, 'height', 0) or 200
+
+                        actual_image_positions.append({
+                            'path': img_path,
+                            'from_row': from_row,
+                            'from_col': from_col,
+                            'to_row': to_row,
+                            'to_col': to_col,
+                            'width': width,
+                            'height': height
+                        })
+
+                        logger.info(f"画像 {img_idx+1} ({img_path}) の位置: ({from_row},{from_col})-({to_row},{to_col}), サイズ: {width}x{height}")
+                    except Exception as e:
+                        logger.error(f"画像 {img_idx} の情報取得中にエラー: {str(e)}")
+
+            # 位置情報の数をログ
+            logger.info(f"合計 {len(actual_image_positions)} 個の画像位置情報を取得しました")
+        except Exception as e:
+            logger.error(f"OpenPyXLによる画像情報取得中にエラー: {str(e)}")
+            actual_image_positions = []
+
+        # ファイルポインタを先頭に戻す
+        file_data.seek(0)
+
+        # ZIPファイルとして開く
+        with zipfile.ZipFile(file_data) as excel_zip:
+            # ZIP内のファイル一覧
+            file_list = excel_zip.namelist()
+            logger.info(f"ZIP内のファイル数: {len(file_list)}")
+
+            # 画像ファイルのパスを探す
+            image_files = [name for name in file_list
+                           if name.startswith('xl/media/') and
+                              (name.lower().endswith('.jpg') or name.lower().endswith('.jpeg'))]
+
+            logger.info(f"見つかったJPEG画像ファイル: {len(image_files)}")
+
+            # 各画像ファイルを処理
+            for idx, img_path in enumerate(image_files):
+                try:
+                    # 画像データを取得
+                    img_data = excel_zip.read(img_path)
+
+                    # 画像データのハッシュを計算して重複チェック
+                    img_hash = hashlib.md5(img_data).hexdigest()
+                    if img_hash in processed_hashes:
+                        logger.info(f"重複画像をスキップ: {img_path}")
+                        continue
+
+                    processed_hashes.add(img_hash)
+
+                    # ヘッダーチェック (JPEGシグネチャ)
+                    if img_data[:2] != b'\xff\xd8':
+                        logger.info(f"JPEG以外の画像をスキップ: {img_path}")
+                        continue
+
+                    # 画像のBase64エンコード
+                    image_b64 = base64.b64encode(img_data).decode('utf-8')
+
+                    # 位置情報を取得 - 実際の画像位置情報から検索
+                    pos_info = None
+                    # 完全一致またはファイル名部分一致で検索
+                    file_name = img_path.split('/')[-1]
+                    for pos in actual_image_positions:
+                        if pos['path'] == img_path or file_name in pos['path'] or f"image{idx+1}" in pos['path']:
+                            pos_info = pos
+                            break
+
+                    if pos_info:
+                        # 取得した位置情報を使用
+                        from_row = pos_info['from_row']
+                        from_col = pos_info['from_col']
+                        to_row = pos_info['to_row']
+                        to_col = pos_info['to_col']
+                        width = pos_info['width']
+                        height = pos_info['height']
+
+                        logger.info(f"画像 {img_path} は実際の位置情報を使用: ({from_row},{from_col})-({to_row},{to_col})")
+                    else:
+                        # 位置情報がない場合はインデックスから推定
+                        # 画像が左右に並ぶように配置
+                        if idx == 0:
+                            from_row = 5
+                            from_col = 1
+                            to_row = 8
+                            to_col = 8
+                        elif idx == 1:
+                            from_row = 5
+                            from_col = 9
+                            to_row = 8
+                            to_col = 16
+                        else:
+                            from_row = 5 + (idx // 2) * 4  # 行方向にも展開
+                            from_col = 1 + (idx % 2) * 9   # 2列で交互に配置
+                            to_row = from_row + 3
+                            to_col = from_col + 7
+
+                        width = 300
+                        height = 200
+
+                        logger.info(f"画像 {img_path} は推定位置を使用: ({from_row},{from_col})-({to_row},{to_col})")
+
+                    # セルの幅と高さから画像の実際のピクセルサイズを計算
+                    pixel_width = 0
+                    for col in range(from_col, to_col + 1):
+                        cell_width = column_widths.get(col, 8.43)  # デフォルト幅
+                        pixel_width += cell_width * 9  # ピクセル変換係数
+
+                    pixel_height = 0
+                    for row in range(from_row, to_row + 1):
+                        cell_height = row_heights.get(row, 20)  # デフォルト高さ
+                        pixel_height += cell_height
+
+                    # 計算したピクセルサイズをログ
+                    logger.info(f"画像 {img_path} のセルから計算したサイズ: {pixel_width}x{pixel_height}px")
+
+                    # セルから計算したサイズを使用するが、最小値は設定
+                    if pixel_width < 50:
+                        pixel_width = 300
+                    if pixel_height < 50:
+                        pixel_height = 200
+
+                    # 画像オブジェクトを作成
+                    bulletin_image = BulletinImage(
+                        bulletin_id=bulletin_id,
+                        image_data=image_b64,
+                        image_type="jpeg",
+                        from_row=from_row,
+                        from_col=from_col,
+                        to_row=to_row,
+                        to_col=to_col,
+                        width=pixel_width,  # セルから計算したピクセル幅
+                        height=pixel_height  # セルから計算したピクセル高さ
+                    )
+
+                    images.append(bulletin_image)
+                except Exception as e:
+                    logger.error(f"画像 {img_path} の処理中にエラー: {str(e)}")
+                    logger.error(traceback.format_exc())
+
+            # 画像データの一括保存
+            if images:
+                db.bulk_save_objects(images)
+                logger.info(f"保存された画像の数: {len(images)}")
+            else:
+                logger.warning("JPEG画像が見つかりませんでした")
+
+        return images
+
+    except Exception as e:
+        logger.error(f"画像抽出中のエラー: {str(e)}")
+        logger.error(traceback.format_exc())
+        return []
+
+# Excelファイルを解析してデータベースに保存する関数
 async def parse_excel_to_db(
     file_data: io.BytesIO, filename: str, employee_id: int,
     title: str, content: Optional[str], db: Session
@@ -40,7 +295,7 @@ async def parse_excel_to_db(
         db.add(bulletin_post)
         db.flush()
 
-        # Pandasによる読み込みとOpenpyxlによる読み込みを並行して実行
+        # 従来の方法を試す（DFとOpenpyxlでの処理）
         df_task = asyncio.create_task(_run_in_thread(
             lambda: pd.read_excel(file_data, engine='openpyxl')
         ))
@@ -56,11 +311,13 @@ async def parse_excel_to_db(
         df = await df_task
         workbook = await workbook_task
 
-        sheet = workbook.active
-
         # データ処理
         cell_id_mapping = await _process_cell_data(df, bulletin_post.id, db)
-        await _process_styles_and_properties(sheet, cell_id_mapping, bulletin_post.id, db)
+        await _process_styles_and_properties(workbook.active, cell_id_mapping, bulletin_post.id, db)
+
+        # ZIP方式で直接抽出 (JPEG画像のみを抽出)
+        file_data.seek(0)
+        images = await _extract_images_from_zip(file_data, bulletin_post.id, db)
 
         db.commit()
         return bulletin_post
@@ -168,8 +425,6 @@ async def _collect_row_dimensions(sheet, bulletin_id):
     ]
 
 
-# ============= Excel更新関連関数 =============
-
 # 既存の掲示板投稿のExcelデータを更新する
 async def update_excel_in_db(
     bulletin_id: int, file_data: io.BytesIO,
@@ -205,6 +460,10 @@ async def update_excel_in_db(
         cell_id_mapping = await _process_cell_data(df, bulletin_id, db)
         await _process_styles_and_properties(sheet, cell_id_mapping, bulletin_id, db)
 
+        # ZIP方式でJPEG画像のみを抽出
+        file_data.seek(0)
+        await _extract_images_from_zip(file_data, bulletin_id, db)
+
         db.commit()
         return post
 
@@ -226,6 +485,7 @@ async def _delete_related_data(bulletin_id, db):
     db.query(BulletinMerge).filter(BulletinMerge.bulletin_id == bulletin_id).delete(synchronize_session=False)
     db.query(BulletinColumnDimension).filter(BulletinColumnDimension.bulletin_id == bulletin_id).delete(synchronize_session=False)
     db.query(BulletinRowDimension).filter(BulletinRowDimension.bulletin_id == bulletin_id).delete(synchronize_session=False)
+    db.query(BulletinImage).filter(BulletinImage.bulletin_id == bulletin_id).delete(synchronize_session=False)
 
 
 # ============= Excel生成関連関数 =============
@@ -325,10 +585,13 @@ async def get_bulletin_list(skip: int, limit: int, db: Session) -> Dict[str, Any
         lambda: db.query(BulletinPost).count()
     ))
 
-    # 投稿データをjoinedloadを使って従業員情報と一緒に取得
+    # 投稿データをjoinedloadを使って従業員情報と画像情報を一緒に取得
     posts_task = asyncio.create_task(_run_in_thread(
         lambda: db.query(BulletinPost)
-               .options(joinedload(BulletinPost.employee))
+               .options(
+                   joinedload(BulletinPost.employee),
+                   joinedload(BulletinPost.images)
+               )
                .order_by(BulletinPost.created_at.desc())
                .offset(skip)
                .limit(limit)
@@ -348,7 +611,20 @@ async def get_bulletin_list(skip: int, limit: int, db: Session) -> Dict[str, Any
             "employee_name": post.employee.name if post.employee else None,
             "created_at": post.created_at,
             "updated_at": post.updated_at,
-            "filename": post.filename
+            "filename": post.filename,
+            "images": [
+                {
+                    "image_data": image.image_data,
+                    "image_type": image.image_type,
+                    "from_row": image.from_row,
+                    "from_col": image.from_col,
+                    "to_row": image.to_row,
+                    "to_col": image.to_col,
+                    "width": image.width,
+                    "height": image.height
+                }
+                for image in post.images
+            ] if post.images else []
         }
         for post in posts
     ]
@@ -379,11 +655,12 @@ async def get_bulletin_detail(bulletin_id: int, db: Session) -> Dict[str, Any]:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"ID {bulletin_id} の掲示板投稿が見つかりません")
 
     # 並行して各データを取得
-    cells_data, merges_data, column_dimensions_data, row_dimensions_data = await asyncio.gather(
+    cells_data, merges_data, column_dimensions_data, row_dimensions_data, images_data = await asyncio.gather(
         _fetch_bulletin_cells_with_styles(db, bulletin_id),
         _fetch_bulletin_merges(db, bulletin_id),
         _fetch_bulletin_column_dimensions(db, bulletin_id),
-        _fetch_bulletin_row_dimensions(db, bulletin_id)
+        _fetch_bulletin_row_dimensions(db, bulletin_id),
+        _fetch_bulletin_images(db, bulletin_id)  # 画像データの取得を追加
     )
 
     employee_name = post.employee.name if post.employee else None
@@ -402,6 +679,7 @@ async def get_bulletin_detail(bulletin_id: int, db: Session) -> Dict[str, Any]:
         "merges": merges_data,
         "column_dimensions": column_dimensions_data,
         "row_dimensions": row_dimensions_data,
+        "images": images_data,  # 画像データを追加
         "exists": True,
         "parsed_at": datetime.now().isoformat()
     }
@@ -469,6 +747,29 @@ async def _fetch_bulletin_row_dimensions(db: Session, bulletin_id: int) -> Dict[
     )
 
     return {str(row_dim.row): row_dim.height for row_dim in row_dimensions}
+
+
+# 画像情報を取得
+async def _fetch_bulletin_images(db: Session, bulletin_id: int) -> List[Dict[str, Any]]:
+    images = await _run_in_thread(
+        lambda: db.query(BulletinImage).filter(
+            BulletinImage.bulletin_id == bulletin_id
+        ).all()
+    )
+
+    return [
+        {
+            "image_data": image.image_data,
+            "image_type": image.image_type,
+            "from_row": image.from_row,
+            "from_col": image.from_col,
+            "to_row": image.to_row,
+            "to_col": image.to_col,
+            "width": image.width,
+            "height": image.height
+        }
+        for image in images
+    ]
 
 
 # ============= ユーティリティ関数 =============
@@ -594,7 +895,6 @@ def _generate_safe_filename(post):
         ascii_title = unicodedata.normalize('NFKD', post.title).encode('ASCII', 'ignore').decode()
         safe_title = ''.join(c if c.isalnum() or c in '_- ' else '_' for c in ascii_title)
         return f"{safe_title}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-
 
 # セルデータをフロントエンド用にフォーマット
 def _format_cell_data(cell, style):
