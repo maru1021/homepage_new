@@ -4,6 +4,8 @@ import time
 import psycopg2
 import re
 from typing import List
+import uuid
+import subprocess
 
 
 DB_NAME = os.environ.get('DB_NAME', 'mydatabase')
@@ -36,6 +38,55 @@ def parse_sql_file(sql_content: str) -> List[str]:
     current_copy_table = None
     copy_data = []
 
+    def escape_value(val: str) -> str:
+        if val == '\\N':
+            return 'NULL'
+        if re.match(r'^\d+$', val):
+            return val
+        if re.match(r'^\d{4}-\d{2}-\d{2}', val):
+            return f"'{val}'"
+        if val.lower() in ['t', 'f', 'true', 'false']:
+            return 'true' if val.lower() in ['t', 'true'] else 'false'
+
+        # 特殊文字のエスケープ処理
+        escaped_val = val
+
+        # Djangoテンプレートタグを一時的なプレースホルダーに置換
+        template_tags = []
+
+        def replace_template_tag(match):
+            tag = match.group(0)
+            placeholder = f"__TEMPLATE_TAG_{len(template_tags)}__"
+            template_tags.append(tag)
+            return placeholder
+
+        # {% ... %} と {{ ... }} を一時的に置換
+        escaped_val = re.sub(r'{%.*?%}|{{.*?}}', replace_template_tag, escaped_val)
+
+        # HTMLの属性値内のクォートを処理
+        def replace_quotes(match):
+            attr = match.group(1)
+            value = match.group(2)
+            return f'{attr}="{value}"'
+
+        escaped_val = re.sub(r'(\s+\w+\s*=\s*)"([^"]*)"', replace_quotes, escaped_val)
+
+        # 基本的なエスケープ処理
+        escaped_val = escaped_val.replace("'", "''")
+
+        # プレースホルダーを元のテンプレートタグに戻す
+        for i, tag in enumerate(template_tags):
+            placeholder = f"__TEMPLATE_TAG_{i}__"
+            # テンプレートタグ内のシングルクォートをダブルクォートに変換
+            tag = tag.replace("'", "''")
+            escaped_val = escaped_val.replace(placeholder, tag)
+
+        # 一意なタグを生成（衝突を避けるため、UUIDを使用）
+        tag = f"QUOTE_{uuid.uuid4().hex}_TAG"
+
+        # PostgreSQLのドル記号クォートを使用
+        return f"${tag}${escaped_val}${tag}$"
+
     for line in sql_content.split('\n'):
         line = line.strip()
 
@@ -51,27 +102,19 @@ def parse_sql_file(sql_content: str) -> List[str]:
             if line == '\\.':
                 in_copy = False
                 if copy_data:
-                    table_name = re.search(r'COPY public\.(\w+)', current_copy_table).group(1)
-                    columns = re.search(r'\((.*?)\)', current_copy_table).group(1)
-                    for data_line in copy_data:
-                        if data_line.strip():
-                            values = data_line.split('\t')
-                            formatted_values = []
-                            for val in values:
-                                val = val.strip()
-                                if val == '\\N':
-                                    formatted_values.append('NULL')
-                                elif re.match(r'^\d+$', val):
-                                    formatted_values.append(val)
-                                elif re.match(r'^\d{4}-\d{2}-\d{2}', val):
-                                    formatted_values.append(f"'{val}'")
-                                elif val.lower() in ['t', 'f', 'true', 'false']:
-                                    formatted_values.append('true' if val.lower() in ['t', 'true'] else 'false')
-                                else:
-                                    escaped_val = val.replace("'", "''")
-                                    formatted_values.append(f"'{escaped_val}'")
-                            insert_stmt = f"INSERT INTO public.{table_name} ({columns}) VALUES ({', '.join(formatted_values)});"
-                            statements.append(insert_stmt)
+                    try:
+                        table_name = re.search(r'COPY public\.(\w+)', current_copy_table).group(1)
+                        columns = re.search(r'\((.*?)\)', current_copy_table).group(1)
+                        for data_line in copy_data:
+                            if data_line.strip():
+                                values = data_line.split('\t')
+                                formatted_values = [escape_value(val.strip()) for val in values]
+                                insert_stmt = f"INSERT INTO public.{table_name} ({columns}) VALUES ({', '.join(formatted_values)});"
+                                statements.append(insert_stmt)
+                    except Exception as e:
+                        print(f"Warning: データの変換中にエラーが発生しました: {str(e)}")
+                        print(f"問題のデータ: {data_line}")
+                        continue
                 copy_data = []
                 current_copy_table = None
                 continue
@@ -87,17 +130,6 @@ def parse_sql_file(sql_content: str) -> List[str]:
     return statements
 
 def restore_database():
-    table_order = [
-        'types',
-        'classifications',
-        'articles',
-        'departments',
-        'employees',
-        'employee_credential',
-        'employeeinfos',
-        'employee_authority'
-    ]
-
     if not wait_for_db():
         return
 
@@ -109,138 +141,34 @@ def restore_database():
         return
 
     try:
-        conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST
+        # psqlコマンドを使用してSQLファイルを直接実行
+        command = [
+            "psql",
+            "-h", DB_HOST,
+            "-U", DB_USER,
+            "-d", DB_NAME,
+            "-f", str(dump_file)
+        ]
+
+        env = os.environ.copy()
+        env["PGPASSWORD"] = DB_PASSWORD
+
+        result = subprocess.run(
+            command,
+            env=env,
+            capture_output=True,
+            text=True,
+            check=True
         )
-        conn.autocommit = True
-        cur = conn.cursor()
 
-        with open(dump_file, 'r', encoding='utf-8') as f:
-            sql_content = f.read()
+        if result.stderr:
+            print("復元中の警告:", result.stderr)
 
-            # 既存のテーブルをドロップ
-            for table in table_order:
-                cur.execute(f"DROP TABLE IF EXISTS public.{table} CASCADE;")
-
-            # SQLステートメントをパースして実行
-            statements = parse_sql_file(sql_content)
-
-            for stmt in statements:
-                if stmt.startswith('CREATE SEQUENCE'):
-                    try:
-                        sequence_name = re.search(r'CREATE SEQUENCE public\.(\w+)', stmt).group(1)
-                        cur.execute(f"DROP SEQUENCE IF EXISTS public.{sequence_name} CASCADE;")
-                        cur.execute(stmt)
-                    except Exception as e:
-                        print(f"Warning: シーケンス作成をスキップしました: {str(e)}")
-
-            for stmt in statements:
-                if stmt.startswith('CREATE TABLE'):
-                    for table in table_order:
-                        if f'CREATE TABLE public.{table}' in stmt:
-                            cur.execute(stmt)
-                            break
-
-            for stmt in statements:
-                if stmt.startswith('ALTER SEQUENCE') and 'OWNED BY' in stmt:
-                    cur.execute(stmt)
-
-            for stmt in statements:
-                if ('ALTER TABLE' in stmt and 'PRIMARY KEY' in stmt) or stmt.startswith('CREATE INDEX'):
-                    for table in table_order:
-                        if f'public.{table}' in stmt:
-                            print(f"{table}のインデックス/制約を追加します...")
-                            cur.execute(stmt)
-                            break
-
-            for table in table_order:
-                data_count = 0
-
-                for stmt in statements:
-                    if f"INSERT INTO public.{table} " in stmt:
-                        try:
-                            cur.execute(stmt)
-                            data_count += 1
-                        except Exception as e:
-                            print(f"エラー発生: {table}のデータ挿入に失敗")
-                            print(f"SQL: {stmt}")
-                            print(f"エラー: {str(e)}")
-                            raise e
-
-                print(f"{table}テーブルに {data_count} 件のデータを挿入しました")
-
-            for stmt in statements:
-                if 'ALTER TABLE' in stmt and 'FOREIGN KEY' in stmt:
-                    for table in table_order:
-                        if f'public.{table}' in stmt:
-                            try:
-                                constraint_name = re.search(r'ADD CONSTRAINT (\w+) FOREIGN KEY', stmt).group(1)
-                                cur.execute(f"ALTER TABLE public.{table} DROP CONSTRAINT IF EXISTS {constraint_name};")
-                                cur.execute(stmt)
-                            except Exception as e:
-                                print(f"エラー発生: {table}の外部キー制約追加に失敗")
-                                print(f"SQL: {stmt}")
-                                print(f"エラー: {str(e)}")
-                                raise e
-
-        # シーケンスを更新
-        cur.execute("""
-            DO $$
-            DECLARE
-                t_name text;
-                max_id integer;
-                has_id_column boolean;
-            BEGIN
-                FOR t_name IN
-                    SELECT tablename FROM pg_tables
-                    WHERE schemaname = 'public'
-                    AND tablename != 'alembic_version'
-                LOOP
-                    -- idカラムが存在するか確認
-                    SELECT EXISTS (
-                        SELECT 1 FROM information_schema.columns
-                        WHERE table_schema = 'public'
-                        AND table_name = t_name
-                        AND column_name = 'id'
-                    ) INTO has_id_column;
-
-                    IF has_id_column THEN
-                        -- 既存のシーケンスを削除
-                        EXECUTE format('DROP SEQUENCE IF EXISTS %I_id_seq CASCADE', t_name);
-
-                        -- 新しいシーケンスを作成
-                        EXECUTE format('CREATE SEQUENCE %I_id_seq', t_name);
-
-                        -- シーケンスをカラムに関連付け
-                        EXECUTE format(
-                            'ALTER TABLE %I ALTER COLUMN id SET DEFAULT nextval(%L)',
-                            t_name,
-                            t_name || '_id_seq'
-                        );
-
-                        -- 現在の最大値を取得してシーケンスを設定
-                        EXECUTE format('SELECT COALESCE(MAX(id), 0) + 1 FROM %I', t_name) INTO max_id;
-                        IF max_id IS NOT NULL THEN
-                            EXECUTE format(
-                                'ALTER SEQUENCE %I_id_seq RESTART WITH %s',
-                                t_name,
-                                max_id
-                            );
-                        END IF;
-                    END IF;
-                END LOOP;
-            END $$;
-        """)
-
-        cur.close()
-        conn.close()
         print("データベースの復元が正常に完了しました。")
-    except Exception as e:
+
+    except subprocess.CalledProcessError as e:
         print("データベースの復元に失敗しました。")
-        print("エラー内容:", str(e))
+        print("エラー内容:", e.stderr)
         print("エラーの詳細:", type(e).__name__)
 
 if __name__ == "__main__":
