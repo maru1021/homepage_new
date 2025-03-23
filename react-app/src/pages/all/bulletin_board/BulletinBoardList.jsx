@@ -266,21 +266,6 @@ const BulletinBoardList = () => {
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography
           variant="h4"
-          sx={{
-            fontWeight: 700,
-            color: '#2c3e50',
-            position: 'relative',
-            paddingBottom: 2,
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              width: '80px',
-              height: '3px',
-              backgroundColor: '#3498db',
-            }
-          }}
         >
           掲示板一覧
         </Typography>

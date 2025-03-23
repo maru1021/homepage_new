@@ -10,6 +10,7 @@ import PropTypes from 'prop-types';
 import ConfirmDeleteModal from '../../../components/modal/ConfirmDeleteModal';
 import handleAPI from '../../../utils/handleAPI';
 import LoadingAnimation from '../../../components/LoadingAnimation';
+import '../../../CSS/article.css';
 
 
 const EditField = ({ value, onChange, onSave, multiline = false }) => (
@@ -77,6 +78,18 @@ const formatDisplayText = (text) => {
     return text
         .replace(/\\n/g, '<br />')  // バックスラッシュ付きの改行をHTMLの改行タグに変換
         .replace(/\\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');  // タブをスペースに変換
+};
+
+// 説明テキストの処理関数を追加
+const processExplanationText = (text) => {
+    if (!text) return '';
+
+    // コードブロックを検出して行番号を追加
+    return text.replace(/<div class="code-block">([\s\S]*?)<\/div>/g, (match, code) => {
+        const lines = code.trim().split('\n');
+        const numberedLines = lines.map(line => `<span>${line}</span>`).join('\n');
+        return `<div class="code-block"><div class="line-numbers">${numberedLines}</div></div>`;
+    });
 };
 
 const Article = () => {
@@ -211,25 +224,6 @@ const Article = () => {
                 ) : (
                     <Typography
                         variant="h4"
-                        sx={{
-                            fontWeight: 700,
-                            color: '#2c3e50',
-                            marginTop: -1,
-                            marginBottom: 1,
-                            textShadow: '2px 2px 4px rgba(0,0,0,0.05)',
-                            borderBottom: '2px solid #edf2f7',
-                            position: 'relative',
-                            '&::after': {
-                                content: '""',
-                                position: 'absolute',
-                                bottom: -2,
-                                left: 0,
-                                width: '100px',
-                                height: '2px',
-                                backgroundColor: '#3498db',
-                                transition: 'width 0.3s ease'
-                            }
-                        }}
                         onContextMenu={(e) => handleContextMenu(e, 'title')}
                     >
                         {article.title}
@@ -237,8 +231,8 @@ const Article = () => {
                 )}
 
                 {/* タグと更新日 */}
-                <Box sx={{ 
-                    display: 'flex', 
+                <Box sx={{
+                    display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     mt: 2
@@ -325,8 +319,8 @@ const Article = () => {
                         }}
                     >
                         {tabs.map((tab, index) => (
-                            <Tab 
-                                key={index} 
+                            <Tab
+                                key={index}
                                 label={tab.label}
                                 sx={{
                                     transition: 'all 0.3s ease',
@@ -453,7 +447,13 @@ const Article = () => {
                         <Typography
                             variant="body1"
                             component="div"
-                            dangerouslySetInnerHTML={{ __html: article.explanation }}
+                            sx={{
+                                '& .code-block': {
+                                    mt: 2,
+                                    mb: 2
+                                }
+                            }}
+                            dangerouslySetInnerHTML={{ __html: processExplanationText(article.explanation) }}
                         />
                     )}
                 </Paper>

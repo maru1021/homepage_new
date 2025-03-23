@@ -15,17 +15,19 @@ import validateFields from '../../../utils/validFields';
 
 // 部署データを取得する関数
 const fetchDepartments = async () => {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/api/general/department`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    if (response.ok) {
-        const data = await response.json();
-        return data.departments || [];
-    } else {
-        console.error('Failed to fetch departments');
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/general/department`, {
+            credentials: 'include'
+        });
+        if (response.ok) {
+            const data = await response.json();
+            return data.departments || [];
+        } else {
+            console.error('Failed to fetch departments');
+            return [];
+        }
+    } catch (error) {
+        console.error('Error fetching departments:', error);
         return [];
     }
 };

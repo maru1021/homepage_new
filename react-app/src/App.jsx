@@ -1,6 +1,3 @@
-// App.jsx - 更新版
-
-import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState, useEffect, useMemo } from 'react';
 import { ToastContainer } from 'react-toastify';
 import './CSS/index.css';
@@ -132,7 +129,7 @@ function App() {
   }, [sidebar, isAuthenticated, mobileOpen, isMobile]);
 
   // サイドバーの幅を動的に決定
-  const sidebarWidth = sidebar === 'homepage' ? 320 : 200;
+  const sidebarWidth = sidebar === 'homepage' ? 320 : 250;
   const mainContentWidth = 10;
 
   // メニューボタンの表示条件を変更
@@ -179,7 +176,7 @@ function App() {
             sm={2}
             sx={{
               display: isMobile ? (mobileOpen ? 'block' : 'none') : 'block',
-              width: sidebar === 'homepage' ? '320px' : '200px',
+              width: sidebar === '320px',
               position: 'fixed',
               zIndex: 999,
             }}

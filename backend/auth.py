@@ -13,7 +13,7 @@ import jwt
 from jwt import PyJWTError
 from sqlalchemy.orm import Session, join
 
-from backend.authority.models import EmployeeCredential, UserSession
+from backend.authority.models import EmployeeCredential, UserSession, EmployeeAuthority
 from backend.general.models import Employee
 from backend.models import get_db
 from scripts.get_time import now
@@ -342,10 +342,29 @@ async def logout(
 
 # 現在のユーザー情報を取得
 @router.get("/me")
-async def get_current_user(current_user: Employee = Depends(verify_token)):
+async def get_current_user(current_user: Employee = Depends(verify_token), db: Session = Depends(get_db)):
+    # 部署情報を取得
+    authorities = db.query(EmployeeAuthority).filter(
+        EmployeeAuthority.employee_id == current_user.id,
+        EmployeeAuthority.end_date.is_(None)  # 現在有効な部署のみ
+    ).all()
+
+    departments = []
+    is_system_admin = False
+    for auth in authorities:
+        departments.append({
+            "id": auth.department_id,
+            "name": auth.department.name,
+            "admin": auth.admin
+        })
+        # システム部の管理者かどうかをチェック
+        if auth.department.name == "システム部" and auth.admin:
+            is_system_admin = True
+
     return {
         "id": current_user.id,
         "employee_no": current_user.employee_no,
         "name": current_user.name,
-        # その他必要な情報をここに追加
+        "departments": departments,
+        "is_system_admin": is_system_admin
     }

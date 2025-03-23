@@ -47,23 +47,7 @@ const TableMaster = ({ title, fetchData, TableComponent, modalTitle, FormCompone
                         <Typography
                             variant="h4"
                             sx={{
-                                fontWeight: 700,
-                                color: '#2c3e50',
-                                marginTop: -1,
-                                marginBottom: 1,
-                                textShadow: '2px 2px 4px rgba(0,0,0,0.05)',
-                                borderBottom: '2px solid #edf2f7',
-                                position: 'relative',
-                                '&::after': {
-                                    content: '""',
-                                    position: 'absolute',
-                                    bottom: -2,
-                                    left: 0,
-                                    width: '100px',
-                                    height: '2px',
-                                    backgroundColor: '#3498db',
-                                    transition: 'width 0.3s ease'
-                                },
+                                mb: 2
                             }}
                         >
                             {title}

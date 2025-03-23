@@ -21,6 +21,7 @@ import EmployeeAuthorityEditForm from './EmployeeAuthorityEditForm';
 import LoadingAnimation from '../../../components/LoadingAnimation';
 
 import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
+import useAdminAccess from '../../../hooks/useAdminAccess';
 
 
 function EmployeeAuthorityTable({ data, searchQuery, currentPage, itemsPerPage }) {
@@ -32,9 +33,20 @@ function EmployeeAuthorityTable({ data, searchQuery, currentPage, itemsPerPage }
         hoveredRowId,
         isMenuVisible,
         setIsMenuVisible,
-        handleContextMenu,
+        handleContextMenu: baseHandleContextMenu,
         menuRef,
     } = useContextMenu();
+
+    const {
+        wrapContextMenu
+    } = useAdminAccess();
+
+    const handleContextMenu = (event, id) => {
+        const employee = employees.find(emp => emp.id === id);
+        if (employee && employee.departments.length > 0) {
+            wrapContextMenu(baseHandleContextMenu)(event, id, "総務部");
+        }
+    };
 
     const url = `${API_BASE_URL}/api/authority/employee_authority`
 
@@ -64,61 +76,78 @@ function EmployeeAuthorityTable({ data, searchQuery, currentPage, itemsPerPage }
 
     const columns = ['部署', '権限', '社員番号', '名前', 'メールアドレス'];
 
-    return (
-        <>
+    if (isLoading) {
+        return (
             <TableContainer component={Paper} elevation={3}>
-            <Table>
-                <TableHeader columns={columns} />
-
-                <TableBody>
-                    {isLoading ? (
+                <Table>
+                    <TableHeader columns={columns} />
+                    <TableBody>
                         <TableRow>
                             <TableCell colSpan={columns.length} sx={{ border: 'none' }}>
                                 <LoadingAnimation />
                             </TableCell>
                         </TableRow>
-                    ) : employees.length > 0 ? (
-                        employees?.map((employee) => (
-                            <TableRow
-                                key={employee.id}
-                                onContextMenu={(event) => handleContextMenu(event, employee.id)}
-                                hover
-                                sx={{ transition: '0.3s', '&:hover': { backgroundColor: '#f5f5f5' } }}
-                            >
-                                <TableCell>
-                                    {employee.departments.map((department) => (
-                                        <div key={`dep-name-${employee.id}-${department.id}`}>
-                                            {department.name}
-                                        </div>
-                                    ))}
-                                </TableCell>
-                                <TableCell>
-                                    {employee.departments.map((department) => (
-                                        <div key={`dep-admin-${employee.id}-${department.id}`}>
-                                            {department.admin ? '管理者' : '利用者'}
-                                        </div>
-                                    ))}
-                                </TableCell>
-                                <TableCell>{employee.employee_no}</TableCell>
-                                <TableCell>{employee.name}</TableCell>
-                                <TableCell>{employee.email}</TableCell>
-                            </TableRow>
-                        ))
-                    ) : (
-                        <TableRow>
-                            <TableCell colSpan={columns.length} align="center">
-                                <Typography sx={{ textAlign: 'center', color: '#888' }}>
-                                    データがありません
-                                </Typography>
-                            </TableCell>
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        );
+    }
 
+    return (
+        <>
+            <TableContainer component={Paper} elevation={3}>
+                <Table>
+                    <TableHeader columns={columns} />
+
+                    <TableBody>
+                        {employees.length > 0 ? (
+                            employees?.map((employee) => (
+                                <TableRow
+                                    key={employee.id}
+                                    onContextMenu={(event) => handleContextMenu(event, employee.id)}
+                                    hover
+                                    sx={{
+                                        transition: '0.3s',
+                                        '&:hover': {
+                                            backgroundColor: '#f5f5f5',
+                                        }
+                                    }}
+                                >
+                                    <TableCell>
+                                        {employee.departments.map((department) => (
+                                            <div key={`dep-name-${employee.id}-${department.id}`}>
+                                                {department.name}
+                                            </div>
+                                        ))}
+                                    </TableCell>
+                                    <TableCell>
+                                        {employee.departments.map((department) => (
+                                            <div key={`dep-admin-${employee.id}-${department.id}`}>
+                                                {department.admin ? '管理者' : '利用者'}
+                                            </div>
+                                        ))}
+                                    </TableCell>
+                                    <TableCell>{employee.employee_no}</TableCell>
+                                    <TableCell>{employee.name}</TableCell>
+                                    <TableCell>{employee.email}</TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} align="center">
+                                    <Typography sx={{ textAlign: 'center', color: '#888' }}>
+                                        データがありません
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
             </TableContainer>
 
-            {isMenuVisible && <ContextMenu position={menuPosition} actions={contextMenuActions} menuRef={menuRef} />}
+            {isMenuVisible && (
+                <ContextMenu position={menuPosition} actions={contextMenuActions} menuRef={menuRef} />
+            )}
         </>
     );
 }

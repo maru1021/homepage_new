@@ -21,7 +21,7 @@ def run_websocket(db: Session):
     asyncio.run(noti_websocket(db))
 
 
-def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10, return_total_count=True):
+def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10, department_id: int = None, return_total_count=True):
     query = db.query(Employee).options(joinedload(Employee.departments))
 
     try:
@@ -59,12 +59,32 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10,
                 )
             )
 
+            # 検索結果が0件の場合は空のリストを返す
+            if query.count() == 0:
+                return [], 0
+
+        # 部署IDによるフィルタリング
+        if department_id:
+            department_employees = db.query(EmployeeAuthority.employee_id).filter(
+                EmployeeAuthority.department_id == department_id,
+                EmployeeAuthority.end_date.is_(None)  # 現在有効な権限のみ
+            )
+            query = query.filter(Employee.id.in_(department_employees))
+
+            # 部署フィルタリング結果が0件の場合は空のリストを返す
+            if query.count() == 0:
+                return [], 0
+
         if not return_total_count:
             return query
 
         total_count = query.count()  # 検索結果の総件数
 
-        employees = query.offset((page - 1) * limit).limit(limit).all()  # ページネーション処理
+        # 検索結果が0件の場合は空のリストを返す
+        if total_count == 0:
+            return [], 0
+
+        employees = query.offset((page - 1) * limit).limit(limit).all()
 
         # レスポンス用データ構築
         employees_data = [
@@ -95,7 +115,7 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10,
         return employees_data, total_count
     except SQLAlchemyError as e:
         print(f"Error occurred: {e}")
-        return {"success": False, "message": "情報の取得に失敗しました", "field": ""}
+        return [], 0  # エラーの場合も空のリストと0件を返す
 
 def create_employee(db: Session, employee: schemas.EmployeeCreate, background_tasks: BackgroundTasks):
     from backend.scripts.init_employee import init_employee

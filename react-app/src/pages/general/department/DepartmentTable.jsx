@@ -19,7 +19,7 @@ import { API_BASE_URL, WS_BASE_URL } from '../../../config/baseURL';
 import { setTableData, TableHeader, useContextMenu } from '../../../index/basicTableModules';
 import ContextMenu from '../../../components/ContextMenu';
 import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
-
+import useAdminAccess from '../../../hooks/useAdminAccess';
 
 function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
     const [departments, setDepartments] = useState(data);
@@ -29,10 +29,21 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
         menuPosition,
         isMenuVisible,
         hoveredRowId,
-        handleContextMenu,
         setIsMenuVisible,
+        handleContextMenu: baseHandleContextMenu,
         menuRef,
     } = useContextMenu();
+
+    const {
+        wrapContextMenu
+    } = useAdminAccess();
+
+    const handleContextMenu = (event, id) => {
+        const department = departments.find(dept => dept.id === id);
+        if (department) {
+            wrapContextMenu(baseHandleContextMenu)(event, id, "総務部");
+        }
+    };
 
     const url = `${API_BASE_URL}/api/general/department`
 
@@ -68,12 +79,6 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
             <TableContainer
                 component={Paper}
                 elevation={3}
-                sx={{
-                    overflowX: "auto",
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.05)'
-                }}
             >
                 <Table>
                     <TableHeader columns={columns} />
@@ -99,8 +104,8 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} align="center">
-                                    <Typography sx={{ 
-                                        textAlign: 'center', 
+                                    <Typography sx={{
+                                        textAlign: 'center',
                                         color: '#94a3b8',
                                         py: 4
                                     }}>

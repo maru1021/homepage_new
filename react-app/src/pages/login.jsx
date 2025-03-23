@@ -7,11 +7,12 @@ import { motion } from 'framer-motion';
 import AuthService from '../services/auth';
 
 function Login({ setAuth }) {
-  const [username, setUsername] = useState('admin12');
+  const [username, setUsername] = useState('admin00');
   const [password, setPassword] = useState('password');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -34,18 +35,23 @@ function Login({ setAuth }) {
 
       // 認証状態を更新
       setAuth(true);
+      setIsSuccess(true);
 
-      // ホームページにリダイレクト
-      navigate('/');
+      // setTimeoutを使用して遅延を設定入れないと正しく動作しない
+      setTimeout(() => {
+        navigate('/all/bulletin_board/list');
+      }, 0);
     } catch (error) {
       console.error('Login failed:', error);
       setErrorMessage(
         error.message === 'Failed to fetch'
           ? 'サーバーに接続できません。ネットワーク接続を確認してください。'
-          : (error.message || '社員番号もしくはパスワードが間違えています')
+          : ('社員番号もしくはパスワードが間違えています')
       );
     } finally {
-      setIsLoggingIn(false);
+      if (!isSuccess) {
+        setIsLoggingIn(false);
+      }
     }
   };
 
@@ -63,7 +69,11 @@ function Login({ setAuth }) {
         <Card
           component={motion.div}
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          animate={{
+            opacity: isSuccess ? 0 : 1,
+            y: isSuccess ? -20 : 0,
+            scale: isSuccess ? 0.95 : 1
+          }}
           transition={{ duration: 0.5 }}
           sx={{
             p: 4,
@@ -80,7 +90,7 @@ function Login({ setAuth }) {
               gutterBottom
               sx={{ fontWeight: 'bold', color: '#445' }}
             >
-              ログイン
+              {isSuccess ? 'ログイン成功' : 'ログイン'}
             </Typography>
             {errorMessage && (
               <Typography
@@ -98,6 +108,7 @@ function Login({ setAuth }) {
                 margin="normal"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                disabled={isSuccess}
                 autoFocus
                 sx={{
                   '& .MuiOutlinedInput-root': {
@@ -113,6 +124,7 @@ function Login({ setAuth }) {
                 margin="normal"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isSuccess}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '8px',
@@ -125,6 +137,7 @@ function Login({ setAuth }) {
                       <IconButton
                         onClick={() => setShowPassword(!showPassword)}
                         edge="end"
+                        disabled={isSuccess}
                         sx={{
                           color: '#7aa8ff',
                           '&:hover': { backgroundColor: 'rgba(120, 160, 255, 0.1)' },
@@ -139,22 +152,28 @@ function Login({ setAuth }) {
               <Button
                 type="submit"
                 fullWidth
-                disabled={isLoggingIn}
+                disabled={isLoggingIn || isSuccess}
                 sx={{
                   mt: 3,
                   height: '48px',
-                  background: 'linear-gradient(to right, #9abff7, #7aa8ff)',
+                  background: isSuccess
+                    ? 'linear-gradient(to right, #4CAF50, #45a049)'
+                    : 'linear-gradient(to right, #9abff7, #7aa8ff)',
                   boxShadow: '4px 4px 10px rgba(160, 190, 255, 0.4), -4px -4px 10px rgba(255, 255, 255, 0.7)',
                   color: 'white',
                   fontWeight: 'bold',
                   borderRadius: '10px',
                   transition: '0.3s ease-in-out',
                   '&:hover': {
-                    background: 'linear-gradient(to right, #89aff6, #6a98f5)',
+                    background: isSuccess
+                      ? 'linear-gradient(to right, #45a049, #3d8b3d)'
+                      : 'linear-gradient(to right, #89aff6, #6a98f5)',
                     transform: 'scale(1.02)',
                   },
                   '&:active': {
-                    background: 'linear-gradient(to right, #7aa8ff, #689af2)',
+                    background: isSuccess
+                      ? 'linear-gradient(to right, #3d8b3d, #357a35)'
+                      : 'linear-gradient(to right, #7aa8ff, #689af2)',
                     boxShadow: '4px 4px 10px rgba(160, 190, 255, 0.3), -4px -4px 10px rgba(255, 255, 255, 0.6)',
                     transform: 'scale(1)',
                   },
@@ -162,6 +181,8 @@ function Login({ setAuth }) {
               >
                 {isLoggingIn ? (
                   <CircularProgress size={24} color="inherit" />
+                ) : isSuccess ? (
+                  '掲示板一覧へ移動中...'
                 ) : (
                   'ログイン'
                 )}

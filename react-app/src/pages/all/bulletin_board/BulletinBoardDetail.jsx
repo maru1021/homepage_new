@@ -34,6 +34,8 @@ import ja from 'date-fns/locale/ja';
 import { API_BASE_URL } from '../../../config/baseURL';
 import { successNoti, errorNoti } from '../../../utils/noti';
 
+import '../../../CSS/index.css';
+
 const BulletinBoardDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -744,27 +746,11 @@ const BulletinBoardDetail = () => {
         <Paper sx={{ p: 3, mb: 3, borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
           <Typography
             variant="h4"
-            sx={{
-              fontWeight: 700,
-              color: '#2c3e50',
-              position: 'relative',
-              paddingBottom: 2,
-              marginBottom: 2,
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                width: '80px',
-                height: '3px',
-                backgroundColor: '#3498db',
-              }
-            }}
           >
             {bulletinData.title}
           </Typography>
 
-          <Grid container spacing={2} sx={{ mb: 2 }}>
+          <Grid container spacing={2} sx={{ mb: 2, mt: 1 }}>
             <Grid item xs={12} sm={6} sx={{ display: 'flex', alignItems: 'center' }}>
               <PersonIcon sx={{ mr: 1, color: 'text.secondary' }} />
               <Typography variant="body1">
