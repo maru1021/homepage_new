@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Collapse, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Collapse, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Typography, Box, Avatar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import {
@@ -17,12 +17,12 @@ import {
   FaIdCard,
   FaUserShield,
   FaHome,
-  FaPencilAlt,
   FaBullhorn
 } from 'react-icons/fa';
 import { MdDashboard } from 'react-icons/md';
 import { Logout as LogoutIcon } from '@mui/icons-material';
 import AuthService from '../../services/auth';
+import { API_BASE_URL } from '../../config/baseURL';
 import '../..//CSS/sidebar.css';
 
 function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false, onClose = () => {}, isMobile = false }) {
@@ -32,12 +32,43 @@ function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false,
   const [openManufacturing, setOpenManufacturing] = useState(false);
   const [openTools, setOpenTools] = useState(false);
   const [openGeneral, setOpenGeneral] = useState(false);
+  const [userDepartments, setUserDepartments] = useState([]);
+  const [isSystemAdmin, setIsSystemAdmin] = useState(false);
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/me`, {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch user info');
+        }
+        const data = await response.json();
+        setUserDepartments(data.departments || []);
+        setIsSystemAdmin(data.is_system_admin || false);
+        setUserName(data.name || '');
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
+    };
+    fetchUserInfo();
+  }, []);
 
   const handleLogout = async () => {
     await AuthService.logout();
-    // App.jsxのhandleSetAuthを呼び出して認証状態を更新
     setToken(false);
     navigate('/login');
+  };
+
+  // 部署に基づいて表示を制御する関数
+  const hasDepartmentAccess = (departmentName) => {
+    if (isSystemAdmin) return true;
+    return userDepartments.some(dept =>
+      dept.name === departmentName ||
+      (dept.name === '管理者' && ['製造部', '総務部'].includes(departmentName))  // 管理者は全ての部署にアクセス可能
+    );
   };
 
   return (
@@ -57,17 +88,55 @@ function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false,
           padding: '10px',
           border: 'none',
           position: 'fixed',
-          maxWidth: '250px'
+          maxWidth: '320px'
         }
       }}
     >
-      <List sx={{ p: 2 }}>
-        <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 'bold', color: '#666', mb: 2 }}>
-          メニュー
+      {/* ユーザー情報 */}
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          p: 2,
+          mb: 1
+        }}
+      >
+        <Avatar
+          sx={{
+            width: 50,
+            height: 50,
+            mb: 1,
+            bgcolor: 'primary.main',
+            fontSize: '1.5rem'
+          }}
+        >
+          {userName ? userName.charAt(0) : ''}
+        </Avatar>
+        <Typography
+          variant="subtitle1"
+          sx={{
+            fontWeight: 'bold',
+            color: '#666',
+            textAlign: 'center'
+          }}
+        >
+          {userName}
         </Typography>
-        <Divider sx={{ mb: 2 }} />
+        <Typography
+          variant="body2"
+          sx={{
+            color: '#666',
+            opacity: 0.8,
+            textAlign: 'center'
+          }}
+        >
+          {userDepartments.map(dept => dept.name).join(', ')}
+        </Typography>
+      </Box>
+      <List sx={{ p: 2 }}>
 
-        {/* 全体 */}
+        {/* 全体 - 全ユーザーに表示 */}
         <ListItem
           button
           onClick={() => setOpenAll(!openAll)}
@@ -86,12 +155,6 @@ function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false,
         </ListItem>
         <Collapse in={openAll} timeout="auto" unmountOnExit>
           <List sx={{ pl: 4 }}>
-            <ListItem button onClick={() => navigate('/all/bulletin_board/register')}>
-              <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
-                <FaPencilAlt size={16} />
-              </ListItemIcon>
-              <ListItemText primary="掲示板投稿" />
-            </ListItem>
             <ListItem button onClick={() => navigate('/all/bulletin_board/list')}>
               <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
                 <FaBullhorn size={16} />
@@ -101,108 +164,116 @@ function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false,
           </List>
         </Collapse>
 
-        {/* 製造部 */}
-        <ListItem
-          button
-          onClick={() => setOpenManufacturing(!openManufacturing)}
-          sx={{
-            borderRadius: '10px',
-            transition: '0.2s ease-in-out',
-            background: openManufacturing ? 'rgba(180, 230, 255, 0.4)' : 'transparent',
-            '&:hover': { background: 'rgba(255, 255, 255, 0.8)', transform: 'scale(1.02)' },
-          }}
-        >
-          <ListItemIcon sx={{ color: '#666', opacity: 0.8 }}>
-            <FaIndustry />
-          </ListItemIcon>
-          <ListItemText primary="製造部" />
-          {openManufacturing ? <FaChevronDown /> : <FaChevronRight />}
-        </ListItem>
-        <Collapse in={openManufacturing} timeout="auto" unmountOnExit>
-          <List sx={{ pl: 4 }}>
-            <ListItem button onClick={() => navigate('/all/bulletin_board')}>
-              <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
-                <FaMapMarkedAlt size={16} />
-              </ListItemIcon>
-              <ListItemText primary="設備マップ" />
-            </ListItem>
-            <ListItem button onClick={() => navigate('/materials')}>
-              <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
-                <FaWarehouse size={16} />
-              </ListItemIcon>
-              <ListItemText primary="素材一覧" />
-            </ListItem>
-            <ListItem button onClick={() => setOpenTools(!openTools)}>
+        {/* 製造部 - 製造部のユーザーのみ表示 */}
+        {hasDepartmentAccess('製造部') && (
+          <>
+            <ListItem
+              button
+              onClick={() => setOpenManufacturing(!openManufacturing)}
+              sx={{
+                borderRadius: '10px',
+                transition: '0.2s ease-in-out',
+                background: openManufacturing ? 'rgba(180, 230, 255, 0.4)' : 'transparent',
+                '&:hover': { background: 'rgba(255, 255, 255, 0.8)', transform: 'scale(1.02)' },
+              }}
+            >
               <ListItemIcon sx={{ color: '#666', opacity: 0.8 }}>
-                <FaToolbox />
+                <FaIndustry />
               </ListItemIcon>
-              <ListItemText primary="工具管理" />
-              {openTools ? <FaChevronDown /> : <FaChevronRight />}
+              <ListItemText primary="製造部" />
+              {openManufacturing ? <FaChevronDown /> : <FaChevronRight />}
             </ListItem>
-            <Collapse in={openTools} timeout="auto" unmountOnExit>
+            <Collapse in={openManufacturing} timeout="auto" unmountOnExit>
               <List sx={{ pl: 4 }}>
-                <ListItem button onClick={() => navigate('/tools/shuken')}>
+                <ListItem button onClick={() => navigate('/all/bulletin_board')}>
                   <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
-                    <FaClipboardList size={16} />
+                    <FaMapMarkedAlt size={16} />
                   </ListItemIcon>
-                  <ListItemText primary="集研" />
+                  <ListItemText primary="設備マップ" />
                 </ListItem>
-                <ListItem button onClick={() => navigate('/tools/preset')}>
+                <ListItem button onClick={() => navigate('/materials')}>
                   <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
-                    <FaWrench size={16} />
+                    <FaWarehouse size={16} />
                   </ListItemIcon>
-                  <ListItemText primary="プリセット" />
+                  <ListItemText primary="素材一覧" />
                 </ListItem>
-                <ListItem button onClick={() => navigate('/tools/change')}>
-                  <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
-                    <FaExchangeAlt size={16} />
+                <ListItem button onClick={() => setOpenTools(!openTools)}>
+                  <ListItemIcon sx={{ color: '#666', opacity: 0.8 }}>
+                    <FaToolbox />
                   </ListItemIcon>
-                  <ListItemText primary="工具交換" />
+                  <ListItemText primary="工具管理" />
+                  {openTools ? <FaChevronDown /> : <FaChevronRight />}
+                </ListItem>
+                <Collapse in={openTools} timeout="auto" unmountOnExit>
+                  <List sx={{ pl: 4 }}>
+                    <ListItem button onClick={() => navigate('/tools/shuken')}>
+                      <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                        <FaClipboardList size={16} />
+                      </ListItemIcon>
+                      <ListItemText primary="集研" />
+                    </ListItem>
+                    <ListItem button onClick={() => navigate('/tools/preset')}>
+                      <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                        <FaWrench size={16} />
+                      </ListItemIcon>
+                      <ListItemText primary="プリセット" />
+                    </ListItem>
+                    <ListItem button onClick={() => navigate('/tools/change')}>
+                      <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                        <FaExchangeAlt size={16} />
+                      </ListItemIcon>
+                      <ListItemText primary="工具交換" />
+                    </ListItem>
+                  </List>
+                </Collapse>
+              </List>
+            </Collapse>
+          </>
+        )}
+
+        {/* 総務部 - 総務部のユーザーのみ表示 */}
+        {hasDepartmentAccess('総務部') && (
+          <>
+            <ListItem
+              button
+              onClick={() => setOpenGeneral(!openGeneral)}
+              sx={{
+                borderRadius: '10px',
+                transition: '0.2s ease-in-out',
+                background: openGeneral ? 'rgba(180, 230, 255, 0.4)' : 'transparent',
+                '&:hover': { background: 'rgba(255, 255, 255, 0.8)', transform: 'scale(1.02)' },
+              }}
+            >
+              <ListItemIcon sx={{ color: '#666', opacity: 0.8 }}>
+                <FaUsers />
+              </ListItemIcon>
+              <ListItemText primary="総務部" />
+              {openGeneral ? <FaChevronDown /> : <FaChevronRight />}
+            </ListItem>
+            <Collapse in={openGeneral} timeout="auto" unmountOnExit>
+              <List sx={{ pl: 4 }}>
+                <ListItem button onClick={() => navigate('/general/department')}>
+                  <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                    <FaBuilding size={16} />
+                  </ListItemIcon>
+                  <ListItemText primary="部署一覧" />
+                </ListItem>
+                <ListItem button onClick={() => navigate('/general/employee')}>
+                  <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                    <FaIdCard size={16} />
+                  </ListItemIcon>
+                  <ListItemText primary="従業員一覧" />
+                </ListItem>
+                <ListItem button onClick={() => navigate('/authority/employee_authority')}>
+                  <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                    <FaUserShield size={16} />
+                  </ListItemIcon>
+                  <ListItemText primary="従業員権限一覧" />
                 </ListItem>
               </List>
             </Collapse>
-          </List>
-        </Collapse>
-
-        {/* 総務部 */}
-        <ListItem
-          button
-          onClick={() => setOpenGeneral(!openGeneral)}
-          sx={{
-            borderRadius: '10px',
-            transition: '0.2s ease-in-out',
-            background: openGeneral ? 'rgba(180, 230, 255, 0.4)' : 'transparent',
-            '&:hover': { background: 'rgba(255, 255, 255, 0.8)', transform: 'scale(1.02)' },
-          }}
-        >
-          <ListItemIcon sx={{ color: '#666', opacity: 0.8 }}>
-            <FaUsers />
-          </ListItemIcon>
-          <ListItemText primary="総務部" />
-          {openGeneral ? <FaChevronDown /> : <FaChevronRight />}
-        </ListItem>
-        <Collapse in={openGeneral} timeout="auto" unmountOnExit>
-          <List sx={{ pl: 4 }}>
-            <ListItem button onClick={() => navigate('/general/department')}>
-              <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
-                <FaBuilding size={16} />
-              </ListItemIcon>
-              <ListItemText primary="部署一覧" />
-            </ListItem>
-            <ListItem button onClick={() => navigate('/general/employee')}>
-              <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
-                <FaIdCard size={16} />
-              </ListItemIcon>
-              <ListItemText primary="従業員一覧" />
-            </ListItem>
-            <ListItem button onClick={() => navigate('/authority/employee_authority')}>
-              <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
-                <FaUserShield size={16} />
-              </ListItemIcon>
-              <ListItemText primary="従業員権限一覧" />
-            </ListItem>
-          </List>
-        </Collapse>
+          </>
+        )}
 
         <Divider sx={{ mt: 'auto', mb: 2 }} />
 

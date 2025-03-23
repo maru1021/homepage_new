@@ -20,6 +20,8 @@ import {
 } from '../../../index/basicTableModules';
 import { useContextMenuActions } from '../../../hooks/useContextMenuActions';
 import LoadingAnimation from '../../../components/LoadingAnimation';
+import useAdminAccess from '../../../hooks/useAdminAccess';
+
 
 function EmployeeTable({ data, searchQuery, currentPage, itemsPerPage }) {
     const [employees, setEmployees] = useState(data);
@@ -30,9 +32,20 @@ function EmployeeTable({ data, searchQuery, currentPage, itemsPerPage }) {
         hoveredRowId,
         isMenuVisible,
         setIsMenuVisible,
-        handleContextMenu,
+        handleContextMenu: baseHandleContextMenu,
         menuRef,
     } = useContextMenu();
+
+    const {
+        wrapContextMenu
+    } = useAdminAccess();
+
+    const handleContextMenu = (event, id) => {
+        const employee = employees.find(emp => emp.id === id);
+        if (employee) {
+            wrapContextMenu(baseHandleContextMenu)(event, id, "総務部");
+        }
+    };
 
     const url = `${API_BASE_URL}/api/general/employee`
 

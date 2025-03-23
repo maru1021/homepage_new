@@ -94,7 +94,7 @@ const ArticleNew = () => {
                     boxShadow: '0 4px 8px rgba(0,0,0,0.05)'
                 }}
             >
-                <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333', mb: 3 }}>
+                <Typography variant="h4">
                     新規記事作成
                 </Typography>
 
@@ -103,7 +103,7 @@ const ArticleNew = () => {
                     label="タイトル"
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                    sx={{ mb: 2 }}
+                    sx={{ mb: 2, mt: 2 }}
                 />
 
                 <Box sx={{ display: 'flex', gap: 2 }}>
