@@ -14,11 +14,20 @@ const fetchData = async (url, searchQuery = '', currentPage = 1, itemsPerPage = 
             // 認証エラー (401) の場合はログインページにリダイレクト
             if (response.status === 401) {
                 window.location.href = '/login';
+                return { tableDatas: [], totalCount: 0 };
             }
-            return { tableDatas: [], totalCount: 0 };
+
+            // 権限エラー (403) の場合は404ページにリダイレクト
+            if (response.status === 403) {
+                const errorData = await response.json();
+                window.location.href = errorData.detail.redirect || '/error/404';
+                return { tableDatas: [], totalCount: 0 };
+            }
+
+            throw new Error(`APIリクエストエラー: ${response.status}`);
         }
     } catch (error) {
-        console.error('データ取得エラー:', error);
+        console.error('データ取得エラー:', error.message);
         return { tableDatas: [], totalCount: 0 };
     }
 };
