@@ -1,3 +1,6 @@
+# docker exec -it homepage-fastapi-1 /bin/bash
+# python backend/scripts/backup/backup_database.py
+
 import subprocess
 import os
 import shutil

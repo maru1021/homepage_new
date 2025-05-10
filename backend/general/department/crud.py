@@ -19,8 +19,6 @@ def run_websocket(db: Session):
 # 部署一覧取得
 def get_departments(db: Session, search: str = "", page: int = 1, limit: int = 10, return_total_count=True):
     try:
-        from backend.scripts.backup.backup_database import backup_database
-        backup_database()
         query = db.query(Department)
 
         if search:
