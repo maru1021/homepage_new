@@ -1,4 +1,4 @@
-# docker exec -it homepage-fastapi-1 /bin/bash
+# docker exec -it homepage-fastapi-1 bash
 # python backend/scripts/backup/backup_database.py
 
 import subprocess
