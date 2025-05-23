@@ -138,9 +138,31 @@ const Article = () => {
         fetchArticle();
     }, [id]);
 
+    // コンテキストメニューを閉じるためのクリックイベントリスナー
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setMenuPosition(null);
+            }
+        };
+
+        if (menuPosition) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [menuPosition]);
+
     const handleContextMenu = (event, field) => {
         event.preventDefault();
-        setMenuPosition({ x: event.clientX, y: event.clientY });
+
+        // position: 'fixed'を使用しているので、clientXとclientYをそのまま使用
+        setMenuPosition({
+            x: event.clientX,
+            y: event.clientY
+        });
         setSelectedField(field);
     };
 
