@@ -4,12 +4,12 @@ import PropTypes from 'prop-types';
 function ContextMenu({ position, actions, menuRef }) {
     return (
         <div
-            ref={menuRef} // useContextMenu の menuRef を適用
+            ref={menuRef}
             className="context-menu"
             style={{
                 top: `${position.y}px`,
-                left: `${position.x-320}px`,
-                position: 'absolute',
+                left: `${position.x}px`,
+                position: 'fixed',
                 background: 'white',
                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.2)',
                 borderRadius: '6px',
