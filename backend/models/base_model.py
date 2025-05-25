@@ -4,6 +4,10 @@ from backend.scripts.get_time import now
 from sqlalchemy.engine import Engine
 from backend.utils.logger import Logger
 import os
+from contextvars import ContextVar
+
+# 現在のユーザー情報を保持するコンテキスト変数
+current_user_context = ContextVar('current_user', default=None)
 
 # 最後に実行されたSQLとパラメータを保持
 _last_sql = None
@@ -49,8 +53,13 @@ class BaseModel(Base):
                     if model_id is not None:
                         sql = f"{sql} => ID: {model_id}"
 
+                # 現在のユーザー情報を取得
+                current_user = current_user_context.get()
+                user_name = current_user.employee_no if current_user else 'N/A'
+                print(user_name)
+
                 # ログメッセージを作成して出力
-                log_message = f"[{time}] [N/A] {sql}"
+                log_message = f"{time} {user_name} {sql}"
                 Logger.write_sql_log(log_message)
 
                 _last_sql = None

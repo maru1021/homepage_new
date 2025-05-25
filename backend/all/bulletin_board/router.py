@@ -54,7 +54,7 @@ async def upload_excel(
 
     except Exception as e:
         logger.error(f"エラー発生: {str(e)}")
-        logger.error(traceback.format_exc())  # スタックトレースも記録
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"ファイル処理中にエラーが発生しました: {str(e)}")
 
 

@@ -1,3 +1,5 @@
+import { errorNoti } from "./noti";
+
 const fetchData = async (url, searchQuery = '', currentPage = 1, itemsPerPage = 10, model='') => {
     try {
         const response = await fetch(`${url}?searchQuery=${searchQuery}&currentPage=${currentPage}&itemsPerPage=${itemsPerPage}`, {
@@ -6,10 +8,15 @@ const fetchData = async (url, searchQuery = '', currentPage = 1, itemsPerPage = 
 
         if (response.ok) {
             const data = await response.json();
-            return {
-                tableDatas: data[model] || [],
-                totalCount: data.totalCount || 0,
-            };
+            if (data[model].success) {
+                return {
+                    tableDatas: data[model].data || [],
+                    totalCount: data.totalCount || 0,
+                };
+            } else {
+                errorNoti(data[model].message);
+                return { tableDatas: [], totalCount: 0 };
+            }
         } else {
             // 認証エラー (401) の場合はログインページにリダイレクト
             if (response.status === 401) {

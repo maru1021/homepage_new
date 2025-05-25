@@ -1,9 +1,15 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Union
 
 class DepartmentBase(BaseModel):
-    name:str
+    name: str
     searchQuery: Optional[str] = None
+
+class DepartmentCreate(DepartmentBase):
+    pass
+
+class DepartmentUpdate(DepartmentBase):
+    pass
 
 # テーブルのデータ取得時の形式
 class Department(BaseModel):
@@ -13,15 +19,22 @@ class Department(BaseModel):
     class Config:
         from_attributes = True
 
-class PaginatedDepartmentResponse(BaseModel):
-    departments: List[Department]
-    totalCount: int
+class ErrorResponse(BaseModel):
+    success: bool = False
+    message: str
+    field: str = ""
 
-# Post時の返す形式
+# フロントエンドに返す形式
 class DepartmentResponse(BaseModel):
     success: bool = True
-    message: str
-    field: str = ''
+    data: List[Department] | Department = None
+    message: Optional[str] = None
+    field: Optional[str] = None
 
     class Config:
         from_attributes = True
+
+# テーブルデータ取得時の形式
+class PaginatedDepartmentResponse(BaseModel):
+    departments: Union[DepartmentResponse, ErrorResponse]
+    totalCount: int

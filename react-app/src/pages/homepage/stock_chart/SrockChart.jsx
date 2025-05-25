@@ -66,7 +66,6 @@ const StockChart = ({
       setError(null);
 
       try {
-        console.log(`Fetching data for ${symbol} with timeRange ${timeRange}`);
         const token = localStorage.getItem('token');
 
         const data = await fetchStockData(token, {
@@ -79,8 +78,6 @@ const StockChart = ({
           showBollingerBands: showBB,
           showBollingerBands3: showBB3
         });
-
-        console.log(`Received ${data.priceData.length} data points for ${symbol}`);
 
         setStockData(data.priceData);
         setVolumeData(data.volumeData);

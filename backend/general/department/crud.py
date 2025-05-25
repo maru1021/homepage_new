@@ -1,13 +1,12 @@
 import asyncio
 from fastapi import BackgroundTasks
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from backend.authority.models import EmployeeAuthority
 from backend.general.models import Department
 from backend.general.department import schemas
 from backend.websocket import websocket_manager
-
+from backend.logger_config import logger
 
 # 部署の変更をWebSocketで通知
 async def department_websocket(db: Session):
@@ -30,13 +29,22 @@ def get_departments(db: Session, search: str = "", page: int = 1, limit: int = 1
         total_count = query.count()
         departments = query.offset((page - 1) * limit).limit(limit).all()
 
-        departments_data = [
+        departments_data = {
+            "success": True,
+            "data": [
                 {"id": department.id, "name": department.name} for department in departments
             ]
+        }
         return departments_data, total_count
-    except SQLAlchemyError as e:
-        print(f"Error occurred: {e}")
-        return {"success": False, "message": "情報の取得に失敗しました", "field": ""}
+    except Exception as e:
+        # 例外情報をログに記録
+        logger.error(f"Error in get_departments: {str(e)}", exc_info=True, extra={
+            "function": "get_departments",
+            "search": search,
+            "page": page,
+            "limit": limit
+        })
+        return {"success": False, "message": "情報の取得に失敗しました", "field": ""}, 0
 
 # 部署作成
 def create_department(db: Session, department: schemas.DepartmentBase, background_tasks: BackgroundTasks):
@@ -53,11 +61,21 @@ def create_department(db: Session, department: schemas.DepartmentBase, backgroun
 
         background_tasks.add_task(run_websocket, db)
 
-        return { "message": "部署を作成しました。" }
-    except SQLAlchemyError as e:
+        return {
+            "success": True,
+            "message": "部署を作成しました。",
+            "data": {
+                "id": db_department.id,
+                "name": db_department.name
+            }
+        }
+    except Exception as e:
         db.rollback()
-        print(f"Error occurred: {e}")
-        return {"success": False, "message": "データベースエラーが発生しました", "field": ""}
+        logger.error(f"Error in create_department: {str(e)}", exc_info=True, extra={
+            "function": "create_department",
+            "department": department
+        })
+        return {"success": False, "message": "部署の登録に失敗しました", "field": ""}
 
 # 部署編集
 def update_department(db: Session, department_id: int, department_data: schemas.DepartmentBase, background_tasks: BackgroundTasks):
@@ -78,13 +96,20 @@ def update_department(db: Session, department_id: int, department_data: schemas.
         background_tasks.add_task(run_websocket, db)
 
         return {
-            "id": department.id,
-            "name": department.name,
-            "message": "部署情報を更新しました。",
+            "success": True,
+            "message": "部署を更新しました。",
+            "data": {
+                "id": department.id,
+                "name": department.name
+            }
         }
-    except SQLAlchemyError as e:
+    except Exception as e:
         db.rollback()
-        raise ValueError(f"部署更新中にエラーが発生しました: {e}")
+        logger.error(f"Error in update_department: {str(e)}", exc_info=True, extra={
+            "function": "update_department",
+            "department": department_data
+        })
+        return {"success": False, "message": "更新に失敗しました", "field": ""}
 
 # 部署削除
 def delete_department(db: Session, department_id: int, background_tasks: BackgroundTasks):
@@ -107,9 +132,13 @@ def delete_department(db: Session, department_id: int, background_tasks: Backgro
             "name": department.name,
             "message": "部署を削除しました。",
         }
-    except SQLAlchemyError as e:
+    except Exception as e:
         db.rollback()
-        raise ValueError(f"部署削除中にエラーが発生しました: {e}")
+        logger.error(f"Error in delete_department: {str(e)}", exc_info=True, extra={
+            "function": "delete_department",
+            "department_id": department_id
+        })
+        return {"success": False, "message": "削除に失敗しました", "field": ""}
 
 
 # 部署ソート
@@ -124,8 +153,14 @@ def sort_departments(db: Session, department_order: list[dict], background_tasks
         background_tasks.add_task(run_websocket, db)
 
         return {
-            "message": "部署の並び替えが完了しました。",
+            "success": True,
+            "message": "並び替えが完了しました。",
         }
-    except SQLAlchemyError as e:
+
+    except Exception as e:
         db.rollback()
-        raise ValueError(f"Failed to reorder departments: {str(e)}")
+        logger.error(f"Error in sort_departments: {str(e)}", exc_info=True, extra={
+            "function": "sort_departments",
+            "department_order": department_order
+        })
+        return {"success": False, "message": "並べ替えに失敗しました", "field": ""}

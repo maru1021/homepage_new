@@ -19,7 +19,7 @@ const fetchDepartments = async () => {
         });
         if (response.ok) {
             const data = await response.json();
-            return data.departments || [];
+            return data.departments.data || [];
         } else {
             console.error('Failed to fetch departments');
             return [];

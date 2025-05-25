@@ -49,7 +49,6 @@ const useWebSocket = (url, updateFunc, searchQuery, currentPage, itemsPerPage) =
                 };
 
                 wsRef.current.onclose = (event) => {
-                    console.log("WebSocket closed with code:", event.code);
                     wsRef.current = null;
                     // 認証エラーでクローズされた場合、ログインページへリダイレクト
                     if (event.code === 1008) {
