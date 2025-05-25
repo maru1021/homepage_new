@@ -44,7 +44,7 @@ function EmployeeAuthorityTable({ data, searchQuery, currentPage, itemsPerPage }
     const handleContextMenu = (event, id) => {
         const employee = employees.find(emp => emp.id === id);
         if (employee && employee.departments.length > 0) {
-            wrapContextMenu(baseHandleContextMenu)(event, id, "総務部");
+            wrapContextMenu(baseHandleContextMenu)(event, id, "情報システム室");
         }
     };
 

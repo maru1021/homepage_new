@@ -9,7 +9,7 @@ import './CSS/modal.css';
 import './CSS/contextmenu.css';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import AppRoutes from './routes/AppRoutes';
-import Login from './pages/login';
+import Login from './pages/Login';
 import Modal from "./components/modal/Modal"
 import ConfirmDeleteModal from "./components/modal/ConfirmDeleteModal"
 import { Box, IconButton, useMediaQuery, useTheme, Grid } from '@mui/material';

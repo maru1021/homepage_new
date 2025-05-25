@@ -14,7 +14,7 @@ import handleAPI from '../../../utils/handleAPI';
 // 部署データを取得する関数
 const fetchDepartments = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/general/department`, {
+        const response = await fetch(`${API_BASE_URL}/api/authority/employee_authority/department`, {
             credentials: 'include'
         });
         if (response.ok) {
