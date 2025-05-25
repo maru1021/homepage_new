@@ -22,8 +22,17 @@ def get_user_permissions(user_authorities, db: Session):
         'is_system_admin': False,  # 管理者部署所属
         'is_general_affairs': False,  # 総務部所属
         'is_general_affairs_admin': False,  # 総務部の管理者
+        'is_information_system_affairs': False,  # 情報システム室所属
+        'is_information_system_affairs_admin': False,  # 情報システム室の管理者
         'department_ids': set(),  # アクセス可能な部署ID
         'admin_department_ids': set()  # 管理者権限を持つ部署ID
+    }
+
+    # 部署ごとの権限設定
+    department_permissions = {
+        '管理者': {'is_system_admin': True},
+        '総務部': {'is_general_affairs': True, 'admin_key': 'is_general_affairs_admin'},
+        '情報システム室': {'is_information_system_affairs': True, 'admin_key': 'is_information_system_affairs_admin'}
     }
 
     for authority in user_authorities:
@@ -38,15 +47,14 @@ def get_user_permissions(user_authorities, db: Session):
         if authority.admin:
             permissions['admin_department_ids'].add(authority.department_id)
 
-        # 管理者部署所属チェック
-        if department.name == '管理者':
-            permissions['is_system_admin'] = True
-
-        # 総務部所属チェック
-        if department.name == '総務部':
-            permissions['is_general_affairs'] = True
-            if authority.admin:
-                permissions['is_general_affairs_admin'] = True
+        # 部署ごとの権限を設定
+        if department.name in department_permissions:
+            dept_rules = department_permissions[department.name]
+            for key, value in dept_rules.items():
+                if key != 'admin_key':
+                    permissions[key] = value
+                elif authority.admin:
+                    permissions[value] = True
 
     return permissions
 
@@ -71,63 +79,38 @@ async def authenticate_and_authorize_employee_authority(request: Request, db: Se
     # URLパスを取得し、/api/を除去
     path = request.url.path.lower().replace('/api/', '/')
 
-    # 総務部関連のパスかチェック
-    is_general_path = any(path.startswith(prefix) for prefix in ['/general/', '/authority/'])
+    # 部署ごとのアクセス制御設定
+    department_access_rules = {
+        '/general/': {
+            'permission_key': 'is_general_affairs',
+            'admin_permission_key': 'is_general_affairs_admin'
+        },
+        '/authority/': {
+            'permission_key': 'is_information_system_affairs',
+            'admin_permission_key': 'is_information_system_affairs_admin'
+        }
+    }
 
-    # 総務部関連のパスへのアクセス
-    if is_general_path:
-        # 総務部所属者または管理者でない場合はアクセス拒否
-        if not permissions['is_general_affairs']:
+    # パスに基づいてアクセス制御を実行
+    for path_prefix, rules in department_access_rules.items():
+        if path.startswith(path_prefix):
+            # 所属チェック
+            if not permissions[rules['permission_key']]:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail={"redirect": "/error/404"}
+                )
+
+            # メソッドに基づく権限チェック
+            if request.method in ["GET", "POST"]:
+                return current_user
+            elif permissions[rules['admin_permission_key']]:
+                return current_user
+
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail={
-                    "message": "総務部所属者のみがアクセスできます",
-                    "redirect": "/error/404"
-                }
+                detail={"redirect": "/error/404"}
             )
-
-        # 総務部所属者はGET/POSTが可能
-        if request.method in ["GET", "POST"]:
-            return current_user
-        # 総務部管理者はPUT/DELETEも可能
-        elif permissions['is_general_affairs_admin']:
-            return current_user
-
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={
-                "message": "この操作を実行する権限がありません",
-                "redirect": "/error/404"
-            }
-        )
-
-    # その他のパスへのアクセス（特定の部署に関連する操作）
-    if target_department_id:
-        # 自部署へのアクセスチェック
-        if target_department_id not in permissions['department_ids']:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail={
-                    "message": "この部署の情報にアクセスする権限がありません",
-                    "redirect": "/error/404"
-                }
-            )
-
-        # GET/POSTは部署所属者なら可能
-        if request.method in ["GET", "POST"]:
-            return current_user
-
-        # PUT/DELETEは部署の管理者のみ可能
-        if target_department_id in permissions['admin_department_ids']:
-            return current_user
-
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail={
-                "message": "この操作を実行する権限がありません",
-                "redirect": "/error/404"
-            }
-        )
 
     return current_user
 
