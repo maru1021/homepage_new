@@ -3,25 +3,32 @@ import pandas as pd
 from sqlalchemy.orm import Session
 
 from backend.authority.employee_authority.crud import get_employees, run_websocket
-from backend.scripts.export_excel import export_excel
 from backend.scripts.import_excel import import_excel
-
+from backend.logger_config import logger
+from backend.scripts.export_excel import export_excel
 
 def export_excel_employees(db: Session, search):
-    employees = get_employees(db, search, return_total_count=False)
+    try:
+        employees = get_employees(db, search, return_total_count=False)
 
-    df = pd.DataFrame([
-        {
-            "操作": "",
-            "ID": employee.id,
-            "従業員名": employee.name,
-            "社員番号": employee.employee_no,
-            "メールアドレス": employee.email
-        }
-        for employee in employees
-    ])
+        df = pd.DataFrame([
+            {
+                "操作": "",
+                "ID": employee.id,
+                "従業員名": employee.name,
+                "社員番号": employee.employee_no,
+                "メールアドレス": employee.email
+            }
+            for employee in employees
+        ])
 
-    return export_excel(df, "employees.xlsx")
+        return export_excel(df, "従業員権限一覧.xlsx")
+    except Exception as e:
+        logger.error(f"Error in export_excel_employees: {str(e)}", exc_info=True, extra={
+            "function": "export_excel_employees",
+            "search": search
+        })
+        return {"success": False, "message": "Excelファイルのエクスポートに失敗しました", "field": ""}
 
 
 def import_excel_employees(db: Session, file, background_tasks=BackgroundTasks):

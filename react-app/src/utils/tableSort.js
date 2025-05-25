@@ -1,4 +1,4 @@
-import { successNoti } from "./noti";
+import { successNoti, errorNoti } from "./noti";
 
 
 // 行の並び替え処理
@@ -28,10 +28,11 @@ const tableSort = async (url, data, dragIndex, hoverIndex) => {
           body: JSON.stringify(updatedOrder)
       });
 
-      if (response.ok) {
-          successNoti('並び替えが完了しました');
+      const data = await response.json();
+      if (data.success) {
+          successNoti(data.message);
       } else {
-          throw new Error('Failed to update order');
+          errorNoti(data.message);
       }
 
   } catch (error) {

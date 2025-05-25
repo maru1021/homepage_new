@@ -1,6 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, Request, UploadFile, status
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Query, Request, UploadFile
 from sqlalchemy.orm import Session
 
 from backend.authority.employee_authority import crud, schemas, excel_operation
@@ -31,20 +29,8 @@ async def create_employee(
     db: Session = Depends(get_db)
 ):
     await authenticate_and_authorize_employee_authority(request, db)
-
     employee_data = employee.dict()
-
-    try:
-        return crud.create_employee(db=db, employee=schemas.EmployeeCreate(**employee_data), background_tasks=background_tasks)
-
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-
-    except RequestValidationError as e:
-        raise JSONResponse(status_code=422, content={"detail": e.errors()})
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return crud.create_employee(db=db, employee=schemas.EmployeeCreate(**employee_data), background_tasks=background_tasks)
 
 
 @router.put("/{employee_id}", response_model=schemas.EmployeeResponse)
@@ -55,17 +41,8 @@ async def update_employee(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
-    # 権限チェック（PUT/DELETEは管理者のみ）
     await authenticate_and_authorize_employee_authority(request, db)
-
-    try:
-        return crud.update_employee(db, employee_id, employee_data, background_tasks=background_tasks)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except RequestValidationError as e:
-        raise JSONResponse(status_code=422, content={"detail": e.errors()})
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    return crud.update_employee(db, employee_id, employee_data, background_tasks=background_tasks)
 
 
 @router.delete("/{employee_id}", response_model=schemas.EmployeeResponse)
@@ -75,17 +52,8 @@ async def delete_employee(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
-    # 権限チェック（PUT/DELETEは管理者のみ）
     await authenticate_and_authorize_employee_authority(request, db)
-
-    try:
-        return crud.delete_employee(db, employee_id, background_tasks=background_tasks)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except RequestValidationError as e:
-        raise JSONResponse(status_code=422, content={"detail": e.errors()})
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    return crud.delete_employee(db, employee_id, background_tasks=background_tasks)
 
 
 # Excel出力
@@ -95,15 +63,8 @@ async def export_employees_to_excel(
     db: Session = Depends(get_db),
     searchQuery: str = Query("", alias="searchQuery")
 ):
-    # 権限チェック（POST/PUT/DELETEは管理者のみ）
     await authenticate_and_authorize_employee_authority(request, db)
-
-    try:
-        return excel_operation.export_excel_employees(db, searchQuery)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    return excel_operation.export_excel_employees(db, searchQuery)
 
 # Excel入力
 @router.post("/import_excel")
@@ -113,12 +74,5 @@ async def import_employees_to_excel(
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
-    # 権限チェック（POST/PUT/DELETEは管理者のみ）
     await authenticate_and_authorize_employee_authority(request, db)
-
-    try:
-        return excel_operation.import_excel_employees(db, file, background_tasks=background_tasks)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    return excel_operation.import_excel_employees(db, file, background_tasks=background_tasks)

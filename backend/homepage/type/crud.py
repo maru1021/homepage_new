@@ -130,6 +130,7 @@ def sort_types(db: Session, type_order: list[dict], background_tasks: Background
         db.commit()
 
         background_tasks.add_task(run_websocket, db)
+        raise Exception("test")
 
         return {
             "message": "項目の並び替えが完了しました。",

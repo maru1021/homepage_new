@@ -106,7 +106,6 @@ const BulletinBoardDetail = () => {
       try {
         const data = JSON.parse(responseText);
         setBulletinData(data);
-        console.log("取得したデータ:", data);
       } catch (parseError) {
         setError(`データの解析に失敗しました: ${parseError.message}`);
         throw parseError;
@@ -512,18 +511,6 @@ const BulletinBoardDetail = () => {
         bulletinData.row_dimensions
       );
 
-      // デバッグ情報をコンソールに出力
-      console.log(`画像 ${index} の位置計算:`, {
-        image: {
-          from_row: image.from_row,
-          from_col: image.from_col,
-          to_row: image.to_row,
-          to_col: image.to_col,
-          width: image.width,
-          height: image.height
-        },
-        calculated: position
-      });
 
       // データURIを構築
       let imageDataUri = '';

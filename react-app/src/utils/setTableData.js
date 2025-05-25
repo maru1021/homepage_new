@@ -12,9 +12,7 @@ const setTableData = (data, setData, url, searchQuery, currentPage, itemsPerPage
   // WebSocketを利用してリアルタイム更新
   useWebSocket(url, (updatedData) => {
       if (updatedData && updatedData.updated_data) {
-          setData(updatedData.updated_data);
-      } else {
-          setData([]);
+          setData(updatedData.updated_data.data);
       }
       setIsLoading(false);
   }, searchQuery, currentPage, itemsPerPage);

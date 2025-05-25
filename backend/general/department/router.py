@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from backend.models import get_db
 from backend.general.department import crud, schemas, excel_operation
 from backend.utils.auth_service import authenticate_and_authorize_employee_authority
+from backend.logger_config import logger
 
 
 router = APIRouter()
@@ -31,12 +32,7 @@ async def sort_departments(
     db: Session = Depends(get_db)
 ):
     await authenticate_and_authorize_employee_authority(request, db)
-    try:
-        return crud.sort_departments(db, department_order, background_tasks=background_tasks)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    return crud.sort_departments(db, department_order, background_tasks=background_tasks)
 
 # 部署作成
 @router.post("", response_model=schemas.DepartmentResponse)
@@ -60,12 +56,7 @@ async def update_department(
     db: Session = Depends(get_db)
 ):
     await authenticate_and_authorize_employee_authority(request, db)
-    try:
-        return crud.update_department(db, department_id, department_data, background_tasks=background_tasks)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    return crud.update_department(db, department_id, department_data, background_tasks=background_tasks)
 
 # 部署削除
 @router.delete("/{department_id}", response_model=schemas.DepartmentResponse)
@@ -76,12 +67,7 @@ async def delete_department(
     db: Session = Depends(get_db)
 ):
     await authenticate_and_authorize_employee_authority(request, db)
-    try:
-        return crud.delete_department(db, department_id, background_tasks=background_tasks)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    return crud.delete_department(db, department_id, background_tasks=background_tasks)
 
 # Excel出力
 @router.get("/export_excel")
@@ -91,12 +77,7 @@ async def export_departments_to_excel(
     searchQuery: str = Query("", alias="searchQuery")
 ):
     await authenticate_and_authorize_employee_authority(request, db)
-    try:
-        return excel_operation.export_excel_departments(db, searchQuery)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    return excel_operation.export_excel_departments(db, searchQuery)
 
 # Excel入力
 @router.post("/import_excel")
@@ -107,9 +88,4 @@ async def import_departments_to_excel(
     db: Session = Depends(get_db)
 ):
     await authenticate_and_authorize_employee_authority(request, db)
-    try:
-        return excel_operation.import_excel_departments(db, file, background_tasks=background_tasks)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
+    return excel_operation.import_excel_departments(db, file, background_tasks=background_tasks)

@@ -1,7 +1,7 @@
 from datetime import date
 
 from pydantic import BaseModel, EmailStr, Field
-from typing import List, Optional
+from typing import List, Optional, Union
 
 # 社員と紐づいた部署
 class EmployeeDepartment(BaseModel):
@@ -77,15 +77,22 @@ class Employee(BaseModel):
     class Config:
         from_attributes = True
 
-class PaginatedEmployeeResponse(BaseModel):
-    employees: List[Employee]
-    totalCount: int
-
-# Post時の返す形式
+# フロントエンドに返す形式
 class EmployeeResponse(BaseModel):
     success: bool = True
-    message: str
-    field: str = ''
+    data: List[Employee] | Employee = None
+    message: Optional[str] = None
+    field: Optional[str] = None
 
     class Config:
         from_attributes = True
+
+class ErrorResponse(BaseModel):
+    success: bool = False
+    message: str
+    field: str = ""
+
+# テーブルデータ取得時の形式
+class PaginatedEmployeeResponse(BaseModel):
+    employees: Union[EmployeeResponse, ErrorResponse]
+    totalCount: int

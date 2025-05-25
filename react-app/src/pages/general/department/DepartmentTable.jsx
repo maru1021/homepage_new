@@ -95,7 +95,7 @@ function DepartmentTable({ data, searchQuery, currentPage, itemsPerPage }) {
                                 <DraggableRow
                                     key={department.id}
                                     url={`${url}/sort`}
-                                    data={department}
+                                    data={{ id: department.id, name: department.name }}
                                     index={index}
                                     handleContextMenu={handleContextMenu}
                                     allData={departments}

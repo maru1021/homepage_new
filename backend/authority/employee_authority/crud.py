@@ -2,7 +2,6 @@ import asyncio
 
 from fastapi import BackgroundTasks
 from sqlalchemy.orm import joinedload, Session
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import delete, exists, or_, and_
 
 from backend.authority.models import EmployeeAuthority
@@ -11,6 +10,7 @@ from backend.general.models import Employee, Department
 from backend.scripts.validations.existing_employee import existing_employee
 from backend.authority.employee_authority import schemas
 from backend.websocket import websocket_manager
+from backend.logger_config import logger
 
 
 # 従業員の変更をWebSocketで通知
@@ -87,35 +87,43 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10,
         employees = query.offset((page - 1) * limit).limit(limit).all()
 
         # レスポンス用データ構築
-        employees_data = [
-            {
-                "id": employee.id,
-                "employee_no": employee.employee_no,
-                "name": employee.name,
-                "email": employee.email,
-                "departments": [
-                    {
-                        "id": dep.id,
-                        "name": dep.name,
-                        "admin": next(
-                            (row.admin for row in db.query(EmployeeAuthority)
-                            .filter(
-                                EmployeeAuthority.employee_id == employee.id,
-                                EmployeeAuthority.department_id == dep.id
-                            ).all()),
-                            False
-                        )
-                    }
-                    for dep in employee.departments
-                ]
-            }
+        employees_data = {
+            "success": True,
+            "data": [
+                {
+                    "id": employee.id,
+                    "employee_no": employee.employee_no,
+                    "name": employee.name,
+                    "email": employee.email,
+                    "departments": [
+                        {
+                            "id": dep.id,
+                            "name": dep.name,
+                            "admin": next(
+                                (row.admin for row in db.query(EmployeeAuthority)
+                                .filter(
+                                    EmployeeAuthority.employee_id == employee.id,
+                                    EmployeeAuthority.department_id == dep.id
+                                ).all()),
+                                False
+                            )
+                        }
+                        for dep in employee.departments
+                    ]
+                }
             for employee in employees
-        ]
+            ]
+        }
 
         return employees_data, total_count
-    except SQLAlchemyError as e:
-        print(f"Error occurred: {e}")
-        return [], 0  # エラーの場合も空のリストと0件を返す
+    except Exception as e:
+        logger.error(f"Error in get_employees: {str(e)}", exc_info=True, extra={
+            "function": "get_employees",
+            "search": search,
+            "page": page,
+            "limit": limit
+        })
+        return {"success": False, "message": "情報の取得に失敗しました", "field": ""}, 0
 
 def create_employee(db: Session, employee: schemas.EmployeeCreate, background_tasks: BackgroundTasks):
     from backend.scripts.init_employee import init_employee
@@ -140,12 +148,15 @@ def create_employee(db: Session, employee: schemas.EmployeeCreate, background_ta
         db.commit()
 
         background_tasks.add_task(run_websocket, db)
-        return {"success": True, "message": "従業員登録に成功しました"}
+        return {"success": True, "message": "従業員権限の登録に成功しました"}
 
     except Exception as e:
         db.rollback()
-        print(f"エラー発生: {str(e)}")
-        return {"success": False, "message": f"従業員登録処理中にエラーが発生しました: {str(e)}", "field": ""}
+        logger.error(f"Error in create_employee: {str(e)}", exc_info=True, extra={
+            "function": "create_employee",
+            "employee": employee
+        })
+        return {"success": False, "message": "従業員権限の登録に失敗しました", "field": ""}
 
 
 def update_employee(db: Session, employee_id: int, employee_data: schemas.EmployeeUpdate, background_tasks: BackgroundTasks):
@@ -182,10 +193,13 @@ def update_employee(db: Session, employee_id: int, employee_data: schemas.Employ
         background_tasks.add_task(run_websocket, db)
 
         return {"message": "従業員情報を更新しました"}
-    except SQLAlchemyError as e:
+    except Exception as e:
         db.rollback()
-        print(f"Error occurred: {e}")
-        return {"success": False, "message": "更新に失敗しました", "field": ""}
+        logger.error(f"Error in update_employee: {str(e)}", exc_info=True, extra={
+            "function": "update_employee",
+            "employee": employee
+        })
+        return {"success": False, "message": "従業員権限の更新に失敗しました", "field": ""}
 
 
 def delete_employee(db: Session, employee_id: int, background_tasks: BackgroundTasks):
@@ -202,5 +216,8 @@ def delete_employee(db: Session, employee_id: int, background_tasks: BackgroundT
         return {"message": "削除に成功しました。"}
     except Exception as e:
         db.rollback()
-        print(f"Error occurred: {e}")
-        return {"success": False, "message": "データベースエラーが発生しました", "field": ""}
+        logger.error(f"Error in delete_employee: {str(e)}", exc_info=True, extra={
+            "function": "delete_employee",
+            "employee": employee
+        })
+        return {"success": False, "message": "従業員権限の削除に失敗しました", "field": ""}

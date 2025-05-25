@@ -18,6 +18,7 @@ from backend.general.models import Employee
 from backend.models import get_db
 from scripts.get_time import now
 from scripts.hash_password import verify_password, hashed_password
+from backend.models.base_model import current_user_context
 
 # 環境変数から取得することを推奨
 SECRET_KEY = "your_secret_key"  # 本番環境では環境変数から取得
@@ -175,7 +176,7 @@ async def verify_token(token: str = Depends(oauth2_scheme), db: Session = Depend
         if employee is None:
             raise credentials_exception
 
-        return employee
+        return employee  # Employeeオブジェクトを直接返す
 
     except PyJWTError:
         raise credentials_exception
@@ -368,3 +369,25 @@ async def get_current_user(current_user: Employee = Depends(verify_token), db: S
         "departments": departments,
         "is_system_admin": is_system_admin
     }
+
+# ユーザー名の取得
+async def set_current_user_middleware(request: Request, call_next):
+    try:
+        # アクセストークンを取得
+        access_token = request.cookies.get("access_token")
+        if access_token:
+            # データベースセッションを取得
+            db = next(get_db())
+            try:
+                # ユーザー情報を取得
+                user = await verify_token(access_token, db)
+                # コンテキストにユーザー情報を設定
+                if user:# デバッグ用のログ出力
+                    current_user_context.set(user)
+            finally:
+                db.close()
+    except Exception as e:
+        print('exception:', str(e))
+
+    response = await call_next(request)
+    return response
