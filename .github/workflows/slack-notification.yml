@@ -3,7 +3,7 @@ name: Slack Notification
 on:
   push:
     branches:
-      - main # メインブランチへのプッシュ時に実行
+      - master # メインブランチへのプッシュ時に実行
     paths-ignore:
       - "**.md" # Markdownファイルの変更は無視
 
