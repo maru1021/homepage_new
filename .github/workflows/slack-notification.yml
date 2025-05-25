@@ -1,0 +1,44 @@
+name: Slack Notification
+
+on:
+  push:
+    branches:
+      - main # メインブランチへのプッシュ時に実行
+    paths-ignore:
+      - "**.md" # Markdownファイルの変更は無視
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # すべてのコミット履歴を取得
+
+      - name: Get commit messages
+        id: get_commits
+        run: |
+          # コミットメッセージを取得
+          COMMITS=$(git log --pretty=format:"%h - %s (%an)" ${{ github.event.before }}..${{ github.event.after }})
+          echo "commits<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send to Slack
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: "git_merge_history" # 通知を送信するSlackチャンネル
+          slack-message: |
+            🚀 新しいコミットがマージされました
+
+            📝 コミット内容:
+            ```
+            ${{ steps.get_commits.outputs.commits }}
+            ```
+
+            👤 コミッター: ${{ github.actor }}
+            🔗 リポジトリ: ${{ github.repository }}
+            🌿 ブランチ: ${{ github.ref_name }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
