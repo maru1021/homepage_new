@@ -1,11 +1,73 @@
-// VSCodeの設定
-// 保存時に自動でフォーマットとLintの修正を実行する設定
-
-
 {
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll": "always"
   },
-  "files.trimTrailingWhitespace": true
+  "files.trimTrailingWhitespace": true,
+
+  // .githubディレクトリのファイルに対する設定
+  "[yaml]": {
+    "editor.formatOnSave": true,
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "files.trimTrailingWhitespace": true
+  },
+  "[yml]": {
+    "editor.formatOnSave": true,
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "files.trimTrailingWhitespace": true
+  },
+
+  // .githubディレクトリ特有の設定
+  "files.associations": {
+    "*.yml": "yaml",
+    "*.yaml": "yaml"
+  },
+
+  // YAML関連の警告を抑制
+  "yaml.validate": true,
+  "yaml.completion": true,
+  "yaml.hover": true,
+  "yaml.format.enable": true,
+  "yaml.format.singleQuote": false,
+  "yaml.format.bracketSpacing": true,
+  "yaml.format.proseWrap": "preserve",
+
+  // 特定のパスでの警告を無効化
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true
+  },
+
+  // .githubディレクトリのワークフローファイル用設定
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/*/**": true
+  },
+
+  // GitHub Actions用の設定
+  "githubActions.workflowValidation": true,
+
+  // Lint関連の警告を調整
+  "eslint.workingDirectories": [
+    "."
+  ],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+
+  // 特定のファイルタイプでの警告を抑制
+  "problems.decorations.enabled": true,
+
+  // .githubディレクトリ内のファイルでのフォーマット設定
+  "[markdown]": {
+    "editor.formatOnSave": true,
+    "files.trimTrailingWhitespace": true,
+    "editor.wordWrap": "on"
+  }
 }
