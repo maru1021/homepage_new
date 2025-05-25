@@ -22,13 +22,13 @@ const NotFound = () => {
                 margin: 3
             }}
         >
-            <ErrorIcon 
-                sx={{ 
-                    fontSize: '100px', 
+            <ErrorIcon
+                sx={{
+                    fontSize: '100px',
                     color: '#ff6b6b',
                     marginBottom: 3,
                     filter: 'drop-shadow(2px 2px 3px rgba(0,0,0,0.2))'
-                }} 
+                }}
             />
 
             <Typography

@@ -32,6 +32,7 @@ function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false,
   const [openManufacturing, setOpenManufacturing] = useState(false);
   const [openTools, setOpenTools] = useState(false);
   const [openGeneral, setOpenGeneral] = useState(false);
+  const [openInformationSystem, setOpenInformationSystem] = useState(false);
   const [userDepartments, setUserDepartments] = useState([]);
   const [isSystemAdmin, setIsSystemAdmin] = useState(false);
   const [userName, setUserName] = useState('');
@@ -67,7 +68,7 @@ function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false,
     if (isSystemAdmin) return true;
     return userDepartments.some(dept =>
       dept.name === departmentName ||
-      (dept.name === '管理者' && ['製造部', '総務部'].includes(departmentName))  // 管理者は全ての部署にアクセス可能
+      (dept.name === '管理者' && ['製造部', '総務部', '情報システム室'].includes(departmentName))  // 管理者は全ての部署にアクセス可能
     );
   };
 
@@ -264,6 +265,32 @@ function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false,
                   </ListItemIcon>
                   <ListItemText primary="従業員一覧" />
                 </ListItem>
+              </List>
+            </Collapse>
+          </>
+        )}
+
+        {/* 情報システム室 - 情報システム室のユーザーのみ表示 */}
+        {hasDepartmentAccess('情報システム室') && (
+          <>
+            <ListItem
+              button
+              onClick={() => setOpenInformationSystem(!openInformationSystem)}
+              sx={{
+                borderRadius: '10px',
+                transition: '0.2s ease-in-out',
+                background: openGeneral ? 'rgba(180, 230, 255, 0.4)' : 'transparent',
+                '&:hover': { background: 'rgba(255, 255, 255, 0.8)', transform: 'scale(1.02)' },
+              }}
+            >
+              <ListItemIcon sx={{ color: '#666', opacity: 0.8 }}>
+                <FaUsers />
+              </ListItemIcon>
+              <ListItemText primary="情報システム室" />
+              {openInformationSystem ? <FaChevronDown /> : <FaChevronRight />}
+            </ListItem>
+            <Collapse in={openInformationSystem} timeout="auto" unmountOnExit>
+              <List sx={{ pl: 4 }}>
                 <ListItem button onClick={() => navigate('/authority/employee_authority')}>
                   <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
                     <FaUserShield size={16} />
