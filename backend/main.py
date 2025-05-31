@@ -9,7 +9,7 @@ from backend.router import router as main_router
 from backend.websocket import router as ws_router
 from backend.public_router import router as public_router
 from backend.utils.logger import request_context
-from backend.general.department.router import router as department_router
+from backend.api.general.department.router import router as department_router
 
 app = FastAPI()
 

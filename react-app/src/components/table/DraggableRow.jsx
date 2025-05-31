@@ -88,7 +88,7 @@ const DraggableRow = ({ url, data, index, handleContextMenu, allData }) => {
             {displayData.map(([key, value]) => (
                 <TableCell key={key}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        {value}
+                        {value !== null && value !== undefined ? value.toString() : ''}
                     </Box>
                 </TableCell>
             ))}

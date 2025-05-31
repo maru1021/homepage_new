@@ -1,8 +1,8 @@
 from fastapi import HTTPException, Request, status
 from sqlalchemy.orm import Session
 from backend.auth import get_current_user_or_none
-from backend.authority.models import EmployeeAuthority
-from backend.general.models import Department
+from backend.api.authority.models import EmployeeAuthority
+from backend.api.general.models import Department
 from backend.utils.logger import logger
 
 
@@ -25,6 +25,8 @@ def get_user_permissions(user_authorities, db: Session):
         'is_general_affairs_admin': False,  # 総務部の管理者
         'is_information_system_affairs': False,  # 情報システム室所属
         'is_information_system_affairs_admin': False,  # 情報システム室の管理者
+        'is_manufacturing': False,  # 製造部所属
+        'is_manufacturing_admin': False,  # 製造部の管理者
         'department_ids': set(),  # アクセス可能な部署ID
         'admin_department_ids': set()  # 管理者権限を持つ部署ID
     }
@@ -33,7 +35,8 @@ def get_user_permissions(user_authorities, db: Session):
     department_permissions = {
         '管理者': {'is_system_admin': True},
         '総務部': {'is_general_affairs': True, 'admin_key': 'is_general_affairs_admin'},
-        '情報システム室': {'is_information_system_affairs': True, 'admin_key': 'is_information_system_affairs_admin'}
+        '情報システム室': {'is_information_system_affairs': True, 'admin_key': 'is_information_system_affairs_admin'},
+        '製造部': {'is_manufacturing': True, 'admin_key': 'is_manufacturing_admin'}
     }
 
     for authority in user_authorities:
@@ -89,6 +92,10 @@ async def authenticate_and_authorize_employee_authority(request: Request, db: Se
         '/authority/': {
             'permission_key': 'is_information_system_affairs',
             'admin_permission_key': 'is_information_system_affairs_admin'
+        },
+        '/manufacturing/': {
+            'permission_key': 'is_manufacturing',
+            'admin_permission_key': 'is_manufacturing_admin'
         }
     }
 
@@ -100,7 +107,7 @@ async def authenticate_and_authorize_employee_authority(request: Request, db: Se
                 logger.write_invalid_access_log(f"部署権限不足")
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail={"redirect": "/error/404"}
+                    detail={"redirect": "/error/403"}
                 )
 
             # メソッドに基づく権限チェック
@@ -112,7 +119,7 @@ async def authenticate_and_authorize_employee_authority(request: Request, db: Se
             logger.write_invalid_access_log(f"権限不足")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail={"redirect": "/error/404"}
+                detail={"redirect": "/error/403"}
             )
 
     return current_user

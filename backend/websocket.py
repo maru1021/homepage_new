@@ -9,7 +9,7 @@ from starlette.websockets import WebSocketState
 
 from backend.auth import SECRET_KEY, ALGORITHM
 from backend.models import get_db
-from backend.general.models import Employee
+from backend.api.general.models import Employee
 
 router = APIRouter()
 
