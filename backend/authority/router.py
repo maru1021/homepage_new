@@ -14,4 +14,4 @@ router.include_router(authority_router, prefix="/employee_authority", tags=["Emp
 @router.get("/auth_check")
 async def auth_check(request: Request, db: Session = Depends(get_db)):
     await authenticate_and_authorize_employee_authority(request, db)
-    return
+    return {"message": "Authentication successful"}
