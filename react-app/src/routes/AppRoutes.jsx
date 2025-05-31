@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import ProtectedRoute from '../components/auth/ProtectedRoute';
 
 import Index from '../pages/homepage/index';
 import Type from '../pages/homepage/type/Type';
 import Classification from '../pages/homepage/classification/Classification';
 import Department from '../pages/general/department/Department';
 import Employee from '../pages/general/employee/Employee';
-import EmployeeAuthority from '../pages/authority/employee_authority/EmployeeAuthority';
 import NotFound from '../pages/error/404';
+import Forbidden from '../pages/error/403';
 import Article from '../pages/homepage/article/article';
 import ArticleNew from '../pages/homepage/article/new';
 import Sky from '../pages/homepage/3D/Sky/Sky';
@@ -18,6 +19,9 @@ import LocationDisplay from '../pages/homepage/LocationDisplay/LocationDisplay';
 import BulletinBoardRegister from '../pages/all/bulletin_board/BulletinBoardRegister';
 import BulletinBoardDetail from '../pages/all/bulletin_board/BulletinBoardDetail';
 import BulletinBoardList from '../pages/all/bulletin_board/BulletinBoardList';
+
+// EmployeeAuthorityをlazyでラップ
+const EmployeeAuthority = lazy(() => import('../pages/authority/employee_authority/EmployeeAuthority'));
 
 const AppRoutes = ({ isAuthenticated = false }) => {
   return (
@@ -36,33 +40,95 @@ const AppRoutes = ({ isAuthenticated = false }) => {
       {/* プライベートルート（ログイン必要） */}
       <Route
         path='/general/department'
-        element={isAuthenticated ? <Department /> : <Navigate to="/login" replace />}
+        element={
+          isAuthenticated ? (
+            <ProtectedRoute endpoint="/api/general/auth_check">
+              <Suspense fallback={null}>
+                <Department />
+              </Suspense>
+            </ProtectedRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
       />
       <Route
         path='/general/employee'
-        element={isAuthenticated ? <Employee /> : <Navigate to="/login" replace />}
+        element={
+          isAuthenticated ? (
+            <ProtectedRoute endpoint="/api/general/auth_check">
+              <Suspense fallback={null}>
+                <Employee />
+              </Suspense>
+            </ProtectedRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
       />
       <Route
         path='/authority/employee_authority'
-        element={isAuthenticated ? <EmployeeAuthority /> : <Navigate to="/login" replace />}
+        element={
+          isAuthenticated ? (
+            <ProtectedRoute endpoint="/api/authority/auth_check">
+              <Suspense fallback={null}>
+                <EmployeeAuthority />
+              </Suspense>
+            </ProtectedRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
       />
 
       {/* 掲示板関連のルート */}
       <Route
         path='/all/bulletin_board/register'
-        element={isAuthenticated ? <BulletinBoardRegister /> : <Navigate to="/login" replace />}
+        element={
+          isAuthenticated ? (
+            <ProtectedRoute endpoint="/api/all/auth_check">
+              <Suspense fallback={null}>
+                <BulletinBoardRegister />
+              </Suspense>
+            </ProtectedRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
       />
       <Route
         path='/all/bulletin_board/list'
-        element={isAuthenticated ? <BulletinBoardList /> : <Navigate to="/login" replace />}
+        element={
+          isAuthenticated ? (
+            <ProtectedRoute endpoint="/api/all/auth_check">
+              <Suspense fallback={null}>
+                <BulletinBoardList />
+              </Suspense>
+            </ProtectedRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
       />
       <Route
         path='/all/bulletin_board/:id'
-        element={isAuthenticated ? <BulletinBoardDetail /> : <Navigate to="/login" replace />}
+        element={
+          isAuthenticated ? (
+            <ProtectedRoute endpoint="/api/all/auth_check">
+              <Suspense fallback={null}>
+                <BulletinBoardDetail />
+              </Suspense>
+            </ProtectedRoute>
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
       />
-
       {/* 404ページ */}
       <Route path='*' element={<NotFound />} />
+
+      {/* 403ページ */}
+      <Route path='/403' element={<Forbidden />} />
     </Routes>
   );
 };

@@ -1,10 +1,9 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, File,  HTTPException, Query, Request, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Query, Request, UploadFile
 from sqlalchemy.orm import Session
 
 from backend.models import get_db
 from backend.general.department import crud, schemas, excel_operation
 from backend.utils.auth_service import authenticate_and_authorize_employee_authority
-from backend.logger_config import logger
 
 
 router = APIRouter()

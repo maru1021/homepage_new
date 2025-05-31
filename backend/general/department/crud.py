@@ -6,7 +6,7 @@ from backend.authority.models import EmployeeAuthority
 from backend.general.models import Department
 from backend.general.department import schemas
 from backend.websocket import websocket_manager
-from backend.logger_config import logger
+from backend.utils.logger import logger
 
 # 部署の変更をWebSocketで通知
 async def department_websocket(db: Session):
@@ -38,12 +38,13 @@ def get_departments(db: Session, search: str = "", page: int = 1, limit: int = 1
         return departments_data, total_count
     except Exception as e:
         # 例外情報をログに記録
-        logger.error(f"Error in get_departments: {str(e)}", exc_info=True, extra={
-            "function": "get_departments",
-            "search": search,
-            "page": page,
-            "limit": limit
-        })
+        logger.write_error_log(
+            f"Error in get_departments: {str(e)}\n"
+            f"Function: get_departments\n"
+            f"Search: {search}\n"
+            f"Page: {page}\n"
+            f"Limit: {limit}"
+        )
         return {"success": False, "message": "情報の取得に失敗しました", "field": ""}, 0
 
 # 部署作成
@@ -71,10 +72,11 @@ def create_department(db: Session, department: schemas.DepartmentBase, backgroun
         }
     except Exception as e:
         db.rollback()
-        logger.error(f"Error in create_department: {str(e)}", exc_info=True, extra={
-            "function": "create_department",
-            "department": department
-        })
+        logger.write_error_log(
+            f"Error in create_department: {str(e)}\n"
+            f"Function: create_department\n"
+            f"Department: {department}"
+        )
         return {"success": False, "message": "部署の登録に失敗しました", "field": ""}
 
 # 部署編集
@@ -105,10 +107,11 @@ def update_department(db: Session, department_id: int, department_data: schemas.
         }
     except Exception as e:
         db.rollback()
-        logger.error(f"Error in update_department: {str(e)}", exc_info=True, extra={
-            "function": "update_department",
-            "department": department_data
-        })
+        logger.write_error_log(
+            f"Error in update_department: {str(e)}\n"
+            f"Function: update_department\n"
+            f"Department: {department_data}"
+        )
         return {"success": False, "message": "更新に失敗しました", "field": ""}
 
 # 部署削除
@@ -134,10 +137,11 @@ def delete_department(db: Session, department_id: int, background_tasks: Backgro
         }
     except Exception as e:
         db.rollback()
-        logger.error(f"Error in delete_department: {str(e)}", exc_info=True, extra={
-            "function": "delete_department",
-            "department_id": department_id
-        })
+        logger.write_error_log(
+            f"Error in delete_department: {str(e)}\n"
+            f"Function: delete_department\n"
+            f"Department ID: {department_id}"
+        )
         return {"success": False, "message": "削除に失敗しました", "field": ""}
 
 
@@ -159,8 +163,9 @@ def sort_departments(db: Session, department_order: list[dict], background_tasks
 
     except Exception as e:
         db.rollback()
-        logger.error(f"Error in sort_departments: {str(e)}", exc_info=True, extra={
-            "function": "sort_departments",
-            "department_order": department_order
-        })
+        logger.write_error_log(
+            f"Error in sort_departments: {str(e)}\n"
+            f"Function: sort_departments\n"
+            f"Department Order: {department_order}"
+        )
         return {"success": False, "message": "並べ替えに失敗しました", "field": ""}

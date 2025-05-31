@@ -7,18 +7,19 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.security import OAuth2
 from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
 from fastapi.security.utils import get_authorization_scheme_param
-from typing import Dict, Optional, List, Any
+from typing import Dict, Optional
 
 import jwt
 from jwt import PyJWTError
-from sqlalchemy.orm import Session, join
+from sqlalchemy.orm import Session
 
 from backend.authority.models import EmployeeCredential, UserSession, EmployeeAuthority
 from backend.general.models import Employee
 from backend.models import get_db
 from scripts.get_time import now
-from scripts.hash_password import verify_password, hashed_password
-from backend.models.base_model import current_user_context
+from scripts.hash_password import verify_password
+from backend.utils.logger import logger
+
 
 # 環境変数から取得することを推奨
 SECRET_KEY = "your_secret_key"  # 本番環境では環境変数から取得
@@ -152,10 +153,12 @@ async def verify_token(token: str = Depends(oauth2_scheme), db: Session = Depend
         token_type = payload.get("token_type")
 
         if employee_no is None or user_id is None:
+            logger.write_invalid_access_log(f"{employee_no},トークンデコード失敗")
             raise credentials_exception
 
         # アクセストークンかを確認
         if token_type != "access":
+            logger.write_invalid_access_log(f"{employee_no},トークンタイプ不正")
             raise credentials_exception
 
         # トークンの有効期限を確認
@@ -174,11 +177,13 @@ async def verify_token(token: str = Depends(oauth2_scheme), db: Session = Depend
                    .first())
 
         if employee is None:
+            logger.write_invalid_access_log(f"{employee_no},従業員情報取得失敗")
             raise credentials_exception
 
         return employee  # Employeeオブジェクトを直接返す
 
     except PyJWTError:
+        logger.write_invalid_access_log(f"{employee_no},トークンデコード失敗")
         raise credentials_exception
 
 # リフレッシュトークンの検証と新しいアクセストークンの発行
@@ -203,6 +208,7 @@ async def refresh_token(request: Request, response: Response, db: Session = Depe
 
         # リフレッシュトークンかを確認
         if token_type != "refresh":
+            logger.write_invalid_access_log(f"{employee_no},トークンタイプ不正")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="無効なトークンタイプです",
@@ -217,7 +223,7 @@ async def refresh_token(request: Request, response: Response, db: Session = Depe
         ).first()
 
         if not session:
-            # セッションが無効か期限切れ
+            logger.write_invalid_access_log(f"{employee_no},セッションが無効か期限切れ")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="セッションが無効か期限切れです",
@@ -245,6 +251,7 @@ async def refresh_token(request: Request, response: Response, db: Session = Depe
         }
 
     except PyJWTError:
+        logger.write_invalid_access_log(f"{employee_no},リフレッシュトークンデコード失敗")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="無効なリフレッシュトークンです",
@@ -273,6 +280,7 @@ async def login_for_access_token(
     employee = authenticate_user(db, form_data.username, form_data.password)
 
     if not employee:
+        logger.write_access_log_miss(f"{form_data.username},ログイン失敗")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="社員番号またはパスワードが間違っています",
@@ -309,6 +317,8 @@ async def login_for_access_token(
         max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
     )
 
+    logger.write_access_log_success(f"{employee.employee_no},ログイン成功")
+
     # フロントエンド用の非機密情報を含むレスポンス
     return {
         "access_token": access_token,
@@ -338,6 +348,9 @@ async def logout(
     # クッキーを削除
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="refresh_token")
+
+    # ログアウトログを記録
+    logger.write_access_log_success(f"{current_user.employee_no},ログアウト")
 
     return {"detail": "ログアウトしました"}
 
@@ -370,24 +383,3 @@ async def get_current_user(current_user: Employee = Depends(verify_token), db: S
         "is_system_admin": is_system_admin
     }
 
-# ユーザー名の取得
-async def set_current_user_middleware(request: Request, call_next):
-    try:
-        # アクセストークンを取得
-        access_token = request.cookies.get("access_token")
-        if access_token:
-            # データベースセッションを取得
-            db = next(get_db())
-            try:
-                # ユーザー情報を取得
-                user = await verify_token(access_token, db)
-                # コンテキストにユーザー情報を設定
-                if user:# デバッグ用のログ出力
-                    current_user_context.set(user)
-            finally:
-                db.close()
-    except Exception as e:
-        print('exception:', str(e))
-
-    response = await call_next(request)
-    return response

@@ -10,7 +10,7 @@ from backend.general.models import Employee, Department
 from backend.scripts.validations.existing_employee import existing_employee
 from backend.authority.employee_authority import schemas
 from backend.websocket import websocket_manager
-from backend.logger_config import logger
+from backend.utils.logger import logger
 
 
 # 従業員の変更をWebSocketで通知
@@ -117,12 +117,13 @@ def get_employees(db: Session, search: str = "", page: int = 1, limit: int = 10,
 
         return employees_data, total_count
     except Exception as e:
-        logger.error(f"Error in get_employees: {str(e)}", exc_info=True, extra={
-            "function": "get_employees",
-            "search": search,
-            "page": page,
-            "limit": limit
-        })
+        logger.write_error_log(
+            f"Error in get_employees: {str(e)}\n"
+            f"Function: get_employees\n"
+            f"Search: {search}\n"
+            f"Page: {page}\n"
+            f"Limit: {limit}"
+        )
         return {"success": False, "message": "情報の取得に失敗しました", "field": ""}, 0
 
 def create_employee(db: Session, employee: schemas.EmployeeCreate, background_tasks: BackgroundTasks):
@@ -152,10 +153,11 @@ def create_employee(db: Session, employee: schemas.EmployeeCreate, background_ta
 
     except Exception as e:
         db.rollback()
-        logger.error(f"Error in create_employee: {str(e)}", exc_info=True, extra={
-            "function": "create_employee",
-            "employee": employee
-        })
+        logger.write_error_log(
+            f"Error in create_employee: {str(e)}\n"
+            f"Function: create_employee\n"
+            f"Employee: {employee}"
+        )
         return {"success": False, "message": "従業員権限の登録に失敗しました", "field": ""}
 
 
@@ -195,10 +197,11 @@ def update_employee(db: Session, employee_id: int, employee_data: schemas.Employ
         return {"message": "従業員情報を更新しました"}
     except Exception as e:
         db.rollback()
-        logger.error(f"Error in update_employee: {str(e)}", exc_info=True, extra={
-            "function": "update_employee",
-            "employee": employee
-        })
+        logger.write_error_log(
+            f"Error in update_employee: {str(e)}\n"
+            f"Function: update_employee\n"
+            f"Employee: {employee}"
+        )
         return {"success": False, "message": "従業員権限の更新に失敗しました", "field": ""}
 
 
@@ -216,8 +219,9 @@ def delete_employee(db: Session, employee_id: int, background_tasks: BackgroundT
         return {"message": "削除に成功しました。"}
     except Exception as e:
         db.rollback()
-        logger.error(f"Error in delete_employee: {str(e)}", exc_info=True, extra={
-            "function": "delete_employee",
-            "employee": employee
-        })
+        logger.write_error_log(
+            f"Error in delete_employee: {str(e)}\n"
+            f"Function: delete_employee\n"
+            f"Employee: {employee}"
+        )
         return {"success": False, "message": "従業員権限の削除に失敗しました", "field": ""}

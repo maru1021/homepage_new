@@ -1,9 +1,9 @@
 import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Error as ErrorIcon } from '@mui/icons-material';
+import { GppBad as GppBadIcon } from '@mui/icons-material';
 
-const NotFound = () => {
+const Forbidden = () => {
     const navigate = useNavigate();
 
     return (
@@ -22,10 +22,10 @@ const NotFound = () => {
                 margin: 3
             }}
         >
-            <ErrorIcon
+            <GppBadIcon
                 sx={{
                     fontSize: '100px',
-                    color: '#ff6b6b',
+                    color: '#ff9800',
                     marginBottom: 3,
                     filter: 'drop-shadow(2px 2px 3px rgba(0,0,0,0.2))'
                 }}
@@ -41,7 +41,7 @@ const NotFound = () => {
                     textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
                 }}
             >
-                404
+                403
             </Typography>
 
             <Typography
@@ -52,7 +52,7 @@ const NotFound = () => {
                     marginBottom: 4
                 }}
             >
-                ページが見つかりませんでした
+                アクセス権限がありません
             </Typography>
 
             <Typography
@@ -63,22 +63,22 @@ const NotFound = () => {
                     maxWidth: '600px'
                 }}
             >
-                お探しのページは削除されたか、URLが間違っている可能性があります。
+                このページにアクセスする権限がありません。必要に応じて管理者にお問い合わせください。
             </Typography>
 
             <Button
                 variant="contained"
                 onClick={() => navigate('/all/bulletin_board/list')}
                 sx={{
-                    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                    background: 'linear-gradient(45deg, #FF9800 30%, #FFB74D 90%)',
                     borderRadius: '25px',
-                    boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+                    boxShadow: '0 3px 5px 2px rgba(255, 152, 0, .3)',
                     color: 'white',
                     padding: '10px 30px',
                     '&:hover': {
-                        background: 'linear-gradient(45deg, #1976D2 30%, #00BCD4 90%)',
+                        background: 'linear-gradient(45deg, #F57C00 30%, #FFA726 90%)',
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 4px 8px 2px rgba(33, 203, 243, .4)',
+                        boxShadow: '0 4px 8px 2px rgba(255, 152, 0, .4)',
                     },
                     transition: 'all 0.3s ease'
                 }}
@@ -89,4 +89,4 @@ const NotFound = () => {
     );
 };
 
-export default NotFound;
+export default Forbidden;

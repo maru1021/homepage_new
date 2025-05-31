@@ -7,7 +7,7 @@ from backend.general.models import Department
 from backend.general.department.crud import get_departments
 from backend.scripts.export_excel import export_excel
 from backend.scripts.import_excel import import_excel
-from backend.logger_config import logger
+from backend.utils.logger import logger
 
 def export_excel_departments(db: Session, search: str):
     try:
@@ -18,10 +18,11 @@ def export_excel_departments(db: Session, search: str):
         ])
         return export_excel(df, "部署一覧.xlsx")
     except Exception as e:
-        logger.error(f"Error in export_excel_departments: {str(e)}", exc_info=True, extra={
-            "function": "export_excel_departments",
-            "search": search
-        })
+        logger.write_error_log(
+            f"Error in export_excel_departments: {str(e)}\n"
+            f"Function: export_excel_departments\n"
+            f"Search: {search}"
+        )
         return {"success": False, "message": "Excelファイルのエクスポートに失敗しました", "field": ""}
 
 def import_excel_departments(db: Session, file, background_tasks=BackgroundTasks):
@@ -42,9 +43,10 @@ def import_excel_departments(db: Session, file, background_tasks=BackgroundTasks
 
         return import_excel(db, file, "department", model, required_columns, websocket_func, delete_check_func=delete_check_func)
     except Exception as e:
-        logger.error(f"Error in import_excel_departments: {str(e)}", exc_info=True, extra={
-            "function": "import_excel_departments",
-            "file": file
-        })
+        logger.write_error_log(
+            f"Error in import_excel_departments: {str(e)}\n"
+            f"Function: import_excel_departments\n"
+            f"File: {file}"
+        )
         return {"success": False, "message": "Excelファイルのインポートに失敗しました", "field": ""}
 
