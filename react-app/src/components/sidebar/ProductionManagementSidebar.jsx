@@ -17,13 +17,15 @@ import {
   FaIdCard,
   FaUserShield,
   FaHome,
-  FaBullhorn
+  FaBullhorn,
+  FaDatabase
 } from 'react-icons/fa';
 import { MdDashboard } from 'react-icons/md';
 import { Logout as LogoutIcon } from '@mui/icons-material';
 import AuthService from '../../services/auth';
 import { API_BASE_URL } from '../../config/baseURL';
 import '../..//CSS/sidebar.css';
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
 
 function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false, onClose = () => {}, isMobile = false }) {
   const navigate = useNavigate();
@@ -36,6 +38,7 @@ function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false,
   const [userDepartments, setUserDepartments] = useState([]);
   const [isSystemAdmin, setIsSystemAdmin] = useState(false);
   const [userName, setUserName] = useState('');
+  const [openMaster, setOpenMaster] = useState(false);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -224,6 +227,25 @@ function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false,
                         <FaExchangeAlt size={16} />
                       </ListItemIcon>
                       <ListItemText primary="工具交換" />
+                    </ListItem>
+                  </List>
+                </Collapse>
+
+                {/* マスター管理 */}
+                <ListItem button onClick={() => setOpenMaster(!openMaster)}>
+                  <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                    <FaDatabase size={16} />
+                  </ListItemIcon>
+                  <ListItemText primary="マスター管理" />
+                  {openMaster ? <ExpandLess /> : <ExpandMore />}
+                </ListItem>
+                <Collapse in={openMaster} timeout="auto" unmountOnExit>
+                  <List sx={{ pl: 4 }}>
+                    <ListItem button onClick={() => navigate('/manufacturing/master/line')}>
+                      <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                        <FaIndustry size={16} />
+                      </ListItemIcon>
+                      <ListItemText primary="ライン" />
                     </ListItem>
                   </List>
                 </Collapse>

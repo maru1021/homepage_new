@@ -13,8 +13,8 @@ import jwt
 from jwt import PyJWTError
 from sqlalchemy.orm import Session
 
-from backend.authority.models import EmployeeCredential, UserSession, EmployeeAuthority
-from backend.general.models import Employee
+from backend.api.authority.models import EmployeeCredential, UserSession, EmployeeAuthority
+from backend.api.general.models import Employee
 from backend.models import get_db
 from scripts.get_time import now
 from scripts.hash_password import verify_password

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ProtectedRoute from '../components/auth/ProtectedRoute';
@@ -6,8 +6,6 @@ import ProtectedRoute from '../components/auth/ProtectedRoute';
 import Index from '../pages/homepage/index';
 import Type from '../pages/homepage/type/Type';
 import Classification from '../pages/homepage/classification/Classification';
-import Department from '../pages/general/department/Department';
-import Employee from '../pages/general/employee/Employee';
 import NotFound from '../pages/error/404';
 import Forbidden from '../pages/error/403';
 import Article from '../pages/homepage/article/article';
@@ -20,8 +18,9 @@ import BulletinBoardRegister from '../pages/all/bulletin_board/BulletinBoardRegi
 import BulletinBoardDetail from '../pages/all/bulletin_board/BulletinBoardDetail';
 import BulletinBoardList from '../pages/all/bulletin_board/BulletinBoardList';
 
-// EmployeeAuthorityをlazyでラップ
-const EmployeeAuthority = lazy(() => import('../pages/authority/employee_authority/EmployeeAuthority'));
+import GeneralRoutes from './generalRoutes';
+import AuthorityRoutes from './authorityRoutes';
+import ManufacturingRoutes from './manufacturingRoutes';
 
 const AppRoutes = ({ isAuthenticated = false }) => {
   return (
@@ -37,51 +36,16 @@ const AppRoutes = ({ isAuthenticated = false }) => {
       <Route path='/homepage/stock_chart' element={<StockChart />} />
       <Route path='/homepage/current_location' element={<LocationDisplay />} />
 
-      {/* プライベートルート（ログイン必要） */}
-      <Route
-        path='/general/department'
-        element={
-          isAuthenticated ? (
-            <ProtectedRoute endpoint="/api/general/auth_check">
-              <Suspense fallback={null}>
-                <Department />
-              </Suspense>
-            </ProtectedRoute>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-      <Route
-        path='/general/employee'
-        element={
-          isAuthenticated ? (
-            <ProtectedRoute endpoint="/api/general/auth_check">
-              <Suspense fallback={null}>
-                <Employee />
-              </Suspense>
-            </ProtectedRoute>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-      <Route
-        path='/authority/employee_authority'
-        element={
-          isAuthenticated ? (
-            <ProtectedRoute endpoint="/api/authority/auth_check">
-              <Suspense fallback={null}>
-                <EmployeeAuthority />
-              </Suspense>
-            </ProtectedRoute>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
+      {/* 総務部ルート */}
+      <Route path='/general/*' element={<GeneralRoutes isAuthenticated={isAuthenticated} />} />
 
-      {/* 掲示板関連のルート */}
+      {/* 情報システム室ルート */}
+      <Route path='/authority/*' element={<AuthorityRoutes isAuthenticated={isAuthenticated} />} />
+
+      {/* 製造部ルート */}
+      <Route path='/manufacturing/*' element={<ManufacturingRoutes isAuthenticated={isAuthenticated} />} />
+
+      {/* 掲示板 */}
       <Route
         path='/all/bulletin_board/register'
         element={
@@ -124,6 +88,7 @@ const AppRoutes = ({ isAuthenticated = false }) => {
           )
         }
       />
+
       {/* 404ページ */}
       <Route path='*' element={<NotFound />} />
 

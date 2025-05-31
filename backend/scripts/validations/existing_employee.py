@@ -1,6 +1,6 @@
 from sqlalchemy.orm import joinedload, Session
 
-from backend.general.models import Employee
+from backend.api.general.models import Employee
 
 
 def existing_employee(db: Session, employee_no: str, exclude_employee_id: int = False):

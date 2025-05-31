@@ -6,10 +6,11 @@ from sqlalchemy import pool
 from alembic import context
 from backend.models import Base
 
-from backend.general.models import *
-from backend.authority.models import *
 from backend.homepage.models import *
-from backend.all.models import *
+from backend.api.general.models import *
+from backend.api.authority.models import *
+from backend.api.all.models import *
+from backend.api.manufacturing.model.machine_models import *
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
