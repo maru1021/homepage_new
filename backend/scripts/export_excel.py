@@ -1,10 +1,8 @@
 import io
 import base64
 import pandas as pd
-from fastapi.responses import FileResponse
-from openpyxl import Workbook
 from openpyxl.worksheet.datavalidation import DataValidation
-from backend.logger_config import logger
+from backend.utils.logger import logger
 
 
 def export_excel(df, file_name):
@@ -13,8 +11,7 @@ def export_excel(df, file_name):
         excel_buffer = io.BytesIO()
         with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
             df.to_excel(writer, index=False, sheet_name='Sheet1')
-            # ワークブックとワークシートを取得
-            workbook = writer.book
+            # ワークシートを取得
             worksheet = writer.sheets['Sheet1']
 
             # プルダウンリストの選択肢を定義

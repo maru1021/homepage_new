@@ -2,7 +2,7 @@ from sqlalchemy import event
 from backend.models import Base
 from backend.scripts.get_time import now
 from sqlalchemy.engine import Engine
-from backend.utils.logger import Logger
+from backend.utils.logger import logger
 import os
 from contextvars import ContextVar
 
@@ -32,7 +32,6 @@ class BaseModel(Base):
         """トランザクションのコミット後の処理"""
         global _last_sql, _last_params
         if operation_type in ['insert', 'update', 'delete']:
-            time = now().strftime('%Y-%m-%d %H:%M:%S')
             if _last_sql:  # SQLが記録されている場合のみ出力
                 # パラメータを実際の値で置換
                 sql = _last_sql
@@ -56,11 +55,16 @@ class BaseModel(Base):
                 # 現在のユーザー情報を取得
                 current_user = current_user_context.get()
                 user_name = current_user.employee_no if current_user else 'N/A'
-                print(user_name)
 
                 # ログメッセージを作成して出力
-                log_message = f"{time} {user_name} {sql}"
-                Logger.write_sql_log(log_message)
+                logger.write_sql_log(
+                    f"SQL Execution: {sql}",
+                    extra={
+                        "function": f"after_{operation_type}",
+                        "employee_no": user_name,
+                        "model": self.__class__.__name__
+                    }
+                )
 
                 _last_sql = None
                 _last_params = None

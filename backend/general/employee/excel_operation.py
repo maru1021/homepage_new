@@ -2,8 +2,9 @@ from sqlalchemy.orm import Session
 import pandas as pd
 
 from backend.authority.employee_authority.crud import get_employees
-from backend.logger_config import logger
+from backend.utils.logger import logger
 from backend.scripts.export_excel import export_excel
+
 
 def export_excel_employees(db: Session, search):
     try:
@@ -31,8 +32,9 @@ def export_excel_employees(db: Session, search):
 
         return export_excel(df, "従業員一覧.xlsx")
     except Exception as e:
-        logger.error(f"Error in export_excel_employees: {str(e)}", exc_info=True, extra={
-            "function": "export_excel_employees",
-            "search": search
-        })
+        logger.write_error_log(
+            f"Error in export_excel_employees: {str(e)}\n"
+            f"Function: export_excel_employees\n"
+            f"Search: {search}"
+        )
         return {"success": False, "message": "Excelファイルのエクスポートに失敗しました", "field": ""}

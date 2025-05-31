@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from backend.auth import get_current_user_or_none
 from backend.authority.models import EmployeeAuthority
 from backend.general.models import Department
+from backend.utils.logger import logger
 
 
 # 認証関連の処理を提供するサービスクラス
@@ -96,6 +97,7 @@ async def authenticate_and_authorize_employee_authority(request: Request, db: Se
         if path.startswith(path_prefix):
             # 所属チェック
             if not permissions[rules['permission_key']]:
+                logger.write_invalid_access_log(f"部署権限不足")
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail={"redirect": "/error/404"}
@@ -107,6 +109,7 @@ async def authenticate_and_authorize_employee_authority(request: Request, db: Se
             elif permissions[rules['admin_permission_key']]:
                 return current_user
 
+            logger.write_invalid_access_log(f"権限不足")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail={"redirect": "/error/404"}
@@ -125,6 +128,7 @@ async def authenticate_and_authorize_post_owner(request: Request, db: Session, p
         if admin_override and getattr(current_user, 'is_admin', False):
             pass
         else:
+            logger.write_invalid_access_log(f"投稿所有者権限不足")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="この投稿を更新する権限がありません"
@@ -151,6 +155,7 @@ async def authenticate_and_authorize_admin(request: Request, db: Session):
     ).first() is not None
 
     if not has_admin_access:
+        logger.write_invalid_access_log(f"管理者権限不足")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="この操作を実行する権限がありません"

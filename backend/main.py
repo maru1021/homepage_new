@@ -1,14 +1,14 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.auth import router as auth_router, set_current_user_middleware
+from backend.middleware.set_current_user_middleware import set_current_user_middleware
+from backend.auth import router as auth_router
 from backend.auth import verify_token
 from backend import models
 from backend.router import router as main_router
 from backend.websocket import router as ws_router
 from backend.public_router import router as public_router
-from backend.models.base_model import current_user_context
-from backend.logger_config import request_context
+from backend.utils.logger import request_context
 from backend.general.department.router import router as department_router
 
 app = FastAPI()

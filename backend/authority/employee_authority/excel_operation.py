@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from backend.authority.employee_authority.crud import get_employees, run_websocket
 from backend.scripts.import_excel import import_excel
-from backend.logger_config import logger
+from backend.utils.logger import logger
 from backend.scripts.export_excel import export_excel
 
 def export_excel_employees(db: Session, search):
@@ -24,10 +24,11 @@ def export_excel_employees(db: Session, search):
 
         return export_excel(df, "従業員権限一覧.xlsx")
     except Exception as e:
-        logger.error(f"Error in export_excel_employees: {str(e)}", exc_info=True, extra={
-            "function": "export_excel_employees",
-            "search": search
-        })
+        logger.write_error_log(
+            f"Error in export_excel_employees: {str(e)}\n"
+            f"Function: export_excel_employees\n"
+            f"Search: {search}"
+        )
         return {"success": False, "message": "Excelファイルのエクスポートに失敗しました", "field": ""}
 
 
@@ -48,7 +49,6 @@ def import_excel_employees(db: Session, file, background_tasks=BackgroundTasks):
 
     def after_add_func(employee_data, db: Session):
         from backend.scripts.init_employee import init_employee
-        print("after_add_func")
         init_employee(db, employee_data.id)
         return
 
