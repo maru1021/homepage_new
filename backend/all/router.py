@@ -14,4 +14,4 @@ router.include_router(bulletin_board_router, prefix="/bulletin_board", tags=["Bu
 @router.get("/auth_check")
 async def auth_check(request: Request, db: Session = Depends(get_db)):
     await authenticate_and_authorize_employee_authority(request, db)
-    return
+    return {"message": "Authentication successful"}
