@@ -14,9 +14,17 @@ function LineEditForm({ editData, closeModal }) {
     const [position_x, setPositionX] = useState(editData?.position_x || 0);
     const [position_y, setPositionY] = useState(editData?.position_y || 0);
 
+    const positionXMax = 700;
+    const positionYMax = 700;
+
+    const [positionXError, setPositionXError] = useState('');
+    const [positionYError, setPositionYError] = useState('');
+
     const inputValid = () => {
         const validationRules = [
-            {value: name, errorField: setNameError, type: "required", errorMessage: "ライン名を入力して下さい" }
+            {value: name, errorField: setNameError, type: "required", errorMessage: "ライン名を入力して下さい" },
+            {value: position_x, errorField: setPositionXError, type: "int", ex: {min: 0, max: positionXMax}, errorMessage: "位置Xを0から700の間で入力して下さい" },
+            {value: position_y, errorField: setPositionYError, type: "int", ex: {min: 0, max: positionYMax}, errorMessage: "位置Yを0から700の間で入力して下さい" }
         ]
         return validateFields(validationRules);
     };
@@ -61,7 +69,8 @@ function LineEditForm({ editData, closeModal }) {
                     type="number"
                     value={position_x}
                     onChange={(e) => setPositionX(e.target.value)}
-                    inputProps={{ min: 0, max: 700 }}
+                    error={Boolean(positionXError)}
+                    helperText={positionXError}
                 />
                 <TextField
                     fullWidth
@@ -69,7 +78,8 @@ function LineEditForm({ editData, closeModal }) {
                     type="number"
                     value={position_y}
                     onChange={(e) => setPositionY(e.target.value)}
-                    inputProps={{ min: 0, max: 700 }}
+                    error={Boolean(positionYError)}
+                    helperText={positionYError}
                 />
                 <FormControlLabel
                     control={

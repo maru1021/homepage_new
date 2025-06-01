@@ -1,7 +1,7 @@
 const validateFields = (validationRules) => {
   let isValid = true;
 
-  validationRules.forEach(({ value, errorField, errorMessage, type }) => {
+  validationRules.forEach(({ value, errorField, errorMessage, type, ex=null }) => {
     if (type === "required") {
       if (!value) {
         errorField(errorMessage || "必須項目です。");
@@ -38,6 +38,20 @@ const validateFields = (validationRules) => {
       } else if (!phoneRegex.test(value)) {
         errorField("正しい電話番号を入力してください。（例: 0120-12-3456, 080-1234-5678, 08012345678）");
         isValid = false;
+      } else {
+        errorField("")
+      }
+    } else if (type === "int") {
+      if (!/^[0-9]+$/.test(value)) {
+        errorField("整数を入力してください。");
+        isValid = false;
+      } else if (ex) {
+        if (value < ex.min || value > ex.max) {
+          errorField(errorMessage);
+          isValid = false;
+        } else {
+          errorField("")
+        }
       } else {
         errorField("")
       }
