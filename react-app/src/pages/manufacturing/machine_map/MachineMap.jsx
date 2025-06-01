@@ -1,28 +1,44 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { API_BASE_URL } from '../../../config/baseURL';
 
 // 工場建物のSVGアイコンコンポーネント
-const FactoryBuildingIcon = ({ size = 48, color = "#60a5fa" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
-    <rect x="2" y="8" width="20" height="12" rx="1" fill="#3b82f6"/>
-    <rect x="4" y="4" width="6" height="4" fill="#2563eb"/>
-    <rect x="14" y="6" width="4" height="2" fill="#2563eb"/>
-    <circle cx="7" cy="11" r="1" fill="#60a5fa"/>
-    <circle cx="12" cy="11" r="1" fill="#60a5fa"/>
-    <circle cx="17" cy="11" r="1" fill="#60a5fa"/>
-    <rect x="6" y="14" width="2" height="6" fill="#1d4ed8"/>
-    <rect x="11" y="14" width="2" height="6" fill="#1d4ed8"/>
-    <rect x="16" y="14" width="2" height="6" fill="#1d4ed8"/>
-    <path d="M2 8L7 4L12 8" stroke="#2563eb" strokeWidth="2"/>
-  </svg>
-);
+const FactoryBuildingIcon = ({ size = 48, color = "#60a5fa", operatingCondition = "稼働中" }) => {
+  const getColors = () => {
+    switch(operatingCondition) {
+      case "停止中":
+        return { main: "#dc2626", secondary: "#991b1b", light: "#f87171" };
+      case "計画停止":
+        return { main: "#eab308", secondary: "#a16207", light: "#facc15" };
+      default: // 稼働中
+        return { main: "#3b82f6", secondary: "#2563eb", light: "#60a5fa" };
+    }
+  };
+
+  const colors = getColors();
+
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+      <rect x="2" y="8" width="20" height="12" rx="1" fill={colors.main}/>
+      <rect x="4" y="4" width="6" height="4" fill={colors.secondary}/>
+      <rect x="14" y="6" width="4" height="2" fill={colors.secondary}/>
+      <circle cx="7" cy="11" r="1" fill={colors.light}/>
+      <circle cx="12" cy="11" r="1" fill={colors.light}/>
+      <circle cx="17" cy="11" r="1" fill={colors.light}/>
+      <rect x="6" y="14" width="2" height="6" fill={colors.secondary}/>
+      <rect x="11" y="14" width="2" height="6" fill={colors.secondary}/>
+      <rect x="16" y="14" width="2" height="6" fill={colors.secondary}/>
+      <path d="M2 8L7 4L12 8" stroke={colors.secondary} strokeWidth="2"/>
+    </svg>
+  );
+};
 
 FactoryBuildingIcon.propTypes = {
   size: PropTypes.number,
-  color: PropTypes.string
+  color: PropTypes.string,
+  operatingCondition: PropTypes.string
 };
 
 // 煙のSVGアニメーション
@@ -64,33 +80,47 @@ SmokeAnimation.propTypes = {
 };
 
 // 機械名表示コンポーネント
-const MachineName = ({ name }) => (
-  <Box
-    sx={{
-      position: 'absolute',
-      top: '10px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      textAlign: 'center',
-      fontSize: '16px',
-      fontWeight: '700',
-      color: '#1f2937',
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      padding: '6px 12px',
-      borderRadius: '8px',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-      border: '2px solid #3b82f6',
-      minWidth: '120px',
-      maxWidth: '160px',
-      zIndex: 10
-    }}
-  >
-    {name}
-  </Box>
-);
+const MachineName = ({ name, operatingCondition = "稼働中" }) => {
+  const getBorderColor = () => {
+    switch(operatingCondition) {
+      case "停止中":
+        return "#dc2626";
+      case "計画停止":
+        return "#eab308";
+      default: // 稼働中
+        return "#3b82f6";
+    }
+  };
+
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        top: '10px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        textAlign: 'center',
+        fontSize: '16px',
+        fontWeight: '700',
+        color: '#1f2937',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        padding: '6px 12px',
+        borderRadius: '8px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+        border: `2px solid ${getBorderColor()}`,
+        minWidth: '120px',
+        maxWidth: '160px',
+        zIndex: 10
+      }}
+    >
+      {name}
+    </Box>
+  );
+};
 
 MachineName.propTypes = {
-  name: PropTypes.string.isRequired
+  name: PropTypes.string.isRequired,
+  operatingCondition: PropTypes.string
 };
 
 // 煙コンテナコンポーネント
@@ -109,7 +139,7 @@ const SmokeContainer = () => (
 );
 
 // 工場アイコンコンテナコンポーネント
-const FactoryIconContainer = () => (
+const FactoryIconContainer = ({ operatingCondition }) => (
   <Box
     sx={{
       position: 'absolute',
@@ -118,49 +148,78 @@ const FactoryIconContainer = () => (
       transform: 'translateX(-50%)'
     }}
   >
-    <FactoryBuildingIcon size={80} />
+    <FactoryBuildingIcon size={80} operatingCondition={operatingCondition} />
   </Box>
 );
 
+FactoryIconContainer.propTypes = {
+  operatingCondition: PropTypes.string
+};
+
 // 建物コンテナコンポーネント
-const BuildingContainer = ({ children, onMouseEnter, onMouseLeave }) => (
-  <Box
-    className="building-container"
-    onMouseEnter={onMouseEnter}
-    onMouseLeave={onMouseLeave}
-    sx={{
-      position: 'relative',
-      display: 'flex',
-      alignItems: 'flex-end',
-      justifyContent: 'center',
-      backgroundColor: '#f8fafc',
-      borderRadius: '16px',
-      padding: '15px',
-      paddingBottom: '10px',
-      boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)',
-      border: '4px solid #3b82f6',
-      transition: 'all 0.3s ease',
-      width: '180px',
-      height: '180px',
-      overflow: 'hidden',
-      '&:hover': {
-        transform: 'scale(1.05)',
-        boxShadow: '0 8px 20px rgba(59, 130, 246, 0.4)'
-      }
-    }}
-  >
-    {children}
-  </Box>
-);
+const BuildingContainer = ({ children, onMouseEnter, onMouseLeave, operatingCondition = "稼働中" }) => {
+  const getBorderColor = () => {
+    switch(operatingCondition) {
+      case "停止中":
+        return "#dc2626";
+      case "計画停止":
+        return "#eab308";
+      default: // 稼働中
+        return "#3b82f6";
+    }
+  };
+
+  const getHoverColor = () => {
+    switch(operatingCondition) {
+      case "停止中":
+        return "rgba(220, 38, 38, 0.4)";
+      case "計画停止":
+        return "rgba(234, 179, 8, 0.4)";
+      default: // 稼働中
+        return "rgba(59, 130, 246, 0.4)";
+    }
+  };
+
+  return (
+    <Box
+      className="building-container"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      sx={{
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        backgroundColor: '#f8fafc',
+        borderRadius: '16px',
+        padding: '15px',
+        paddingBottom: '10px',
+        boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)',
+        border: `4px solid ${getBorderColor()}`,
+        transition: 'all 0.3s ease',
+        width: '180px',
+        height: '180px',
+        overflow: 'hidden',
+        '&:hover': {
+          transform: 'scale(1.05)',
+          boxShadow: `0 8px 20px ${getHoverColor()}`
+        }
+      }}
+    >
+      {children}
+    </Box>
+  );
+};
 
 BuildingContainer.propTypes = {
   children: PropTypes.node.isRequired,
   onMouseEnter: PropTypes.func,
-  onMouseLeave: PropTypes.func
+  onMouseLeave: PropTypes.func,
+  operatingCondition: PropTypes.string
 };
 
 // メインの機械アイコンコンポーネント
-const MachineIcon = ({ machineName, x, y, lineId, onClick }) => {
+const MachineIcon = ({ machineName, x, y, lineId, onClick, operatingCondition }) => {
   return (
     <Box
       onClick={() => onClick(lineId)}
@@ -178,10 +237,10 @@ const MachineIcon = ({ machineName, x, y, lineId, onClick }) => {
         transition: 'all 0.3s ease'
       }}
     >
-      <BuildingContainer>
-        <MachineName name={machineName} />
+      <BuildingContainer operatingCondition={operatingCondition}>
+        <MachineName name={machineName} operatingCondition={operatingCondition} />
         <SmokeContainer />
-        <FactoryIconContainer />
+        <FactoryIconContainer operatingCondition={operatingCondition} />
       </BuildingContainer>
     </Box>
   );
@@ -192,7 +251,8 @@ MachineIcon.propTypes = {
   x: PropTypes.number.isRequired,
   y: PropTypes.number.isRequired,
   lineId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  onClick: PropTypes.func.isRequired
+  onClick: PropTypes.func.isRequired,
+  operatingCondition: PropTypes.string
 };
 
 // ローディングコンポーネント
@@ -271,11 +331,13 @@ MapContainer.propTypes = {
 };
 
 // メインのLineMapコンポーネント
-const LineMap = () => {
+const MachineMap = () => {
   const [lines, setLines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  const { lineId } = useParams();
 
   const handleLineClick = (lineId) => {
     navigate(`/manufacturing/machine_map/${lineId}`);
@@ -284,7 +346,7 @@ const LineMap = () => {
   useEffect(() => {
     const fetchLines = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/manufacturing/line_map`, {
+        const response = await fetch(`${API_BASE_URL}/api/manufacturing/machine_map/${lineId}`, {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -320,7 +382,13 @@ const LineMap = () => {
     };
 
     fetchLines();
-  }, []);
+
+    const intervalId = setInterval(fetchLines, 1000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [lineId]);
 
   if (loading) {
     return <LoadingComponent />;
@@ -347,6 +415,7 @@ const LineMap = () => {
             x={x}
             y={y}
             onClick={handleLineClick}
+            operatingCondition={line.operating_condition}
           />
         );
       })}
@@ -354,4 +423,4 @@ const LineMap = () => {
   );
 };
 
-export default LineMap;
+export default MachineMap;

@@ -76,7 +76,7 @@ function MachineTable({ data, searchQuery, currentPage, itemsPerPage }) {
         { label: '削除', icon:<FaTrash color='#E57373' />, onClick: handleDelete }
     ];
 
-    const columns = ['ライン', '名前', '有効']
+    const columns = ['ライン', '名前', '稼働状態', 'Map座標X', 'Map座標Y', '有効']
 
     return (
         <DndProvider backend={HTML5Backend}>
@@ -100,6 +100,9 @@ function MachineTable({ data, searchQuery, currentPage, itemsPerPage }) {
                                         data={{
                                             line_name: machine.line?.name || '',
                                             name: machine.name,
+                                            operating_condition: machine.operating_condition,
+                                            position_x: machine.position_x,
+                                            position_y: machine.position_y,
                                             active: machine.active ? '☑️' : '⬜',
                                             id: machine.id
                                         }}
@@ -134,6 +137,9 @@ MachineTable.propTypes = {
             name: PropTypes.string.isRequired,
             active: PropTypes.bool.isRequired,
             sort: PropTypes.number.isRequired,
+            position_x: PropTypes.number.isRequired,
+            position_y: PropTypes.number.isRequired,
+            operating_condition: PropTypes.string.isRequired,
             line_id: PropTypes.number,
             line_name: PropTypes.string
         })

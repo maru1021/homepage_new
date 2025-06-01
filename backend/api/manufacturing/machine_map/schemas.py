@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional, Union
 
-class LineMapBase(BaseModel):
+class MachineMapBase(BaseModel):
     name: str
     active: bool = True
     position_x: int = 0
@@ -9,9 +9,10 @@ class LineMapBase(BaseModel):
     searchQuery: Optional[str] = None
 
 # テーブルのデータ取得時の形式
-class LineMap(BaseModel):
+class MachineMap(BaseModel):
     id: int
     name: str
+    operating_condition: str
     position_x: int | None = None
     position_y: int | None = None
 
@@ -24,9 +25,9 @@ class ErrorResponse(BaseModel):
     field: str = ""
 
 # フロントエンドに返す形式
-class LineMapResponse(BaseModel):
+class MachineMapResponse(BaseModel):
     success: bool = True
-    data: List[LineMap] | LineMap = None
+    data: List[MachineMap] | MachineMap = None
     message: Optional[str] = None
     field: Optional[str] = None
 

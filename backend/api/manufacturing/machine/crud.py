@@ -42,7 +42,10 @@ def get_machines(db: Session, search: str = "", page: int = 1, limit: int = 10, 
                     "id": machine.id,
                     "name": machine.name,
                     "active": machine.active,
+                    "position_x": machine.position_x,
+                    "position_y": machine.position_y,
                     "sort": machine.sort,
+                    "operating_condition": machine.operating_condition,
                     "line_id": machine.line.id if machine.line else None,
                     "line_name": machine.line.name if machine.line else None,
                     "line": {
@@ -105,6 +108,9 @@ def create_machine(db: Session, machine: schemas.MachineCreate, background_tasks
                 "name": db_machine.name,
                 "active": db_machine.active,
                 "sort": db_machine.sort,
+                "position_x": db_machine.position_x,
+                "position_y": db_machine.position_y,
+                "operating_condition": db_machine.operating_condition,
                 "line_id": db_machine.line_id,
                 "line_name": line.name if line else None,
                 "line": {
@@ -153,9 +159,14 @@ def update_machine(db: Session, machine_id: int, machine_data: schemas.MachineUp
         machine.name = machine_data.name
         machine.active = machine_data.active
         machine.line_id = machine_data.line_id if line else None
-
+        machine.position_x = machine_data.position_x
+        machine.position_y = machine_data.position_y
+        machine.operating_condition = machine_data.operating_condition
         db.commit()
         db.refresh(machine)
+        print('-------------------------------')
+        print(machine.operating_condition)
+        print('-------------------------------')
 
         background_tasks.add_task(run_websocket, db)
 
@@ -166,7 +177,10 @@ def update_machine(db: Session, machine_id: int, machine_data: schemas.MachineUp
                 "id": machine.id,
                 "name": machine.name,
                 "active": machine.active,
+                "position_x": machine.position_x,
+                "position_y": machine.position_y,
                 "sort": machine.sort,
+                "operating_condition": machine.operating_condition,
                 "line_id": machine.line_id,
                 "line_name": line.name if line else None,
                 "line": {

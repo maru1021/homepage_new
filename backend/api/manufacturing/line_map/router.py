@@ -17,14 +17,3 @@ async def read_line_map(
     await authenticate_and_authorize_employee_authority(request, db)
     return crud.get_line_map(db)
 
-# ライン編集
-@router.put("/{line_id}", response_model=schemas.LineMapResponse)
-async def update_line(
-    request: Request,
-    line_id: int,
-    line_data: schemas.LineMapBase,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
-):
-    await authenticate_and_authorize_employee_authority(request, db)
-    return crud.update_line_map(db, line_id, line_data, background_tasks=background_tasks)

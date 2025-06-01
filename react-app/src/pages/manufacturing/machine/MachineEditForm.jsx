@@ -33,6 +33,15 @@ function MachineEditForm({ closeModal, editData }) {
     const [line_id, setLineId] = useState(editData.line?.id || '');
     const [active, setActive] = useState(editData.active);
     const [lines, setLines] = useState([]);
+    const [position_x, setPositionX] = useState(editData.position_x);
+    const [position_y, setPositionY] = useState(editData.position_y);
+    const [operating_condition, setOperatingCondition] = useState(editData.operating_condition);
+
+    const positionXMax = 700;
+    const positionYMax = 700;
+
+    const [positionXError, setPositionXError] = useState('');
+    const [positionYError, setPositionYError] = useState('');
 
     // エラーメッセージ
     const [nameError, setNameError] = useState('');
@@ -50,6 +59,8 @@ function MachineEditForm({ closeModal, editData }) {
     const validateInput = () => {
         const validationRules = [
             { value: name, errorField: setNameError, type: "required", errorMessage: "名前を入力して下さい"},
+            { value: position_x, errorField: setPositionXError, type: "int", ex: {min: 0, max: positionXMax}, errorMessage: "位置Xを0から700の間で入力して下さい" },
+            { value: position_y, errorField: setPositionYError, type: "int", ex: {min: 0, max: positionYMax}, errorMessage: "位置Yを0から700の間で入力して下さい" }
         ]
 
         return validateFields(validationRules);
@@ -70,7 +81,10 @@ function MachineEditForm({ closeModal, editData }) {
         const sendData = {
             name,
             line_id: line_id || null,
-            active
+            active,
+            position_x,
+            position_y,
+            operating_condition
         }
 
         handleAPI(url, 'PUT', closeModal, sendData, errorFieldMap)
@@ -97,6 +111,34 @@ function MachineEditForm({ closeModal, editData }) {
                                 {line.name}
                             </MenuItem>
                         ))}
+                    </Select>
+                </FormControl>
+
+                <TextField
+                    fullWidth
+                    label='位置X'
+                    type="number"
+                    value={position_x}
+                    onChange={(e) => setPositionX(e.target.value)}
+                    error={Boolean(positionXError)}
+                    helperText={positionXError}
+                />
+                <TextField
+                    fullWidth
+                    label='位置Y'
+                    type="number"
+                    value={position_y}
+                    onChange={(e) => setPositionY(e.target.value)}
+                    error={Boolean(positionYError)}
+                    helperText={positionYError}
+                />
+
+                <FormControl fullWidth>
+                    <InputLabel>稼働状態</InputLabel>
+                    <Select value={operating_condition} onChange={(e) => setOperatingCondition(e.target.value)}>
+                        <MenuItem value="稼働中">稼働中</MenuItem>
+                        <MenuItem value="停止中">停止中</MenuItem>
+                        <MenuItem value="計画停止">計画停止</MenuItem>
                     </Select>
                 </FormControl>
 
@@ -141,6 +183,9 @@ MachineEditForm.propTypes = {
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
         active: PropTypes.bool.isRequired,
+        position_x: PropTypes.number.isRequired,
+        position_y: PropTypes.number.isRequired,
+        operating_condition: PropTypes.string,
         line: PropTypes.shape({
             id: PropTypes.number,
             name: PropTypes.string
