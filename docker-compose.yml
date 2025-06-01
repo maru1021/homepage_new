@@ -11,6 +11,8 @@
 # cd /var/www/homepage_new
 # docker compose up -d --build
 
+version: "3.8"
+
 services:
   # http://localhost:3000/でReactアプリにアクセスするのに使用
   react-app:
@@ -72,7 +74,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     restart: always
-    healthcheck:  # ヘルスチェックを追加
+    healthcheck: # ヘルスチェックを追加
       test: ["CMD-SHELL", "pg_isready -U user -d mydatabase"]
       interval: 10s
       timeout: 5s
