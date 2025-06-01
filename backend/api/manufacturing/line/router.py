@@ -1,5 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Query, Request, UploadFile
 from sqlalchemy.orm import Session
+from typing import List
 
 from backend.models import get_db
 from backend.api.manufacturing.line import crud, schemas, excel_operation
@@ -88,3 +89,9 @@ async def import_lines_to_excel(
 ):
     await authenticate_and_authorize_employee_authority(request, db)
     return excel_operation.import_excel_lines(db, file, background_tasks=background_tasks)
+
+# ラインの配置情報を取得
+@router.get("/positions")
+async def read_line_positions(db: Session = Depends(get_db)):
+    await authenticate_and_authorize_employee_authority(None, db)
+    return crud.get_line_positions(db)

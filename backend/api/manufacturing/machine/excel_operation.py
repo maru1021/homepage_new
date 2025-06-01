@@ -12,14 +12,7 @@ def export_excel_lines(db: Session, search: str):
     try:
         lines = get_lines(db, search, return_total_count=False)
         df = pd.DataFrame([
-            {
-                "操作": "",
-                "ID": line.id,
-                "ライン名": line.name,
-                "位置X": line.position_x,
-                "位置Y": line.position_y,
-                "有効": line.active
-            }
+            {"操作": "", "ID": line.id, "ライン名": line.name}
             for line in lines
         ])
         return export_excel(df, "ライン一覧.xlsx")
@@ -36,7 +29,7 @@ def import_excel_lines(db: Session, file, background_tasks=BackgroundTasks):
         from backend.api.manufacturing.line.crud import run_websocket
 
         model = Line
-        required_columns = {"操作", "ID", "ライン名", "位置X", "位置Y", "有効"}
+        required_columns = {"操作", "ID", "ライン名"}
         websocket_func = lambda: background_tasks.add_task(run_websocket, db)
 
         return import_excel(db, file, "line", model, required_columns, websocket_func)

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from backend.homepage.models import Type
 from backend.homepage.type import schemas
 from backend.websocket import websocket_manager
-
+from backend.utils.logger import logger
 
 # 項目の変更をWebSocketで通知
 async def type_websocket(db: Session):
@@ -68,7 +68,11 @@ def create_type(db: Session, type: schemas.TypeCreate, background_tasks: Backgro
         }
     except SQLAlchemyError as e:
         db.rollback()
-        print(f"Error occurred: {e}")
+        logger.write_error_log(
+            f"Error in create_type: {str(e)}\n"
+            f"Function: create_type\n"
+            f"Type: {type}"
+        )
         return {"success": False, "message": "データベースエラーが発生しました", "field": ""}
 
 # 項目編集
@@ -96,6 +100,12 @@ def update_type(db: Session, type_id: int, type_data: schemas.Type, background_t
         }
     except SQLAlchemyError as e:
         db.rollback()
+        logger.write_error_log(
+            f"Error in update_type: {str(e)}\n"
+            f"Function: update_type\n"
+            f"Type ID: {type_id}\n"
+            f"Type Data: {type_data}"
+        )
         raise ValueError(f"項目更新中にエラーが発生しました: {e}")
 
 # 項目削除
@@ -117,6 +127,11 @@ def delete_type(db: Session, type_id: int, background_tasks: BackgroundTasks):
         }
     except SQLAlchemyError as e:
         db.rollback()
+        logger.write_error_log(
+            f"Error in delete_type: {str(e)}\n"
+            f"Function: delete_type\n"
+            f"Type ID: {type_id}"
+        )
         raise ValueError(f"項目削除中にエラーが発生しました: {e}")
 
 # 項目並べ替え
@@ -130,7 +145,6 @@ def sort_types(db: Session, type_order: list[dict], background_tasks: Background
         db.commit()
 
         background_tasks.add_task(run_websocket, db)
-        raise Exception("test")
 
         return {
             "message": "項目の並び替えが完了しました。",
@@ -138,4 +152,9 @@ def sort_types(db: Session, type_order: list[dict], background_tasks: Background
 
     except Exception as e:
         db.rollback()
+        logger.write_error_log(
+            f"Error in sort_types: {str(e)}\n"
+            f"Function: sort_types\n"
+            f"Type Order: {type_order}"
+        )
         raise ValueError(f"Failed to reorder types: {str(e)}")

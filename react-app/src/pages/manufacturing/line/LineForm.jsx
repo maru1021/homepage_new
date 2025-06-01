@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, DialogActions, TextField } from '@mui/material';
+import { Button, DialogActions, TextField, Stack } from '@mui/material';
 
 import { API_BASE_URL } from '../../../config/baseURL';
 import validateFields from '../../../utils/validFields';
@@ -10,6 +10,8 @@ import handleAPI from '../../../utils/handleAPI';
 function LineForm({ closeModal }) {
     const [name, setName] = useState('');
     const [nameError, setNameError] = useState('');
+    const [position_x, setPositionX] = useState(0);
+    const [position_y, setPositionY] = useState(0);
 
     const inputValid = () => {
         const validationRules = [
@@ -26,6 +28,8 @@ function LineForm({ closeModal }) {
 
         const sendData = {
             name,
+            position_x,
+            position_y
         };
 
         const errorFieldMap = {
@@ -40,15 +44,32 @@ function LineForm({ closeModal }) {
     return (
         <>
             <form>
-                <TextField
-                    fullWidth
-                    label='ライン名'
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    error={Boolean(nameError)}
-                    helperText={nameError}
-                    autoFocus
-                />
+                <Stack direction="column" spacing={2}>
+                    <TextField
+                        fullWidth
+                        label='ライン名'
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        error={Boolean(nameError)}
+                        helperText={nameError}
+                        autoFocus
+                    />
+
+                    <TextField
+                        fullWidth
+                        label='位置X'
+                        value={position_x}
+                        onChange={(e) => setPositionX(e.target.value)}
+                    />
+
+                    <TextField
+                        fullWidth
+                        label='位置Y'
+                        value={position_y}
+                        onChange={(e) => setPositionY(e.target.value)}
+                    />
+                </Stack>
+
                 <DialogActions>
                     <Button type='submit' variant='contained' color='primary' onClick={handleSubmit}>
                         登録

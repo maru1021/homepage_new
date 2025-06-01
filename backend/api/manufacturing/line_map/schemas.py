@@ -1,26 +1,25 @@
 from pydantic import BaseModel
 from typing import List, Optional, Union
 
-class LineBase(BaseModel):
+class LineMapBase(BaseModel):
     name: str
     active: bool = True
     position_x: int = 0
     position_y: int = 0
     searchQuery: Optional[str] = None
 
-class LineCreate(LineBase):
+class LineMapCreate(LineMapBase):
     pass
 
-class LineUpdate(LineBase):
+class LineMapUpdate(LineMapBase):
     pass
 
 # テーブルのデータ取得時の形式
-class Line(BaseModel):
+class LineMap(BaseModel):
     id: int
     name: str
-    active: bool
-    position_x: int
-    position_y: int
+    position_x: int | None = None
+    position_y: int | None = None
 
     class Config:
         from_attributes = True
@@ -31,16 +30,11 @@ class ErrorResponse(BaseModel):
     field: str = ""
 
 # フロントエンドに返す形式
-class LineResponse(BaseModel):
+class LineMapResponse(BaseModel):
     success: bool = True
-    data: List[Line] | Line = None
+    data: List[LineMap] | LineMap = None
     message: Optional[str] = None
     field: Optional[str] = None
 
     class Config:
         from_attributes = True
-
-# テーブルデータ取得時の形式
-class PaginatedLineResponse(BaseModel):
-    lines: Union[LineResponse, ErrorResponse]
-    totalCount: int

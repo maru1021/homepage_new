@@ -1,6 +1,7 @@
-from backend.authority.models import EmployeeAuthority, EmployeeCredential
-from backend.general.models import EmployeeInfo
+from backend.api.authority.models import EmployeeAuthority, EmployeeCredential
+from backend.api.general.models import EmployeeInfo
 from sqlalchemy.exc import SQLAlchemyError
+from backend.utils.logger import logger
 from backend.scripts.get_time import today
 
 from backend.scripts.hash_password import hashed_password
@@ -54,5 +55,11 @@ def init_employee(db, id, authorities=[], info=None):
 
   except SQLAlchemyError as e:
     db.rollback()
-    print(f"エラーが発生しました: {e}")
+    logger.write_error_log(
+      f"Error in init_employee: {str(e)}\n"
+      f"Function: init_employee\n"
+      f"ID: {id}\n"
+      f"Authorities: {authorities}\n"
+      f"Info: {info}"
+    )
     return {"success": False, "message": f"データベースエラーが発生しました: {str(e)}", "field": ""}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, DialogActions, TextField, FormControlLabel, Checkbox } from '@mui/material';
+import { Button, DialogActions, TextField, FormControlLabel, Checkbox, Stack } from '@mui/material';
 
 import { API_BASE_URL } from '../../../config/baseURL';
 import validateFields from '../../../utils/validFields';
@@ -11,6 +11,8 @@ function LineEditForm({ editData, closeModal }) {
     const [name, setName] = useState(editData?.name || '');
     const [active, setActive] = useState(editData?.active ?? true);
     const [nameError, setNameError] = useState('');
+    const [position_x, setPositionX] = useState(editData?.position_x || 0);
+    const [position_y, setPositionY] = useState(editData?.position_y || 0);
 
     const inputValid = () => {
         const validationRules = [
@@ -27,7 +29,9 @@ function LineEditForm({ editData, closeModal }) {
 
         const sendData = {
             name,
-            active
+            active,
+            position_x,
+            position_y
         };
 
         const errorFieldMap = {
@@ -35,32 +39,49 @@ function LineEditForm({ editData, closeModal }) {
         }
 
         const url = `${API_BASE_URL}/api/manufacturing/line/${editData?.id}`
-        console.log(url)
 
         handleAPI(url, 'PUT', closeModal, sendData, errorFieldMap)
     };
 
     return (
         <form>
-            <TextField
-                fullWidth
-                label='ライン名'
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                error={Boolean(nameError)}
-                helperText={nameError}
-                autoFocus
-            />
-            <FormControlLabel
-                control={
-                    <Checkbox
-                        checked={active}
-                        onChange={(e) => setActive(e.target.checked)}
-                        color="primary"
-                    />
-                }
-                label="有効"
-            />
+            <Stack direction="column" spacing={2}>
+                <TextField
+                    fullWidth
+                    label='ライン名'
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    error={Boolean(nameError)}
+                    helperText={nameError}
+                    autoFocus
+                />
+                <TextField
+                    fullWidth
+                    label='位置X'
+                    type="number"
+                    value={position_x}
+                    onChange={(e) => setPositionX(e.target.value)}
+                    inputProps={{ min: 0, max: 700 }}
+                />
+                <TextField
+                    fullWidth
+                    label='位置Y'
+                    type="number"
+                    value={position_y}
+                    onChange={(e) => setPositionY(e.target.value)}
+                    inputProps={{ min: 0, max: 700 }}
+                />
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={active}
+                            onChange={(e) => setActive(e.target.checked)}
+                            color="primary"
+                        />
+                    }
+                    label="有効"
+                />
+            </Stack>
             <DialogActions>
                 <Button type='submit' variant='contained' color='primary' onClick={handleSubmit}>
                     登録
@@ -74,7 +95,9 @@ LineEditForm.propTypes = {
     editData: PropTypes.shape({
         id: PropTypes.number,
         name: PropTypes.string,
-        active: PropTypes.bool
+        active: PropTypes.bool,
+        position_x: PropTypes.number,
+        position_y: PropTypes.number
     }),
     closeModal: PropTypes.func.isRequired,
     searchQuery: PropTypes.string,

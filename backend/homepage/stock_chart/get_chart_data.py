@@ -6,6 +6,7 @@ import numpy as np
 import os
 from io import StringIO
 import time
+from backend.utils.logger import logger
 
 ALPHA_VANTAGE_API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
 
@@ -210,7 +211,12 @@ def fetch_forex_data(symbol: str, time_range: str):
         return prepare_stock_response(df)
 
     except Exception as e:
-        print(f"為替データ取得エラー: {str(e)}")
+        logger.write_error_log(
+            f"Error in fetch_forex_data: {str(e)}\n"
+            f"Function: fetch_forex_data\n"
+            f"Symbol: {symbol}\n"
+            f"Time Range: {time_range}"
+        )
         raise
 
 # 時間範囲をパースする共通関数
@@ -282,12 +288,22 @@ def fetch_japan_stock_data(symbol: str, time_range: str):
                     return prepare_stock_response(df)
 
         # Stooqからデータ取得できなかった場合
-        print(f"Stooqからデータ取得できませんでした: {response.status_code}")
+        logger.write_error_log(
+            f"Error in fetch_japan_stock_data: {str(e)}\n"
+            f"Function: fetch_japan_stock_data\n"
+            f"Symbol: {symbol}\n"
+            f"Time Range: {time_range}"
+        )
         # Alpha Vantageで代替
         return fetch_alpha_vantage_data(symbol, time_range)
 
     except Exception as e:
-        print(f"日本株データ取得エラー（Stooq）: {str(e)}")
+        logger.write_error_log(
+            f"Error in fetch_japan_stock_data: {str(e)}\n"
+            f"Function: fetch_japan_stock_data\n"
+            f"Symbol: {symbol}\n"
+            f"Time Range: {time_range}"
+        )
         # Alpha Vantageで代替
         return fetch_alpha_vantage_data(symbol, time_range)
 
@@ -361,5 +377,10 @@ def fetch_alpha_vantage_data(symbol: str, time_range: str):
         return prepare_stock_response(df)
 
     except Exception as e:
-        print(f"Alpha Vantageデータ取得エラー: {str(e)}")
+        logger.write_error_log(
+            f"Error in fetch_alpha_vantage_data: {str(e)}\n"
+            f"Function: fetch_alpha_vantage_data\n"
+            f"Symbol: {symbol}\n"
+            f"Time Range: {time_range}"
+        )
         raise

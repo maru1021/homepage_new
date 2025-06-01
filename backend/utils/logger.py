@@ -69,10 +69,8 @@ class Logger:
         # 現在のユーザー情報を取得
         try:
             current_user = current_user_context.get()
-            print('current_user in logger:', current_user)
             if current_user and hasattr(current_user, 'employee_no'):
                 employee_no = current_user.employee_no
-                print('employee_no in logger:', employee_no)
             else:
                 # リクエスト情報からユーザー情報を取得
                 request = request_context.get()
@@ -80,14 +78,11 @@ class Logger:
                     current_user = request.state.user
                     if current_user and hasattr(current_user, 'employee_no'):
                         employee_no = current_user.employee_no
-                        print('employee_no from request state:', employee_no)
                     else:
                         employee_no = 'N/A'
                 else:
                     employee_no = 'N/A'
-                print('employee_no not found, using N/A')
         except Exception as e:
-            print('Error getting current_user:', str(e))
             employee_no = 'N/A'
 
         # リクエスト情報を取得

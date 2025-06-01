@@ -2,6 +2,7 @@ from io import BytesIO
 import pandas as pd
 
 from backend.column_name import COLUMN_NAME
+from backend.utils.logger import logger
 
 
 def import_excel(db, file, model_name, model, required_columns, websocket_func, before_add_func=None,
@@ -14,12 +15,12 @@ def import_excel(db, file, model_name, model, required_columns, websocket_func, 
 
         # 必須カラムの確認
       if not required_columns.issubset(df.columns):
-          raise ValueError(f"Excelのフォーマットが正しくありません。{','.join(required_columns)}の列が必要です。")
+        return {"success": False, "message": f"Excelのフォーマットが正しくありません。{','.join(required_columns)}の列が必要です。", "field": ""}
 
       # 列名を英語に変換
       column_name = COLUMN_NAME.get(model_name)
       if not column_name:
-          raise ValueError(f"モデル '{model_name}' のカラムマッピングが見つかりません。")
+        return {"success": False, "message": f"モデル '{model_name}' のカラムマッピングが見つかりません。", "field": ""}
 
       df.rename(columns=column_name, inplace=True)
 
@@ -106,5 +107,11 @@ def import_excel(db, file, model_name, model, required_columns, websocket_func, 
       return {"success": True, "message": "Excelデータをインポートしました"}
     except Exception as e:
       db.rollback()
-      print(str(e))
+      logger.write_error_log(
+        f"Error in import_excel: {str(e)}\n"
+        f"Function: import_excel\n"
+        f"File: {file}\n"
+        f"Model Name: {model_name}\n"
+        f"Required Columns: {required_columns}"
+      )
       return {"success": False, "message": str(e), "field": ""}

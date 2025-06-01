@@ -2,6 +2,7 @@ from fastapi import Request
 from backend.models.base_model import current_user_context
 from backend.models import get_db
 from backend.auth import verify_token
+from backend.utils.logger import logger
 
 # ユーザー名の取得
 async def set_current_user_middleware(request: Request, call_next):
@@ -27,7 +28,10 @@ async def set_current_user_middleware(request: Request, call_next):
         response = await call_next(request)
         return response
     except Exception as e:
-        print('exception in middleware:', str(e))
+        logger.write_error_log(
+            f"Error in set_current_user_middleware: {str(e)}\n"
+            f"Function: set_current_user_middleware"
+        )
         response = await call_next(request)
         return response
     finally:

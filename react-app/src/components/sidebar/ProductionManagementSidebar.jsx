@@ -189,11 +189,11 @@ function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false,
             </ListItem>
             <Collapse in={openManufacturing} timeout="auto" unmountOnExit>
               <List sx={{ pl: 4 }}>
-                <ListItem button onClick={() => navigate('/all/bulletin_board')}>
+                <ListItem button onClick={() => navigate('/manufacturing/line_map')}>
                   <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
                     <FaMapMarkedAlt size={16} />
                   </ListItemIcon>
-                  <ListItemText primary="設備マップ" />
+                  <ListItemText primary="マップ" />
                 </ListItem>
                 <ListItem button onClick={() => navigate('/materials')}>
                   <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
@@ -246,6 +246,14 @@ function ProductionManagementSidebar({ setToken, setSidebar, mobileOpen = false,
                         <FaIndustry size={16} />
                       </ListItemIcon>
                       <ListItemText primary="ライン" />
+                    </ListItem>
+                  </List>
+                  <List sx={{ pl: 4 }}>
+                    <ListItem button onClick={() => navigate('/manufacturing/master/machine')}>
+                      <ListItemIcon sx={{ color: '#666', opacity: 0.8, minWidth: '36px' }}>
+                        <FaIndustry size={16} />
+                      </ListItemIcon>
+                      <ListItemText primary="設備" />
                     </ListItem>
                   </List>
                 </Collapse>
