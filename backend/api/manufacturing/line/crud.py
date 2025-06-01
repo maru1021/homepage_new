@@ -74,7 +74,9 @@ def create_line(db: Session, line: schemas.LineCreate, background_tasks: Backgro
             "data": {
                 "id": db_line.id,
                 "name": db_line.name,
-                "active": db_line.active
+                "active": db_line.active,
+                "position_x": db_line.position_x,
+                "position_y": db_line.position_y
             }
         }
     except Exception as e:

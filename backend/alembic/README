@@ -8,6 +8,9 @@ CREATE SCHEMA public;
 docker-compose exec fastapi alembic revision --autogenerate -m "コメント"
 docker-compose exec fastapi alembic upgrade head
 
+本番環境時
+docker compose exec fastapi alembic upgrade head
+
 データベースを初期状態の戻す場合は以下のコマンドを実行する
 docker-compose exec fastapi alembic downgrade base
 
@@ -18,3 +21,10 @@ docker-compose exec fastapi alembic downgrade -1
 全てのテーブルの削除
 docker compose exec db psql -U user -d mydatabase
 DROP SCHEMA public CASCADE;
+
+publicスキーマの作成
+docker compose exec db psql -U user -d mydatabase -c "CREATE SCHEMA IF NOT EXISTS public;"
+
+ユーザー作成
+docker compose exec db psql -U user -d mydatabase -c "GRANT ALL ON SCHEMA public TO \"user\";"
+docker compose exec db psql -U user -d mydatabase -c "GRANT ALL ON SCHEMA public TO public;"
