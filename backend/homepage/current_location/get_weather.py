@@ -3,6 +3,7 @@ from fastapi import HTTPException
 import httpx
 from typing import Optional
 from backend.homepage.current_location.router import WeatherInfo
+from backend.utils.logger import logger
 
 async def get_weather_info(city: str, country: Optional[str] = None):
     try:
@@ -20,13 +21,21 @@ async def get_weather_info(city: str, country: Optional[str] = None):
             geo_response = await client.get(geocoding_url, params=params)
 
             if geo_response.status_code != 200:
-                print(f"位置情報の取得に失敗: {geo_response.status_code}")
+                logger.write_error_log(
+                    f"Error in get_weather_info: {str(e)}\n"
+                    f"Function: get_weather_info\n"
+                    f"City: {city}"
+                )
                 raise HTTPException(status_code=500, detail="位置情報の取得に失敗しました")
 
             geo_data = geo_response.json()
 
             if not geo_data.get("results"):
-                print(f"都市 '{city}' の位置情報が見つかりません")
+                logger.write_error_log(
+                    f"Error in get_weather_info: {str(e)}\n"
+                    f"Function: get_weather_info\n"
+                    f"City: {city}"
+                )
                 raise HTTPException(status_code=404, detail=f"都市 '{city}' の位置情報が見つかりません")
 
             # 最初の結果を使用
@@ -46,7 +55,11 @@ async def get_weather_info(city: str, country: Optional[str] = None):
             weather_response = await client.get(weather_url, params=weather_params)
 
             if weather_response.status_code != 200:
-                print(f"天気情報の取得に失敗: {weather_response.status_code}")
+                logger.write_error_log(
+                    f"Error in get_weather_info: {str(e)}\n"
+                    f"Function: get_weather_info\n"
+                    f"City: {city}"
+                )
                 raise HTTPException(status_code=500, detail="天気情報の取得に失敗しました")
 
             weather_data = weather_response.json()
@@ -69,7 +82,11 @@ async def get_weather_info(city: str, country: Optional[str] = None):
             return result
 
     except Exception as e:
-        print(f"天気情報取得中にエラーが発生しました: {str(e)}")
+        logger.write_error_log(
+            f"Error in get_weather_info: {str(e)}\n"
+            f"Function: get_weather_info\n"
+            f"City: {city}"
+        )
         # エラー時はダミーデータを返す
         return WeatherInfo(
             temperature='-',

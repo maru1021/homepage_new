@@ -1,26 +1,33 @@
 from pydantic import BaseModel
 from typing import List, Optional, Union
 
-class LineBase(BaseModel):
-    name: str
-    active: bool = True
-    position_x: int = 0
-    position_y: int = 0
-    searchQuery: Optional[str] = None
-
-class LineCreate(LineBase):
-    pass
-
-class LineUpdate(LineBase):
-    pass
-
-# テーブルのデータ取得時の形式
+# ラインの基本情報
 class Line(BaseModel):
     id: int
     name: str
+
+    class Config:
+        from_attributes = True
+
+class MachineBase(BaseModel):
+    name: str
+    active: bool = True
+    searchQuery: Optional[str] = None
+    line_id: Optional[int] = None
+
+class MachineCreate(MachineBase):
+    pass
+
+class MachineUpdate(MachineBase):
+    pass
+
+# テーブルのデータ取得時の形式
+class Machine(BaseModel):
+    id: int
+    name: str
     active: bool
-    position_x: int
-    position_y: int
+    sort: int
+    line: Optional[Line] = None
 
     class Config:
         from_attributes = True
@@ -31,9 +38,9 @@ class ErrorResponse(BaseModel):
     field: str = ""
 
 # フロントエンドに返す形式
-class LineResponse(BaseModel):
+class MachineResponse(BaseModel):
     success: bool = True
-    data: List[Line] | Line = None
+    data: List[Machine] | Machine = None
     message: Optional[str] = None
     field: Optional[str] = None
 
@@ -41,6 +48,6 @@ class LineResponse(BaseModel):
         from_attributes = True
 
 # テーブルデータ取得時の形式
-class PaginatedLineResponse(BaseModel):
-    lines: Union[LineResponse, ErrorResponse]
+class PaginatedMachineResponse(BaseModel):
+    machines: Union[MachineResponse, ErrorResponse]
     totalCount: int

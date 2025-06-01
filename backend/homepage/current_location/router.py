@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, HTTPException
 import httpx
 from backend.homepage.current_location.schemas import LocationInfo, BrowserLocation, BrowserLocationResponse, WeatherInfo
 from typing import Optional
+from backend.utils.logger import logger
 
 router = APIRouter()
 
@@ -41,7 +42,11 @@ async def get_location_info(request: Request):
             response = await client.get(f"https://ipinfo.io/{client_ip}/json")
 
             if response.status_code != 200:
-                print(f"ipinfo.ioからのレスポンスエラー: {response.status_code}")
+                logger.write_error_log(
+                    f"Error in get_location_info: {str(e)}\n"
+                    f"Function: get_location_info\n"
+                    f"Client IP: {client_ip}"
+                )
 
                 # 代替としてipapi.coを試す
                 alt_response = await client.get(f"https://ipapi.co/{client_ip}/json/")
@@ -72,7 +77,11 @@ async def get_location_info(request: Request):
             )
 
     except Exception as e:
-        print(f"位置情報取得中にエラーが発生しました: {str(e)}")
+        logger.write_error_log(
+            f"Error in get_location_info: {str(e)}\n"
+            f"Function: get_location_info\n"
+            f"Client IP: {client_ip}"
+        )
         raise HTTPException(status_code=500, detail=f"位置情報の取得に失敗しました: {str(e)}")
 
 
@@ -100,7 +109,11 @@ async def process_browser_location(location: BrowserLocation):
             )
 
             if response.status_code != 200:
-                print(f"Nominatim APIエラー: {response.status_code}")
+                logger.write_error_log(
+                    f"Error in process_browser_location: {str(e)}\n"
+                    f"Function: process_browser_location\n"
+                    f"Location: {location}"
+                )
                 # 座標情報だけ返す
                 return BrowserLocationResponse(
                     latitude=location.latitude,
@@ -143,7 +156,11 @@ async def process_browser_location(location: BrowserLocation):
             )
 
     except Exception as e:
-        print(f"逆ジオコーディング中にエラーが発生しました: {str(e)}")
+        logger.write_error_log(
+            f"Error in process_browser_location: {str(e)}\n"
+            f"Function: process_browser_location\n"
+            f"Location: {location}"
+        )
         # エラーが発生しても座標情報だけは返す
         return BrowserLocationResponse(
             latitude=location.latitude,
@@ -165,7 +182,11 @@ async def get_location_info(request: Request):
             else:
                 client_ip = request.client.host
 
-        print(f"取得したクライアントIP: {client_ip}")
+        logger.write_error_log(
+            f"Error in get_location_info: {str(e)}\n"
+            f"Function: get_location_info\n"
+            f"Client IP: {client_ip}"
+        )
 
         # プライベートIPの判定
         if (client_ip == "127.0.0.1" or
@@ -188,7 +209,11 @@ async def get_location_info(request: Request):
             response = await client.get(f"https://ipapi.co/{client_ip}/json/")
 
             if response.status_code != 200:
-                print(f"外部APIからのレスポンスエラー: {response.status_code}")
+                logger.write_error_log(
+                    f"Error in get_location_info: {str(e)}\n"
+                    f"Function: get_location_info\n"
+                    f"Client IP: {client_ip}"
+                )
                 raise HTTPException(status_code=500, detail="位置情報の取得に失敗しました")
 
             data = response.json()
@@ -203,7 +228,11 @@ async def get_location_info(request: Request):
             )
 
     except Exception as e:
-        print(f"位置情報取得中にエラーが発生しました: {str(e)}")
+        logger.write_error_log(
+            f"Error in get_location_info: {str(e)}\n"
+            f"Function: get_location_info\n"
+            f"Client IP: {client_ip}"
+        )
         raise HTTPException(status_code=500, detail=f"位置情報の取得に失敗しました: {str(e)}")
 
 
@@ -214,7 +243,12 @@ async def get_weather_endpoint(city: str, country: Optional[str] = None):
         return await get_weather_info(city, country)
 
     except Exception as e:
-        print(f"天気情報取得中にエラーが発生しました: {str(e)}")
+        logger.write_error_log(
+            f"Error in get_weather_endpoint: {str(e)}\n"
+            f"Function: get_weather_endpoint\n"
+            f"City: {city}\n"
+            f"Country: {country}"
+        )
         # エラー時はダミーデータを返す
         return WeatherInfo(
             temperature='-',

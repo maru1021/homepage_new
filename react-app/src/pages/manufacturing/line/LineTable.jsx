@@ -72,7 +72,7 @@ function LineTable({ data, searchQuery, currentPage, itemsPerPage }) {
         { label: '削除', icon: <FaTrash color='#E57373' />, onClick: handleDelete }
     ];
 
-    const columns = ['ライン名', '有効']
+    const columns = ['ライン名', 'Map座標X', 'Map座標Y', 'Map表示']
 
     return (
         <>
@@ -98,7 +98,9 @@ function LineTable({ data, searchQuery, currentPage, itemsPerPage }) {
                                     data={{
                                         id: line.id,
                                         name: line.name,
-                                        active: line.active ? '☑️' : '⬜'
+                                        position_x: line.position_x,
+                                        position_y: line.position_y,
+                                        active: line.active ? '表示' : '非表示',
                                     }}
                                     index={index}
                                     handleContextMenu={handleContextMenu}
@@ -133,6 +135,8 @@ LineTable.propTypes = {
             id: PropTypes.number.isRequired,
             name: PropTypes.string.isRequired,
             active: PropTypes.bool.isRequired,
+            position_x: PropTypes.number.isRequired,
+            position_y: PropTypes.number.isRequired,
         })
     ).isRequired,
     searchQuery: PropTypes.string,

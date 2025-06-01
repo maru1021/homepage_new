@@ -21,5 +21,22 @@ COLUMN_NAME = {
         "入社日": "hire_date",
         "退社日": "leave_date",
         "契約満了日": "contract_expiration",
+    },
+    "line": {
+        "操作": "action",
+        "ID": "id",
+        "ライン名": "name",
+        "位置X": "position_x",
+        "位置Y": "position_y",
+        "有効": "active",
+    },
+    "machine": {
+        "操作": "action",
+        "ラインID": "line_id",
+        "ID": "id",
+        "設備名": "name",
+        "位置X": "position_x",
+        "位置Y": "position_y",
+        "有効": "active",
     }
 }

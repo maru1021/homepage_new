@@ -17,7 +17,7 @@ def run_websocket(db: Session):
 # ライン一覧取得
 def get_lines(db: Session, search: str = "", page: int = 1, limit: int = 10, return_total_count=True):
     try:
-        query = db.query(Line)
+        query = db.query(Line).order_by(Line.sort)
 
         if search:
             query = query.filter(Line.name.contains(search))
@@ -31,7 +31,14 @@ def get_lines(db: Session, search: str = "", page: int = 1, limit: int = 10, ret
         lines_data = {
             "success": True,
             "data": [
-                {"id": line.id, "name": line.name, "active": line.active} for line in lines
+                {
+                    "id": line.id,
+                    "name": line.name,
+                    "active": line.active,
+                    "sort": line.sort,
+                    "position_x": line.position_x,
+                    "position_y": line.position_y,
+                } for line in lines
             ]
         }
         return lines_data, total_count
@@ -52,7 +59,7 @@ def create_line(db: Session, line: schemas.LineCreate, background_tasks: Backgro
         if db.query(Line).filter(Line.name == line.name).first():
             return {"success": False, "message": "そのラインは既に存在しています", "field": "name"}
 
-        db_line = Line(name=line.name, active=line.active)
+        db_line = Line(name=line.name, active=line.active, position_x=line.position_x, position_y=line.position_y)
         db.add(db_line)
         max_sort = db.query(func.max(Line.sort)).scalar() or 0
         db_line.sort = max_sort + 1
@@ -92,6 +99,8 @@ def update_line(db: Session, line_id: int, line_data: schemas.LineUpdate, backgr
 
         line.name = line_data.name
         line.active = line_data.active
+        line.position_x = line_data.position_x
+        line.position_y = line_data.position_y
 
         db.commit()
         db.refresh(line)
@@ -104,7 +113,9 @@ def update_line(db: Session, line_id: int, line_data: schemas.LineUpdate, backgr
             "data": {
                 "id": line.id,
                 "name": line.name,
-                "active": line.active
+                "active": line.active,
+                "position_x": line.position_x,
+                "position_y": line.position_y
             }
         }
     except Exception as e:
@@ -167,3 +178,4 @@ def sort_lines(db: Session, line_order: list[dict], background_tasks: Background
             f"Line Order: {line_order}"
         )
         return {"success": False, "message": "並べ替えに失敗しました", "field": ""}
+

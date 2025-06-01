@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from backend.homepage.models import Type, Classification
 from backend.homepage.classification import schemas
 from backend.websocket import websocket_manager
+from backend.utils.logger import logger
 
 
 # 項目の変更をWebSocketで通知
@@ -74,7 +75,11 @@ def create_classification(db: Session, classification: schemas.ClassificationCre
         }
     except SQLAlchemyError as e:
         db.rollback()
-        print(f"Error occurred: {e}")
+        logger.write_error_log(
+            f"Error in create_classification: {str(e)}\n"
+            f"Function: create_classification\n"
+            f"Classification: {classification}"
+        )
         return {"success": False, "message": "データベースエラーが発生しました", "field": ""}
 
 # 項目編集
