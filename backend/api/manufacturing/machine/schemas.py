@@ -19,6 +19,9 @@ class MachineCreate(MachineBase):
     pass
 
 class MachineUpdate(MachineBase):
+    operating_condition: str
+    position_x: int
+    position_y: int
     pass
 
 # テーブルのデータ取得時の形式
@@ -27,8 +30,10 @@ class Machine(BaseModel):
     name: str
     active: bool
     sort: int
+    position_x: int
+    position_y: int
     line: Optional[Line] = None
-
+    operating_condition: str
     class Config:
         from_attributes = True
 

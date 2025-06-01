@@ -5,6 +5,7 @@ import ProtectedRouteWrapper from '../components/auth/ProtectedRouteWrapper';
 const Line = lazy(() => import('../pages/manufacturing/line/Line'));
 const Machine = lazy(() => import('../pages/manufacturing/machine/Machine'));
 const LineMap = lazy(() => import('../pages/manufacturing/line_map/LineMap'));
+const MachineMap = lazy(() => import('../pages/manufacturing/machine_map/MachineMap'));
 
 const manufacturingRoutes = [
   {
@@ -20,6 +21,11 @@ const manufacturingRoutes = [
   {
     path: 'line_map',
     element: LineMap,
+    endpoint: '/api/manufacturing/auth_check'
+  },
+  {
+    path: 'machine_map/:lineId',
+    element: MachineMap,
     endpoint: '/api/manufacturing/auth_check'
   }
 ];
