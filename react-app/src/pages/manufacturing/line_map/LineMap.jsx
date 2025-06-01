@@ -20,10 +20,6 @@ const FactoryBuildingIcon = ({ size = 48, color = "#60a5fa" }) => (
   </svg>
 );
 
-SmokeAnimation.propTypes = {
-  size: PropTypes.number
-};
-
 FactoryBuildingIcon.propTypes = {
   size: PropTypes.number,
   color: PropTypes.string
@@ -63,6 +59,10 @@ const SmokeAnimation = ({ size = 40 }) => (
   </svg>
 );
 
+SmokeAnimation.propTypes = {
+  size: PropTypes.number
+};
+
 // 機械名表示コンポーネント
 const MachineName = ({ name }) => (
   <Box
@@ -88,20 +88,6 @@ const MachineName = ({ name }) => (
     {name}
   </Box>
 );
-
-MapContainer.propTypes = {
-  children: PropTypes.node.isRequired
-};
-
-ErrorComponent.propTypes = {
-  error: PropTypes.string.isRequired
-};
-
-BuildingContainer.propTypes = {
-  children: PropTypes.node.isRequired,
-  onMouseEnter: PropTypes.func,
-  onMouseLeave: PropTypes.func
-};
 
 MachineName.propTypes = {
   name: PropTypes.string.isRequired
@@ -166,6 +152,12 @@ const BuildingContainer = ({ children, onMouseEnter, onMouseLeave }) => (
     {children}
   </Box>
 );
+
+BuildingContainer.propTypes = {
+  children: PropTypes.node.isRequired,
+  onMouseEnter: PropTypes.func,
+  onMouseLeave: PropTypes.func
+};
 
 // メインの機械アイコンコンポーネント
 const MachineIcon = ({ machineName, x, y, lineId, onClick }) => {
@@ -253,6 +245,10 @@ const ErrorComponent = ({ error }) => (
   </Box>
 );
 
+ErrorComponent.propTypes = {
+  error: PropTypes.string.isRequired
+};
+
 // マップコンテナコンポーネント
 const MapContainer = ({ children }) => (
   <Box
@@ -269,6 +265,10 @@ const MapContainer = ({ children }) => (
     {children}
   </Box>
 );
+
+MapContainer.propTypes = {
+  children: PropTypes.node.isRequired
+};
 
 // メインのLineMapコンポーネント
 const LineMap = () => {
