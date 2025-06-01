@@ -72,7 +72,7 @@ function LineTable({ data, searchQuery, currentPage, itemsPerPage }) {
         { label: '削除', icon: <FaTrash color='#E57373' />, onClick: handleDelete }
     ];
 
-    const columns = ['ライン名', 'Map座標X', 'Map座標Y', 'Map表示']
+    const columns = ['ライン名', 'Map座標X', 'Map座標Y', '有効']
 
     return (
         <>
@@ -100,7 +100,7 @@ function LineTable({ data, searchQuery, currentPage, itemsPerPage }) {
                                         name: line.name,
                                         position_x: line.position_x,
                                         position_y: line.position_y,
-                                        active: line.active ? '表示' : '非表示',
+                                        active: line.active ? '☑️' : '⬜',
                                     }}
                                     index={index}
                                     handleContextMenu={handleContextMenu}
