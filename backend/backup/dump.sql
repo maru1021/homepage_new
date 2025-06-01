@@ -1,4 +1,4 @@
--- Backup created at: 2025-06-01 13:47:46
+-- Backup created at: 2025-06-01 20:49:46
 
 --
 -- PostgreSQL database dump
@@ -2372,11 +2372,13 @@ COPY "public"."lines" ("id", "register_date", "name", "active", "sort", "positio
 --
 
 COPY "public"."machines" ("id", "register_date", "name", "active", "sort", "line_id", "operating_condition", "position_x", "position_y") FROM stdin;
-11	2025-05-31 00:00:00	OP10B	t	10	4	停止	10	100
-12	2025-05-31 00:00:00	OP10C	t	11	4	稼働	300	200
-9	2025-05-31 00:00:00	OP10A	t	9	4	稼働	150	500
-13	2025-05-31 21:13:27.928009	OP20A	t	12	4	稼働中	200	800
-14	2025-05-31 21:38:31.361118	OP20B	t	13	4	稼働中	800	600
+12	2025-05-31 00:00:00	OP10C	t	3	4	計画停止	400	100
+14	2025-05-31 21:38:31.361118	OP20B	t	5	4	停止中	200	400
+11	2025-05-31 00:00:00	OP10B	t	2	4	停止中	200	100
+9	2025-05-31 00:00:00	OP10A	t	1	4	稼働中	0	100
+13	2025-05-31 21:13:27.928009	OP20A	t	4	4	稼働中	0	400
+15	2025-06-01 14:26:50.735929	aa	t	6	5	稼働中	0	0
+16	2025-06-01 20:12:04.957393	aaa	t	7	\N	稼働中	0	0
 \.
 
 
@@ -2750,7 +2752,7 @@ SELECT pg_catalog.setval('"public"."lines_id_seq"', 23, true);
 -- Name: machines_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('"public"."machines_id_seq"', 14, true);
+SELECT pg_catalog.setval('"public"."machines_id_seq"', 16, true);
 
 
 --
