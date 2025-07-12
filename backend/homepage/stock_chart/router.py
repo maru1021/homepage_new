@@ -97,9 +97,6 @@ async def get_stock_data(request: StockRequest):
         # 日本株データの場合
         if request.symbol in JAPAN_INDICES or request.symbol in JAPAN_STOCKS or '.T' in request.symbol:
             try:
-                logger.write_info_log(
-                    f"日本株データ取得開始: {request.symbol}, 期間={request.timeRange}"
-                )
                 # 日本株データの取得を試みる
                 data = fetch_japan_stock_data(request.symbol, request.timeRange)
 
